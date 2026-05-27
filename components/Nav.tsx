@@ -21,20 +21,20 @@ export default function Nav() {
     <nav
       className={`sticky top-0 z-50 transition-shadow ${scrolled ? "shadow-sm" : ""}`}
       style={{
-        backgroundColor: "#52b548",
-        borderBottom: "1px solid rgba(255,255,255,0.15)",
+        backgroundColor: "#fff",
+        borderBottom: "1px solid rgba(0,0,0,0.08)",
       }}
     >
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
         {/* Logo */}
         <a href="#hero" className="flex flex-col leading-tight">
           <span
-            className="font-bold text-lg text-white"
-            style={{ fontFamily: "var(--font-playfair-display)" }}
+            className="font-bold text-lg"
+            style={{ fontFamily: "var(--font-playfair-display)", color: "#52b548" }}
           >
             Valet Waste Disposal
           </span>
-          <span className="text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>
+          <span className="text-xs uppercase tracking-wide" style={{ color: "#888" }}>
             San Diego County
           </span>
         </a>
@@ -45,19 +45,16 @@ export default function Nav() {
             <a
               key={l.href}
               href={l.href}
-              className="text-sm font-medium transition-opacity hover:opacity-100"
-              style={{ color: "rgba(255,255,255,0.85)" }}
+              className="text-sm font-medium transition-opacity hover:opacity-70"
+              style={{ color: "#222" }}
             >
               {l.label}
             </a>
           ))}
           <a
             href="#contact"
-            className="text-sm font-medium text-white rounded-full px-4 py-1.5 transition-opacity hover:opacity-90"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.2)",
-              border: "1px solid rgba(255,255,255,0.4)",
-            }}
+            className="text-sm font-semibold text-white rounded-full px-5 py-2 transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "#52b548" }}
           >
             Get a Quote
           </a>
@@ -69,23 +66,24 @@ export default function Nav() {
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
         >
-          <span className="block w-6 h-0.5 bg-white" />
-          <span className="block w-6 h-0.5 bg-white" />
-          <span className="block w-6 h-0.5 bg-white" />
+          <span className="block w-6 h-0.5 bg-gray-700" />
+          <span className="block w-6 h-0.5 bg-gray-700" />
+          <span className="block w-6 h-0.5 bg-gray-700" />
         </button>
       </div>
 
       {/* Mobile dropdown */}
       {open && (
         <div
-          className="md:hidden px-4 pb-4 flex flex-col gap-4"
-          style={{ backgroundColor: "#52b548" }}
+          className="md:hidden px-4 pb-4 flex flex-col gap-4 border-t"
+          style={{ backgroundColor: "#fff", borderColor: "rgba(0,0,0,0.08)" }}
         >
           {links.map((l) => (
             <a
               key={l.href}
               href={l.href}
-              className="text-white font-medium"
+              className="font-medium"
+              style={{ color: "#222" }}
               onClick={() => setOpen(false)}
             >
               {l.label}
@@ -93,11 +91,8 @@ export default function Nav() {
           ))}
           <a
             href="#contact"
-            className="text-sm font-medium text-white rounded-full px-4 py-2 text-center"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.2)",
-              border: "1px solid rgba(255,255,255,0.4)",
-            }}
+            className="text-sm font-semibold text-white rounded-full px-4 py-2 text-center"
+            style={{ backgroundColor: "#52b548" }}
             onClick={() => setOpen(false)}
           >
             Get a Quote
