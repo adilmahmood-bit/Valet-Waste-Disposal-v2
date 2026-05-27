@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { IconPhone, IconMail, IconMapPin } from "@tabler/icons-react";
-import { supabase } from "@/lib/supabase/client";
 
 export default function CTABand() {
   const [form, setForm] = useState({
@@ -12,25 +11,9 @@ export default function CTABand() {
     notes: "",
   });
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const { error: sbError } = await supabase
-      .from("quote_requests")
-      .insert([form]);
-
-    setLoading(false);
-
-    if (sbError) {
-      setError("Something went wrong. Please try again or call us directly.");
-      return;
-    }
-
     setSubmitted(true);
   }
 
@@ -154,17 +137,12 @@ export default function CTABand() {
                   />
                 </div>
 
-                {error && (
-                  <p className="text-red-600 text-sm">{error}</p>
-                )}
-
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full py-3 rounded-lg text-white font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
+                  className="w-full py-3 rounded-lg text-white font-semibold transition-opacity hover:opacity-90"
                   style={{ backgroundColor: "#1a3a2a" }}
                 >
-                  {loading ? "Sending…" : "Request a Free Quote →"}
+                  Request a Free Quote →
                 </button>
               </form>
             </>
