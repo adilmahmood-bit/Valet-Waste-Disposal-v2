@@ -26,16 +26,28 @@ export default function Nav() {
       }}
     >
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
-        {/* Logo */}
-        <a href="#hero" className="flex flex-col leading-tight">
-          <span
-            className="font-bold text-lg text-white"
-            style={{ fontFamily: "var(--font-playfair-display)" }}
-          >
-            Valet Waste Disposal
-          </span>
-          <span className="text-xs uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.65)" }}>
-            San Diego County
+        {/* Logo lockup */}
+        <a href="#hero" className="flex items-center text-white" style={{ color: "#fff", gap: "0px" }}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 132" aria-hidden="true" style={{ width: "77px", height: "auto", display: "block" }}>
+            <g fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="30" y="16" width="120" height="102" rx="20" strokeWidth="2.4" opacity="0.55"/>
+              <path d="M84 110 L130 110" strokeWidth="2.6"/>
+              <path d="M88 110 L88 30 L126 30 L126 110"/>
+              <rect x="95" y="38" width="24" height="28" strokeWidth="2.4"/>
+              <rect x="95" y="74" width="24" height="30" strokeWidth="2.4"/>
+              <path d="M60 80 L60 78.5 Q60 77 62 77 L64 77 Q66 77 66 78.5 L66 80" strokeWidth="2.6"/>
+              <path d="M53 82 L73 82" strokeWidth="3.2"/>
+              <path d="M54 86 L72 86 L69 106 Q69 110 65 110 L61 110 Q57 110 57 106 Z" strokeWidth="3"/>
+              <path d="M59.5 90 L59.5 105" strokeWidth="1.7"/>
+              <path d="M63 90 L63 105" strokeWidth="1.7"/>
+              <path d="M66.5 90 L66.5 105" strokeWidth="1.7"/>
+            </g>
+            <circle cx="93" cy="70" r="2" fill="currentColor"/>
+          </svg>
+          <span className="flex flex-col leading-none" style={{ fontFamily: "var(--font-libre-franklin)" }}>
+            <span style={{ fontWeight: 800, fontSize: "15px", letterSpacing: "-0.01em" }}>VALET WASTE</span>
+            <span style={{ fontWeight: 500, fontSize: "15px", letterSpacing: "0.205em", marginTop: "2px" }}>DISPOSAL</span>
+            <span style={{ fontWeight: 600, fontSize: "7px", letterSpacing: "0.22em", textTransform: "uppercase", color: "#7FDDE6", marginTop: "4px" }}>Every door, every night</span>
           </span>
         </a>
 

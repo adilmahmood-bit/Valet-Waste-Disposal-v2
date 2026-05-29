@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 132" role="img" aria-label="Valet Waste Disposal">
+  <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="30" y="16" width="120" height="102" rx="20" stroke-width="2.4" opacity="0.55"></rect>
+    <path d="M84 110 L130 110" stroke-width="2.6"></path>
+    <path d="M88 110 L88 30 L126 30 L126 110"></path>
+    <rect x="95" y="38" width="24" height="28" stroke-width="2.4"></rect>
+    <rect x="95" y="74" width="24" height="30" stroke-width="2.4"></rect>
+    <path d="M60 80 L60 78.5 Q60 77 62 77 L64 77 Q66 77 66 78.5 L66 80" stroke-width="2.6"></path>
+    <path d="M53 82 L73 82" stroke-width="3.2"></path>
+    <path d="M54 86 L72 86 L69 106 Q69 110 65 110 L61 110 Q57 110 57 106 Z" stroke-width="3"></path>
+    <path d="M59.5 90 L59.5 105" stroke-width="1.7"></path>
+    <path d="M63 90 L63 105" stroke-width="1.7"></path>
+    <path d="M66.5 90 L66.5 105" stroke-width="1.7"></path>
+  </g>
+  <circle cx="93" cy="70" r="2" fill="currentColor"></circle>
+</svg>

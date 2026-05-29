@@ -35,7 +35,7 @@ export default function CTABand() {
           <div className="flex flex-col gap-4">
             {[
               { icon: <IconPhone size={20} color="white" stroke={1.5} />, text: "619-324-8875" },
-              { icon: <IconMail size={20} color="white" stroke={1.5} />, text: "adil.mahmood@valetwastedisposal.com" },
+              { icon: <IconMail size={20} color="white" stroke={1.5} />, text: "contact@valetwastedisposal.com" },
               { icon: <IconMapPin size={20} color="white" stroke={1.5} />, text: "San Diego County" },
             ].map((item) => (
               <div key={item.text} className="flex items-center gap-3">
@@ -90,7 +90,7 @@ export default function CTABand() {
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       className="border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-gray-400"
-                      placeholder="Jane Smith"
+                      placeholder="Pete Mitchell"
                     />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -101,7 +101,7 @@ export default function CTABand() {
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       className="border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-gray-400"
-                      placeholder="jane@realty.com"
+                      placeholder="maverick@topliving.com"
                     />
                   </div>
                 </div>
@@ -122,7 +122,7 @@ export default function CTABand() {
                     value={form.property_name}
                     onChange={(e) => setForm({ ...form, property_name: e.target.value })}
                     className="border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-gray-400"
-                    placeholder="Sunset Ridge Apartments"
+                    placeholder="Graves Top Living"
                   />
                 </div>
 
