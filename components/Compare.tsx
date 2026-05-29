@@ -33,7 +33,7 @@ export default function Compare() {
     <section id="why-us" className="py-20 px-4" style={{ backgroundColor: "#0e1117" }}>
       <div className="max-w-5xl mx-auto">
         <RevealSection>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#52b548" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#0E9AA7" }}>
             Why Us, Not Them
           </p>
           <h2
@@ -52,15 +52,17 @@ export default function Compare() {
             <table className="w-full text-sm" style={{ minWidth: "640px" }}>
               <thead>
                 <tr>
-                  <th className="text-left py-3 px-4 text-white/50 font-medium">
+                  <th
+                    className="text-left py-3 px-4 font-medium text-white/60"
+                    style={{ backgroundColor: "#1B4F72" }}
+                  >
                     When this happens…
                   </th>
                   <th
-                    className="text-left py-3 px-4 font-semibold"
+                    className="text-left py-3 px-4 font-semibold text-white"
                     style={{
-                      color: "#6dbf67",
-                      backgroundColor: "rgba(26,58,42,0.4)",
-                      borderLeft: "3px solid #1a3a2a",
+                      backgroundColor: "#1B4F72",
+                      borderLeft: "3px solid #0E9AA7",
                     }}
                   >
                     Valet Waste Disposal
@@ -88,8 +90,8 @@ export default function Compare() {
                     <td
                       className="py-4 px-4 text-white/90"
                       style={{
-                        backgroundColor: "rgba(26,58,42,0.2)",
-                        borderLeft: "3px solid #1a3a2a",
+                        backgroundColor: "rgba(14,154,167,0.08)",
+                        borderLeft: "3px solid #0E9AA7",
                       }}
                     >
                       {row.us}
