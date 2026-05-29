@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="py-10 px-4" style={{ backgroundColor: "#52b548" }}>
+    <footer className="py-10 px-4" style={{ backgroundColor: "#1B4F72" }}>
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
         {/* Logo */}
         <div>

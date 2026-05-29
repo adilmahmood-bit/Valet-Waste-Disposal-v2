@@ -29,15 +29,15 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-white py-20 px-4">
+    <section id="how-it-works" className="py-20 px-4" style={{ backgroundColor: "#FAF8F4" }}>
       <div className="max-w-5xl mx-auto">
         <RevealSection>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#52b548" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#0E9AA7" }}>
             The Nightly Routine
           </p>
           <h2
-            className="text-3xl sm:text-4xl font-bold text-ink mb-12"
-            style={{ fontFamily: "var(--font-playfair-display)" }}
+            className="text-3xl sm:text-4xl font-bold mb-12"
+            style={{ fontFamily: "var(--font-playfair-display)", color: "#1B4F72" }}
           >
             How a service night works.
           </h2>
@@ -49,7 +49,7 @@ export default function HowItWorks() {
             <div
               className="hidden md:block absolute"
               style={{
-                backgroundColor: "rgba(82,181,72,0.25)",
+                backgroundColor: "rgba(14,154,167,0.3)",
                 height: "2px",
                 top: "24px",
                 left: "calc(12.5% + 24px)",
@@ -62,7 +62,7 @@ export default function HowItWorks() {
               <div key={step.num} className="flex flex-col items-center text-center relative z-10">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-md mb-4"
-                  style={{ backgroundColor: "#52b548" }}
+                  style={{ backgroundColor: "#0E9AA7" }}
                 >
                   {step.num}
                 </div>
@@ -73,8 +73,8 @@ export default function HowItWorks() {
                   {step.time}
                 </p>
                 <h3
-                  className="font-bold text-ink mb-2"
-                  style={{ fontFamily: "var(--font-playfair-display)" }}
+                  className="font-bold mb-2"
+                  style={{ fontFamily: "var(--font-playfair-display)", color: "#1B4F72" }}
                 >
                   {step.title}
                 </h3>

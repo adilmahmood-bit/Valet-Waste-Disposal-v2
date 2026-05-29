@@ -10,32 +10,32 @@ import RevealSection from "./RevealSection";
 
 const cards = [
   {
-    icon: <IconTrash size={28} stroke={1.5} color="#6dbf67" />,
+    icon: <IconTrash size={28} stroke={1.5} color="#0E9AA7" />,
     title: "We provide the bins",
     body: "Branded, lidded container delivered to every unit door before the first service night.",
   },
   {
-    icon: <IconRoute size={28} stroke={1.5} color="#6dbf67" />,
+    icon: <IconRoute size={28} stroke={1.5} color="#0E9AA7" />,
     title: "We run the route",
     body: "Five nights a week, every door, GPS-verified check-in so you always know service happened.",
   },
   {
-    icon: <IconUsers size={28} stroke={1.5} color="#6dbf67" />,
+    icon: <IconUsers size={28} stroke={1.5} color="#0E9AA7" />,
     title: "We handle the residents",
     body: "Violations tagged with photo-documented reasons. Resident questions absorbed — not forwarded to you.",
   },
   {
-    icon: <IconFileText size={28} stroke={1.5} color="#6dbf67" />,
+    icon: <IconFileText size={28} stroke={1.5} color="#0E9AA7" />,
     title: "We send the report",
     body: "Photo-verified completion summary in your inbox by midnight, every service night.",
   },
   {
-    icon: <IconLeaf size={28} stroke={1.5} color="#6dbf67" />,
+    icon: <IconLeaf size={28} stroke={1.5} color="#0E9AA7" />,
     title: "SB 1383 Compliance",
     body: "California-mandatory organics and recycling. One vendor, one invoice, zero fine exposure.",
   },
   {
-    icon: <IconSpray size={28} stroke={1.5} color="#6dbf67" />,
+    icon: <IconSpray size={28} stroke={1.5} color="#0E9AA7" />,
     title: "We sweep the pad",
     body: "Dumpster pad cleaning and dog waste stations available on any contract.",
   },
@@ -43,15 +43,15 @@ const cards = [
 
 export default function Services() {
   return (
-    <section id="services" className="bg-surface py-20 px-4">
+    <section id="services" className="py-20 px-4" style={{ backgroundColor: "#FAF8F4" }}>
       <div className="max-w-7xl mx-auto">
         <RevealSection>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#52b548" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#0E9AA7" }}>
             The Cherry on Top — You Do Nothing
           </p>
           <h2
-            className="text-3xl sm:text-4xl font-bold text-ink mb-3"
-            style={{ fontFamily: "var(--font-playfair-display)" }}
+            className="text-3xl sm:text-4xl font-bold mb-3"
+            style={{ fontFamily: "var(--font-playfair-display)", color: "#1B4F72" }}
           >
             Everything we handle. Everything.
           </h2>
@@ -67,11 +67,11 @@ export default function Services() {
                 className="bg-white rounded-xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
                 style={{
                   border: "1px solid #e5e7eb",
-                  borderTop: "4px solid #52b548",
+                  borderTop: "4px solid #1B4F72",
                 }}
               >
                 <div className="mb-4">{card.icon}</div>
-                <h3 className="font-bold text-ink mb-2">{card.title}</h3>
+                <h3 className="font-bold mb-2" style={{ color: "#1B4F72" }}>{card.title}</h3>
                 <p className="text-ink-mid text-sm">{card.body}</p>
               </div>
             </RevealSection>

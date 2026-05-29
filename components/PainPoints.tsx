@@ -23,15 +23,15 @@ const cards = [
 
 export default function PainPoints() {
   return (
-    <section id="pain-points" className="bg-white py-20 px-4">
+    <section id="pain-points" className="py-20 px-4" style={{ backgroundColor: "#FAF8F4" }}>
       <div className="max-w-7xl mx-auto">
         <RevealSection>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#52b548" }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: "#0E9AA7" }}>
             Why Property Managers Call Us First
           </p>
           <h2
-            className="text-3xl sm:text-4xl font-bold text-ink mb-12 max-w-2xl"
-            style={{ fontFamily: "var(--font-playfair-display)" }}
+            className="text-3xl sm:text-4xl font-bold mb-12 max-w-2xl"
+            style={{ fontFamily: "var(--font-playfair-display)", color: "#1B4F72" }}
           >
             Three problems you live with every single week.
           </h2>
@@ -44,18 +44,18 @@ export default function PainPoints() {
                 className="bg-white rounded-xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
                 style={{
                   border: "1px solid #e5e7eb",
-                  borderTop: "4px solid #52b548",
+                  borderTop: "4px solid #1B4F72",
                 }}
               >
                 <span
                   className="text-3xl font-bold block mb-3"
-                  style={{ color: "#52b548", fontFamily: "var(--font-playfair-display)" }}
+                  style={{ color: "#1B4F72", fontFamily: "var(--font-playfair-display)" }}
                 >
                   {card.num}
                 </span>
                 <h3
-                  className="text-lg font-bold text-ink mb-2"
-                  style={{ fontFamily: "var(--font-playfair-display)" }}
+                  className="text-lg font-bold mb-2"
+                  style={{ fontFamily: "var(--font-playfair-display)", color: "#1B4F72" }}
                 >
                   {card.title}
                 </h3>

@@ -11,13 +11,14 @@ export default function CTABand() {
     notes: "",
   });
   const [submitted, setSubmitted] = useState(false);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitted(true);
   }
 
   return (
-    <section id="contact" className="py-20 px-4" style={{ backgroundColor: "#1a3a2a" }}>
+    <section id="contact" className="py-20 px-4" style={{ backgroundColor: "#1B4F72" }}>
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-start">
         {/* Left */}
         <div>
@@ -33,7 +34,7 @@ export default function CTABand() {
 
           <div className="flex flex-col gap-4">
             {[
-              { icon: <IconPhone size={20} color="white" stroke={1.5} />, text: "(949) 307-7759" },
+              { icon: <IconPhone size={20} color="white" stroke={1.5} />, text: "619-324-8875" },
               { icon: <IconMail size={20} color="white" stroke={1.5} />, text: "adil.mahmood@valetwastedisposal.com" },
               { icon: <IconMapPin size={20} color="white" stroke={1.5} />, text: "San Diego County" },
             ].map((item) => (
@@ -56,7 +57,7 @@ export default function CTABand() {
             <div className="text-center py-8">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{ backgroundColor: "#52b548" }}
+                style={{ backgroundColor: "#0E9AA7" }}
               >
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
@@ -138,8 +139,7 @@ export default function CTABand() {
 
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-lg text-white font-semibold transition-opacity hover:opacity-90"
-                  style={{ backgroundColor: "#1a3a2a" }}
+                  className="btn-primary w-full py-3 rounded-lg text-white font-semibold"
                 >
                   Request a Free Quote →
                 </button>
