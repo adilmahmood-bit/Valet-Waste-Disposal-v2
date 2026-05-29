@@ -5,7 +5,7 @@ const featureCards = [
   {
     label: "Valet Trash: Doorstep Pickup",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0E9AA7" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FDDE6" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="3 6 5 6 21 6" />
         <path d="M19 6l-1 14H6L5 6" />
         <path d="M10 11v6" />
@@ -17,7 +17,7 @@ const featureCards = [
   {
     label: "Nightly Service Reports",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0E9AA7" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FDDE6" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
         <line x1="16" y1="13" x2="8" y2="13" />
@@ -29,7 +29,7 @@ const featureCards = [
   {
     label: "Recycling & SB 1383 Compliance",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0E9AA7" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FDDE6" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" />
         <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
       </svg>
@@ -38,7 +38,7 @@ const featureCards = [
   {
     label: "Pet Waste Stations",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 100 100" fill="#0E9AA7" stroke="none">
+      <svg width="28" height="28" viewBox="0 0 100 100" fill="#7FDDE6" stroke="none">
         {/* Top-left toe — spread wide */}
         <ellipse cx="13" cy="24" rx="10" ry="13" transform="rotate(-22 13 24)" />
         {/* Top-middle-left toe */}
@@ -55,7 +55,7 @@ const featureCards = [
   {
     label: "Fully Licensed and Insured",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0E9AA7" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FDDE6" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         <polyline points="9 12 11 14 15 10" />
       </svg>
@@ -64,7 +64,7 @@ const featureCards = [
   {
     label: "All Employees W-2 & Background Checked",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0E9AA7" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FDDE6" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
         <circle cx="12" cy="7" r="4" />
       </svg>
