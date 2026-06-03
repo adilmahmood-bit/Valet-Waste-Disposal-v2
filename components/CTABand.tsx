@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { IconPhone, IconMail, IconMapPin } from "@tabler/icons-react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function CTABand() {
   const [form, setForm] = useState({
@@ -11,10 +12,33 @@ export default function CTABand() {
     notes: "",
   });
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setError(null);
+
+    const supabase = createClient();
+    const { error: sbError } = await supabase
+      .from("quote_requests")
+      .insert([{
+        name: form.name,
+        email: form.email,
+        phone: form.phone || null,
+        property_name: form.property_name || null,
+        notes: form.notes || null,
+      }]);
+
+    setLoading(false);
+
+    if (sbError) {
+      setError("Something went wrong — please try again or call us directly.");
+      console.error(sbError);
+    } else {
+      setSubmitted(true);
+    }
   }
 
   return (
@@ -137,11 +161,15 @@ export default function CTABand() {
                   />
                 </div>
 
+                {error && (
+                  <p className="text-sm text-red-600 text-center">{error}</p>
+                )}
                 <button
                   type="submit"
-                  className="btn-primary w-full py-3 rounded-lg text-white font-semibold"
+                  disabled={loading}
+                  className="btn-primary w-full py-3 rounded-lg text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Request a Free Quote →
+                  {loading ? "Sending…" : "Request a Free Quote →"}
                 </button>
               </form>
             </>
