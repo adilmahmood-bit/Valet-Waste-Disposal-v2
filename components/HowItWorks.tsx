@@ -3,21 +3,21 @@ import RevealSection from "./RevealSection";
 const steps = [
   {
     num: "1",
-    time: "6–8 PM",
+    time: "By 6 PM",
     title: "Set-Out",
-    desc: "Residents set their labeled bins outside their unit door.",
+    desc: "Residents place their provided container — with a securely tied bag inside — just outside their unit door.",
   },
   {
     num: "2",
-    time: "8:00 PM",
-    title: "Check-In",
-    desc: "Attendant arrives and GPS check-in is logged — you know service started on time.",
+    time: "7 PM",
+    title: "Collection Begins",
+    desc: "A uniformed, background-checked attendant arrives and GPS check-in is logged — you know service started on time.",
   },
   {
     num: "3",
-    time: "8–11 PM",
-    title: "Collection",
-    desc: "Every door on every floor, every bin collected — no skipped units.",
+    time: "7 PM – Midnight",
+    title: "Every Door",
+    desc: "Every door on every floor, every bin collected quietly without disturbing residents — no skipped units.",
   },
   {
     num: "4",
