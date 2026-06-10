@@ -1,6 +1,7 @@
 import Hero from "@/components/Hero";
 import PainPoints from "@/components/PainPoints";
 import Services from "@/components/Services";
+import StatsBar from "@/components/StatsBar";
 import Compare from "@/components/Compare";
 import HowItWorks from "@/components/HowItWorks";
 import CTABand from "@/components/CTABand";
@@ -12,6 +13,7 @@ export default function Home() {
       <Hero />
       <PainPoints />
       <Services />
+      <StatsBar />
       <Compare />
       <HowItWorks />
       <CTABand />
