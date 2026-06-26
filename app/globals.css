@@ -7,6 +7,10 @@
   --color-muted: #6b7280;
   --color-surface: #FAF8F4;
   --color-border: #e5e7eb;
+  --color-navy: #1B4F72;
+  --color-teal: #0E9AA7;
+  --color-teal-soft: #7FDDE6;
+  --color-accent: #C9622B;
   --font-playfair: var(--font-playfair-display);
   --font-dm: var(--font-dm-sans);
 }
@@ -14,6 +18,13 @@
 body {
   font-family: var(--font-dm-sans), sans-serif;
   background-color: #FAF8F4;
+}
+
+/* Display headings — Libre Franklin extrabold, matches the brand flyers */
+.font-heading {
+  font-family: var(--font-libre-franklin), sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 /* Primary CTA button — #0E9AA7 base, lighter teal on hover */

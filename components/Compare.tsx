@@ -7,6 +7,11 @@ const rows = [
     them: "District manager covering 30+ properties",
   },
   {
+    scenario: "Tenant has a complaint or needs support",
+    us: "Direct line of communication to us — we handle it",
+    them: "Request pushed back to your office staff to field",
+  },
+  {
     scenario: "Attendant doesn't show",
     us: "Owner runs the route himself, you hear from us",
     them: "Service skipped, you find out from a resident",
@@ -37,8 +42,8 @@ export default function Compare() {
             Why Us, Not Them
           </p>
           <h2
-            className="text-3xl sm:text-4xl font-bold text-white mb-3"
-            style={{ fontFamily: "var(--font-playfair-display)" }}
+            className="text-3xl sm:text-4xl font-extrabold text-white mb-3"
+            style={{ fontFamily: "var(--font-libre-franklin)", letterSpacing: "-0.01em" }}
           >
             Same service on paper. A different call when something goes wrong.
           </h2>

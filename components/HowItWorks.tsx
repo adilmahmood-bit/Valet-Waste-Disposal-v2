@@ -3,24 +3,28 @@ import RevealSection from "./RevealSection";
 const steps = [
   {
     num: "1",
+    color: "#1B4F72",
     time: "By 6 PM",
     title: "Set-Out",
     desc: "Residents place their provided container — with a securely tied bag inside — just outside their unit door.",
   },
   {
     num: "2",
+    color: "#2C7FB8",
     time: "7 PM",
     title: "Collection Begins",
-    desc: "A uniformed, background-checked attendant arrives and GPS check-in is logged — you know service started on time.",
+    desc: "A uniformed, background-checked attendant arrives and logs a GPS check-in — you know service started on time.",
   },
   {
     num: "3",
+    color: "#0E9AA7",
     time: "7 PM – Midnight",
     title: "Every Door",
     desc: "Every door on every floor, every bin collected quietly without disturbing residents — no skipped units.",
   },
   {
     num: "4",
+    color: "#C9622B",
     time: "By Midnight",
     title: "Report",
     desc: "Photo-verified completion summary lands in your inbox — forward it to your regional in two clicks.",
@@ -36,8 +40,8 @@ export default function HowItWorks() {
             The Nightly Routine
           </p>
           <h2
-            className="text-3xl sm:text-4xl font-bold mb-12"
-            style={{ fontFamily: "var(--font-playfair-display)", color: "#1B4F72" }}
+            className="text-3xl sm:text-4xl font-extrabold mb-12"
+            style={{ fontFamily: "var(--font-libre-franklin)", color: "#1B4F72", letterSpacing: "-0.01em" }}
           >
             How a service night works.
           </h2>
@@ -62,7 +66,7 @@ export default function HowItWorks() {
               <div key={step.num} className="flex flex-col items-center text-center relative z-10">
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shadow-md mb-4"
-                  style={{ backgroundColor: "#0E9AA7" }}
+                  style={{ backgroundColor: step.color }}
                 >
                   {step.num}
                 </div>
@@ -74,7 +78,7 @@ export default function HowItWorks() {
                 </p>
                 <h3
                   className="font-bold mb-2"
-                  style={{ fontFamily: "var(--font-playfair-display)", color: "#1B4F72" }}
+                  style={{ fontFamily: "var(--font-libre-franklin)", color: "#1B4F72" }}
                 >
                   {step.title}
                 </h3>

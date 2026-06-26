@@ -1,23 +1,39 @@
+import {
+  IconAlertTriangle,
+  IconTrashX,
+  IconWind,
+  IconDroplet,
+} from "@tabler/icons-react";
 import RevealSection from "./RevealSection";
 
 const cards = [
   {
-    num: "01",
-    title: "The Complaints",
-    sub: "Overflowing dumpsters are never your fault. They're always your problem.",
-    body: "Every trash complaint is uncompensated work — answering the call, walking the property, chasing the resident. None of it shows up on the things you're actually measured on.",
+    icon: <IconAlertTriangle size={26} stroke={1.6} color="#C9622B" />,
+    accent: "#C9622B",
+    title: "Surprise compliance fines",
+    sub: "Trash and recyclables in the wrong dumpster — SB 1383 violations and code citations.",
+    body: "One missorted load is all it takes for a citation to hit your statement — now multiply that across 10 dumpsters. With us, that exposure goes away — no surprise fines.",
   },
   {
-    num: "02",
-    title: "The Pressure",
-    sub: "Your regional wants more revenue and tighter occupancy. Today.",
-    body: "You need amenities residents notice on renewal without a capex conversation. Doorstep trash is the easiest one to add this quarter.",
+    icon: <IconTrashX size={26} stroke={1.6} color="#0E9AA7" />,
+    accent: "#1B4F72",
+    title: "The morning dumpster mess",
+    sub: "Bags left beside the dumpster instead of in it — scatter and overflow by sunrise.",
+    body: "Self-hauled trash means your porters inherit the cleanup. With us, the area is spotless before your team clocks in — that's labor back on your roster.",
   },
   {
-    num: "03",
-    title: "The Vendor",
-    sub: "The valet company you have doesn't answer the phone anymore.",
-    body: "National operators sign you, then forget you. Completion rates slip, violations go undocumented. You're the last to know when service was missed.",
+    icon: <IconWind size={26} stroke={1.6} color="#0E9AA7" />,
+    accent: "#1B4F72",
+    title: "The smell and the pests",
+    sub: "Trash sitting overnight brings odor, flies, and rodents.",
+    body: "Trash that lingers is trash that smells. With us it's gone the same evening, so odor and pests never get the chance to settle in.",
+  },
+  {
+    icon: <IconDroplet size={26} stroke={1.6} color="#0E9AA7" />,
+    accent: "#1B4F72",
+    title: "Spills and stains",
+    sub: "Leaking bags stain concrete, carpet, and breezeway tile.",
+    body: "Self-hauled bags leak far more often, and those stains set into concrete and carpet. With us, your stairwells, breezeways, and floors stay clean — period.",
   },
 ];
 
@@ -30,35 +46,40 @@ export default function PainPoints() {
             Why Property Managers Call Us First
           </p>
           <h2
-            className="text-3xl sm:text-4xl font-bold mb-12 max-w-2xl"
-            style={{ fontFamily: "var(--font-playfair-display)", color: "#1B4F72" }}
+            className="font-heading text-3xl sm:text-4xl mb-3 max-w-2xl"
+            style={{ color: "#1B4F72" }}
           >
-            Three problems you live with every single week.
+            What lands on you:
           </h2>
+          <p className="text-ink-mid mb-12 max-w-xl">
+            Trash isn&apos;t a line item until it becomes a complaint, a fine, or a porter&apos;s morning. Sound familiar?
+          </p>
         </RevealSection>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
           {cards.map((card) => (
-            <RevealSection key={card.num}>
+            <RevealSection key={card.title}>
               <div
-                className="bg-white rounded-xl p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                className="bg-white rounded-xl p-6 h-full transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
                 style={{
                   border: "1px solid #e5e7eb",
-                  borderTop: "4px solid #1B4F72",
+                  borderTop: `4px solid ${card.accent}`,
                 }}
               >
-                <span
-                  className="text-3xl font-bold block mb-3"
-                  style={{ color: "#1B4F72", fontFamily: "var(--font-playfair-display)" }}
-                >
-                  {card.num}
-                </span>
-                <h3
-                  className="text-lg font-bold mb-2"
-                  style={{ fontFamily: "var(--font-playfair-display)", color: "#1B4F72" }}
-                >
-                  {card.title}
-                </h3>
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: `${card.accent}14` }}
+                  >
+                    {card.icon}
+                  </div>
+                  <h3
+                    className="font-heading text-lg"
+                    style={{ color: "#1B4F72" }}
+                  >
+                    {card.title}
+                  </h3>
+                </div>
                 <p className="text-ink-mid text-sm font-semibold mb-2">{card.sub}</p>
                 <p className="text-ink-mid text-sm">{card.body}</p>
               </div>

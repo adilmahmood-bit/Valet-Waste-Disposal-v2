@@ -1,38 +1,38 @@
 import {
-  IconTrash,
-  IconRoute,
+  IconFileCheck,
   IconUsers,
   IconLeaf,
   IconSpray,
+  IconDroplet,
   IconCoin,
 } from "@tabler/icons-react";
 import RevealSection from "./RevealSection";
 
 const cards = [
   {
-    icon: <IconTrash size={28} stroke={1.5} color="#0E9AA7" />,
-    title: "We provide the bins",
-    body: "Branded, lidded container delivered to every unit door before the first service night.",
-  },
-  {
-    icon: <IconRoute size={28} stroke={1.5} color="#0E9AA7" />,
-    title: "We run the route & send the report",
-    body: "Five nights a week, every door, GPS-verified. A photo-verified completion summary lands in your inbox by midnight — every service night.",
-  },
-  {
     icon: <IconUsers size={28} stroke={1.5} color="#0E9AA7" />,
-    title: "We handle the residents",
-    body: "Education before enforcement — residents get a welcome letter on Day 1. Violations are photo-documented with a plain-language reason, never a surprise fine.",
+    title: "Resident onboarding handled — lidded bins provided",
+    body: "Welcome letters, bin delivery, program rules. We handle every resident touchpoint so your team fields zero setup questions from Day 1.",
+  },
+  {
+    icon: <IconFileCheck size={28} stroke={1.5} color="#0E9AA7" />,
+    title: "A nightly report — in your inbox every morning",
+    body: "Every door serviced, GPS-verified, with a photo-verified completion summary in your inbox by midnight — every night we run.",
   },
   {
     icon: <IconLeaf size={28} stroke={1.5} color="#0E9AA7" />,
-    title: "SB 1383 Compliance",
-    body: "California-mandatory organics and recycling. One vendor, one invoice, zero fine exposure.",
+    title: "SB 1383 Compliance & recycling sortation",
+    body: "California-mandatory organics and recycling, sorted properly at disposal. One vendor, one invoice, zero fine exposure.",
   },
   {
     icon: <IconSpray size={28} stroke={1.5} color="#0E9AA7" />,
-    title: "We sweep the pad",
-    body: "Dumpster pad cleaning and dog waste stations available on any contract.",
+    title: "The mess around the dumpster — gone",
+    body: "Every bag carried into the dumpster — never left beside it. We sweep and tidy the dumpster pad each night, so the enclosure is clean and clear by morning instead of scattered with overflow.",
+  },
+  {
+    icon: <IconDroplet size={28} stroke={1.5} color="#0E9AA7" />,
+    title: "Spills handled, floors protected",
+    body: "We carry trash in leakproof containers and clean any spill on-site — plus available protective mats under each bin, an optional upgrade that keeps leaks off your flooring entirely.",
   },
   {
     icon: <IconCoin size={28} stroke={1.5} color="#0E9AA7" />,
@@ -50,10 +50,10 @@ export default function Services() {
             The Cherry on Top — You Do Nothing
           </p>
           <h2
-            className="text-3xl sm:text-4xl font-bold mb-3"
-            style={{ fontFamily: "var(--font-playfair-display)", color: "#1B4F72" }}
+            className="text-3xl sm:text-4xl font-extrabold mb-3"
+            style={{ fontFamily: "var(--font-libre-franklin)", color: "#1B4F72", letterSpacing: "-0.01em" }}
           >
-            We handle everything.
+            What we handle:
           </h2>
           <p className="text-ink-mid mb-12 max-w-xl">
             You point us at the property and approve the welcome letter. That&apos;s the entire lift on your side.
@@ -90,7 +90,7 @@ export default function Services() {
               </p>
               <h3
                 className="text-xl font-bold text-white mb-4"
-                style={{ fontFamily: "var(--font-playfair-display)" }}
+                style={{ fontFamily: "var(--font-libre-franklin)" }}
               >
                 The amenity they actually use every day.
               </h3>
@@ -102,6 +102,7 @@ export default function Services() {
             <div className="flex-1 flex flex-col gap-3 justify-center">
               {[
                 "No more hauling bags to the dumpster — pickup happens at their door.",
+                "No bags sit out — lidded bins are provided and it's collected the same evening.",
                 "Especially valued by elderly residents, families, and busy professionals.",
                 "Used nightly — residents notice it missing immediately, which means they value it.",
               ].map((item) => (

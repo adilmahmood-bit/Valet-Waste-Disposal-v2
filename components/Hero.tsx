@@ -6,11 +6,9 @@ const featureCards = [
     label: "Valet Trash: Doorstep Pickup",
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FDDE6" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="3 6 5 6 21 6" />
-        <path d="M19 6l-1 14H6L5 6" />
-        <path d="M10 11v6" />
-        <path d="M14 11v6" />
-        <path d="M9 6V4h6v2" />
+        <path d="M3 21h18" />
+        <path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
+        <path d="M14 12v.01" />
       </svg>
     ),
   },
@@ -27,28 +25,25 @@ const featureCards = [
     ),
   },
   {
-    label: "Recycling & SB 1383 Compliance",
+    label: "Recycling compliance and pad sweep",
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FDDE6" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" />
-        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+        <path d="M12 17l-2 2l2 2" />
+        <path d="M10 19h9a2 2 0 0 0 1.75 -2.75l-.55 -1" />
+        <path d="M8.536 11l-.732 -2.732l-2.732 .732" />
+        <path d="M7.804 8.268l-4.5 7.794a2 2 0 0 0 1.506 2.89l1.141 .024" />
+        <path d="M15.464 11l2.732 .732l.732 -2.732" />
+        <path d="M18.196 11.732l-4.5 -7.794a2 2 0 0 0 -3.256 -.14l-.591 .976" />
       </svg>
     ),
   },
   {
-    label: "Pet Waste Stations",
+    label: "Lidded Bins Provided",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 100 100" fill="#7FDDE6" stroke="none">
-        {/* Top-left toe — spread wide */}
-        <ellipse cx="13" cy="24" rx="10" ry="13" transform="rotate(-22 13 24)" />
-        {/* Top-middle-left toe */}
-        <ellipse cx="36" cy="11" rx="10" ry="13" transform="rotate(-7 36 11)" />
-        {/* Top-middle-right toe */}
-        <ellipse cx="64" cy="11" rx="10" ry="13" transform="rotate(7 64 11)" />
-        {/* Top-right toe — spread wide */}
-        <ellipse cx="87" cy="24" rx="10" ry="13" transform="rotate(22 87 24)" />
-        {/* Main pad — narrower */}
-        <path d="M50 40 C34 40 24 53 24 65 C24 78 34 91 50 91 C66 91 76 78 76 65 C76 53 66 40 50 40 Z" />
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7FDDE6" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="3" width="6" height="2" rx="0.5" />
+        <path d="M4 7h16" />
+        <path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" />
       </svg>
     ),
   },
@@ -83,26 +78,29 @@ export default function Hero() {
         className="object-cover"
         priority
       />
-      {/* Overlay — deep green tint for contrast */}
+      {/* Overlay — directional navy gradient scrim, matches the brand flyers */}
       <div
         className="absolute inset-0"
-        style={{ backgroundColor: "rgba(5,18,30,0.68)" }}
+        style={{
+          background:
+            "linear-gradient(105deg, rgba(5,18,30,0.72) 0%, rgba(5,18,30,0.55) 45%, rgba(27,79,114,0.4) 100%)",
+        }}
       />
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto py-24">
         <RevealSection>
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 leading-tight"
-            style={{ fontFamily: "var(--font-playfair-display)" }}
+            className="font-heading text-4xl sm:text-5xl lg:text-6xl mb-4 leading-tight"
+            style={{ textShadow: "0 1px 8px rgba(0,0,0,0.55), 0 2px 24px rgba(0,0,0,0.4)" }}
           >
-            <span style={{ color: "#0E9AA7" }} >You have enough to manage.</span>
+            <span className="text-white">You have enough to manage.</span>
             <br />
-            <span className="text-white italic">Trash shouldn&apos;t be one of them.</span>
+            <span style={{ color: "#7FDDE6" }}>Trash shouldn&apos;t be one of them.</span>
           </h1>
 
           <p className="text-white font-semibold max-w-xl mx-auto mb-8 text-lg">
-            San Diego&apos;s owner-operated valet waste service. Doorstep pickup, nightly reports, and full SB 1383 compliance — handled so you don&apos;t have to think about it.
+            San Diego&apos;s owner-operated valet waste service. Doorstep pickup, nightly reports, sortation compliance, and a tidy pad every morning — handled so none of it lands on you.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -126,8 +124,13 @@ export default function Hero() {
             {featureCards.map((card) => (
               <div
                 key={card.label}
-                className="rounded-xl px-3 py-4 flex flex-col items-center gap-2 shadow-md text-center transition-transform duration-200 hover:-translate-y-1.5 cursor-default"
-                style={{ backgroundColor: "#1B4F72", border: "1px solid rgba(14,154,167,0.3)" }}
+                className="rounded-xl px-3 py-4 flex flex-col items-center gap-2 shadow-lg text-center transition-transform duration-200 hover:-translate-y-1.5 cursor-default"
+                style={{
+                  backgroundColor: "rgba(27,79,114,0.45)",
+                  border: "1px solid rgba(127,221,230,0.35)",
+                  backdropFilter: "blur(10px)",
+                  WebkitBackdropFilter: "blur(10px)",
+                }}
               >
                 {card.icon}
                 <span className="text-sm font-bold text-white leading-snug">{card.label}</span>

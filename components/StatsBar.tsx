@@ -7,12 +7,12 @@ const stats = [
     sub: "We show up every scheduled night — no exceptions.",
   },
   {
-    num: "3–5×",
+    num: "3–7×",
     label: "Nights per week",
     sub: "Schedules built around your property's actual trash patterns.",
   },
   {
-    num: "< 4h",
+    num: "< 2h",
     label: "Resident resolution time",
     sub: "Issues handled before they become your problem.",
   },
@@ -28,7 +28,7 @@ export default function StatsBar() {
               <span
                 className="font-bold leading-none"
                 style={{
-                  fontFamily: "var(--font-playfair-display)",
+                  fontFamily: "var(--font-libre-franklin)",
                   fontSize: "clamp(2.5rem, 5vw, 3.5rem)",
                   color: "#7FDDE6",
                 }}

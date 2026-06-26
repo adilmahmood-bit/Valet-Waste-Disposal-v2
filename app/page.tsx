@@ -13,9 +13,9 @@ export default function Home() {
       <Hero />
       <PainPoints />
       <Services />
+      <HowItWorks />
       <StatsBar />
       <Compare />
-      <HowItWorks />
       <CTABand />
       <Footer />
     </>

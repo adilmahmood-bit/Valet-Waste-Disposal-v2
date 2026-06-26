@@ -47,8 +47,8 @@ export default function CTABand() {
         {/* Left */}
         <div>
           <h2
-            className="text-3xl sm:text-4xl font-bold italic text-white mb-4"
-            style={{ fontFamily: "var(--font-playfair-display)" }}
+            className="text-3xl sm:text-4xl font-extrabold text-white mb-4"
+            style={{ fontFamily: "var(--font-libre-franklin)", letterSpacing: "-0.01em" }}
           >
             Twenty minutes is all we need.
           </h2>
@@ -89,7 +89,7 @@ export default function CTABand() {
               </div>
               <h3
                 className="text-xl font-bold text-ink mb-2"
-                style={{ fontFamily: "var(--font-playfair-display)" }}
+                style={{ fontFamily: "var(--font-libre-franklin)" }}
               >
                 Request received!
               </h3>
@@ -99,7 +99,7 @@ export default function CTABand() {
             <>
               <h3
                 className="text-xl font-bold text-ink mb-1"
-                style={{ fontFamily: "var(--font-playfair-display)" }}
+                style={{ fontFamily: "var(--font-libre-franklin)" }}
               >
                 Request a Free Quote
               </h3>
