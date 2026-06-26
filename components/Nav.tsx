@@ -13,8 +13,8 @@ export default function Nav() {
 
   const links = [
     { label: "Services", href: "#services" },
-    { label: "Why Us", href: "#why-us" },
     { label: "How It Works", href: "#how-it-works" },
+    { label: "Why Us", href: "#why-us" },
   ];
 
   return (
