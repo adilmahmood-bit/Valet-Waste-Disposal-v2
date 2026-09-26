@@ -113,7 +113,12 @@ export default function DemoHome() {
         </Link>
 
         <div className="flex items-center justify-between text-xs pt-2" style={{ color: C.muted }}>
-          <span>Demo data only. Nothing here is saved to a server.</span>
+          <span>
+            Demo data only. Nothing here is saved to a server. ·{" "}
+            <Link href="/demo/features" className="underline">
+              Full feature list
+            </Link>
+          </span>
           <ResetButton />
         </div>
       </main>
