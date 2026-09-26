@@ -47,6 +47,38 @@ export interface Broadcast {
   text: string;
 }
 
+export type Channel = "email" | "text" | "push";
+
+export const DOORSTEP_ALERTS = [
+  { id: "setOut", label: "Set-out time begins" },
+  { id: "hourBefore", label: "Collection starts in an hour" },
+  { id: "onProperty", label: "Attendant arrives on property" },
+  { id: "lastCall", label: "Last call alert" },
+  { id: "violation", label: "Violation at my door" },
+  { id: "pickedUp", label: "My trash was picked up" },
+  { id: "callbackDone", label: "Callback completed" },
+  { id: "complete", label: "Service complete for the night" },
+] as const;
+export type DoorstepAlert = (typeof DOORSTEP_ALERTS)[number]["id"];
+
+export interface AlertPrefs {
+  comms: boolean;
+  service: Record<Channel, boolean>;
+  community: Record<Channel, boolean>;
+  doorstep: boolean;
+  push: Record<DoorstepAlert, boolean>;
+}
+
+export function defaultAlerts(): AlertPrefs {
+  return {
+    comms: false,
+    service: { email: false, text: false, push: false },
+    community: { email: false, text: false, push: false },
+    doorstep: false,
+    push: Object.fromEntries(DOORSTEP_ALERTS.map((a) => [a.id, false])) as Record<DoorstepAlert, boolean>,
+  };
+}
+
 export interface DemoState {
   attendant: {
     name: string;
@@ -60,6 +92,7 @@ export interface DemoState {
   callbacks: Callback[];
   bulk: BulkRequest[];
   broadcasts: Broadcast[];
+  alerts: AlertPrefs;
   lang: "en" | "es";
 }
 
@@ -101,6 +134,7 @@ function initial(): DemoState {
       },
     ],
     broadcasts: [],
+    alerts: defaultAlerts(),
     lang: "en",
   };
 }
