@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Nav() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -10,6 +12,9 @@ export default function Nav() {
     window.addEventListener("scroll", handler);
     return () => window.removeEventListener("scroll", handler);
   }, []);
+
+  // The app demo has its own chrome.
+  if (pathname?.startsWith("/demo")) return null;
 
   const links = [
     { label: "Services", href: "#services" },
