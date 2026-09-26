@@ -34,6 +34,7 @@ const T = {
     progress: "Tonight's route",
     callbacks: "Resident callbacks",
     pickedUp: "Picked up",
+    withPhoto: "Picked up + photo",
     violation: "Report violation",
     checkout: "Check out of property",
     finishBldg: "Finish building",
@@ -52,6 +53,7 @@ const T = {
     progress: "Ruta de esta noche",
     callbacks: "Solicitudes de residentes",
     pickedUp: "Recogido",
+    withPhoto: "Recogido + foto",
     violation: "Reportar infracción",
     checkout: "Registrar salida",
     finishBldg: "Terminar edificio",
@@ -320,6 +322,7 @@ function DoorSheet({ unit, s, t, onClose }: { unit: string; s: DemoState; t: (ty
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState<string>();
   const fileRef = useRef<HTMLInputElement>(null);
+  const proofRef = useRef<HTMLInputElement>(null);
   const d = s.doors[unit];
 
   const onFile = async (f?: File) => {
@@ -354,15 +357,33 @@ function DoorSheet({ unit, s, t, onClose }: { unit: string; s: DemoState; t: (ty
 
         {mode === "menu" ? (
           <div className="grid gap-2">
-            <Btn
-              className="flex items-center justify-center gap-2"
-              onClick={() => {
-                markDone(unit);
+            <input
+              ref={proofRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              hidden
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                markDone(unit, await readPhoto(f));
                 onClose();
               }}
-            >
-              <IconCheck size={18} /> {t.pickedUp}
-            </Btn>
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Btn
+                className="flex items-center justify-center gap-2"
+                onClick={() => {
+                  markDone(unit);
+                  onClose();
+                }}
+              >
+                <IconCheck size={18} /> {t.pickedUp}
+              </Btn>
+              <Btn variant="navy" className="flex items-center justify-center gap-2" onClick={() => proofRef.current?.click()}>
+                <IconCamera size={18} /> {t.withPhoto}
+              </Btn>
+            </div>
             <Btn variant="danger" className="flex items-center justify-center gap-2" onClick={() => setMode("violation")}>
               <IconAlertTriangle size={18} /> {t.violation}
             </Btn>

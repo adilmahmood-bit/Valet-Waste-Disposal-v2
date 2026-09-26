@@ -55,7 +55,25 @@ export const STATUS_META: Record<AttendantStatus, { label: string; color: string
   done: { label: "Tonight's service complete", color: C.navy, bg: "#e0eef7" },
 };
 
-export function statusDetail(a: DemoState["attendant"]) {
+export const STATUS_LABEL_ES: Record<AttendantStatus, string> = {
+  off: "Asistente fuera de servicio",
+  enroute: "Asistente en camino",
+  onsite: "Asistente en la propiedad",
+  done: "Servicio de esta noche completo",
+};
+
+export function statusDetail(a: DemoState["attendant"], lang: "en" | "es" = "en") {
+  if (lang === "es")
+    switch (a.status) {
+      case "off":
+        return "Próximo servicio esta noche, 7:00 – 9:00 PM";
+      case "enroute":
+        return `${a.name} marcó entrada a las ${fmtTime(a.clockIn)} · llegará pronto`;
+      case "onsite":
+        return `${a.name} · Edificio ${a.building ?? "A"} · desde las ${fmtTime(a.checkIn)}`;
+      case "done":
+        return `${a.name} salió a las ${fmtTime(a.checkOut)}`;
+    }
   switch (a.status) {
     case "off":
       return "Next service tonight, 7:00 – 9:00 PM";

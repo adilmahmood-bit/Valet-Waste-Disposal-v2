@@ -12,6 +12,12 @@ import {
   IconPhoneCall,
   IconMail,
   IconRecycle,
+  IconMapPin,
+  IconCreditCard,
+  IconSearch,
+  IconBuildingBank,
+  IconFileInvoice,
+  IconPhoto,
 } from "@tabler/icons-react";
 import {
   useDemo,
@@ -27,67 +33,608 @@ import {
   BulkRequest,
 } from "@/lib/demo/store";
 import { AttendantBanner, Btn, C, Card, LogoMark, PhotoThumb, Pill, ResetButton, StatusDot, Wordmark } from "@/components/demo/ui";
+import PhotoReport from "@/components/demo/PhotoReport";
 
 const TABS = [
-  { id: "overview", label: "Overview", icon: IconLayoutDashboard },
-  { id: "bulk", label: "Bulk pickup", icon: IconTruckLoading },
+  { id: "dashboard", label: "Dashboard", icon: IconLayoutDashboard },
+  { id: "live", label: "Live tracking", icon: IconMapPin },
   { id: "violations", label: "Violations", icon: IconAlertTriangle },
-  { id: "reports", label: "Reports", icon: IconChartBar },
+  { id: "photos", label: "Photo report", icon: IconPhoto },
+  { id: "bulk", label: "Bulk pickup", icon: IconTruckLoading },
+  { id: "reports", label: "Service reports", icon: IconChartBar },
   { id: "messages", label: "Messages", icon: IconSpeakerphone },
+  { id: "billing", label: "Plan & Billing", icon: IconCreditCard },
 ] as const;
 type Tab = (typeof TABS)[number]["id"];
 
 export default function ManagerPortal() {
   const s = useDemo();
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>("dashboard");
   const pendingQuotes = s.bulk.filter((b) => b.status === "quoted").length;
+  const current = TABS.find((t) => t.id === tab)!;
+
+  const badge = (id: Tab) =>
+    id === "bulk" && pendingQuotes > 0 ? (
+      <span className="ml-auto rounded-full px-1.5 text-[10px] font-bold text-white" style={{ backgroundColor: C.accent }}>
+        {pendingQuotes}
+      </span>
+    ) : null;
 
   return (
-    <div className="min-h-dvh" style={{ backgroundColor: C.surface }}>
-      <header className="text-white sticky top-0 z-20" style={{ backgroundColor: C.navy, paddingTop: "env(safe-area-inset-top, 0px)" }}>
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-3">
-          <Link href="/demo" className="flex items-center gap-2">
-            <LogoMark size={40} />
-            <span className="hidden sm:block">
-              <Wordmark small />
-            </span>
-          </Link>
-          <div className="ml-auto text-right">
-            <div className="font-semibold text-sm">{PROPERTY.name}</div>
-            <div className="text-[11px]" style={{ color: C.tealSoft }}>
-              Property Manager Portal · Dana K.
-            </div>
-          </div>
-        </div>
-        <nav className="max-w-6xl mx-auto px-2 flex overflow-x-auto">
+    <div className="min-h-dvh lg:flex" style={{ backgroundColor: "#eef1f4" }}>
+      {/* Sidebar (desktop) */}
+      <aside
+        className="hidden lg:flex flex-col w-64 shrink-0 sticky top-0 h-dvh text-white p-4"
+        style={{ background: `linear-gradient(180deg, ${C.navy} 0%, ${C.navyDeep} 100%)` }}
+      >
+        <Link href="/demo" className="flex items-center gap-2 px-2 py-2">
+          <LogoMark size={44} />
+          <Wordmark small />
+        </Link>
+        <nav className="mt-6 space-y-1 flex-1">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className="flex items-center gap-1.5 px-3 py-2.5 text-sm whitespace-nowrap border-b-2 transition"
-              style={{ borderColor: tab === t.id ? C.tealSoft : "transparent", opacity: tab === t.id ? 1 : 0.7 }}
+              className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition"
+              style={tab === t.id ? { backgroundColor: C.teal, fontWeight: 600 } : { opacity: 0.8 }}
             >
-              <t.icon size={16} /> {t.label}
-              {t.id === "bulk" && pendingQuotes > 0 && (
-                <span className="ml-1 rounded-full px-1.5 text-[10px] font-bold" style={{ backgroundColor: C.accent }}>
-                  {pendingQuotes}
-                </span>
-              )}
+              <t.icon size={18} /> {t.label}
+              {badge(t.id)}
             </button>
           ))}
         </nav>
-      </header>
-
-      <main className="max-w-6xl mx-auto p-4 space-y-4">
-        {tab === "overview" && <Overview s={s} />}
-        {tab === "bulk" && <Bulk s={s} />}
-        {tab === "violations" && <Violations s={s} />}
-        {tab === "reports" && <Reports s={s} />}
-        {tab === "messages" && <Messages s={s} />}
-        <div className="text-center pt-4">
-          <ResetButton />
+        <div className="rounded-xl p-3 text-xs" style={{ backgroundColor: "rgba(255,255,255,0.08)" }}>
+          <div className="font-semibold">Need something?</div>
+          <div className="opacity-70">Your account rep answers within the hour.</div>
         </div>
-      </main>
+      </aside>
+
+      <div className="flex-1 min-w-0">
+        {/* Top bar */}
+        <header className="sticky top-0 z-20 lg:bg-transparent text-white lg:text-inherit" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+          <div className="lg:hidden" style={{ backgroundColor: C.navy }}>
+            <div className="px-4 h-14 flex items-center gap-2">
+              <Link href="/demo">
+                <LogoMark size={36} />
+              </Link>
+              <Wordmark small />
+            </div>
+            <nav className="px-2 flex overflow-x-auto">
+              {TABS.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-sm whitespace-nowrap border-b-2"
+                  style={{ borderColor: tab === t.id ? C.tealSoft : "transparent", opacity: tab === t.id ? 1 : 0.7 }}
+                >
+                  <t.icon size={16} /> {t.label}
+                  {badge(t.id)}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </header>
+
+        <main className="max-w-7xl mx-auto p-4 lg:p-6 space-y-4">
+          <div className="bg-white rounded-2xl border px-4 py-3 flex flex-wrap items-center gap-3" style={{ borderColor: C.border }}>
+            <div>
+              <div className="font-heading text-xl" style={{ color: C.navy }}>
+                {current.label}
+              </div>
+              <div className="text-xs" style={{ color: C.muted }}>
+                {tab === "dashboard" ? `All properties · ${PORTFOLIO.length} sites` : PROPERTY.name}
+              </div>
+            </div>
+            <div className="ml-auto flex items-center gap-2">
+              <span className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm text-white" style={{ backgroundColor: C.accent }}>
+                DK
+              </span>
+              <div className="leading-tight">
+                <div className="text-sm font-semibold">Dana K.</div>
+                <div className="text-[11px]" style={{ color: C.muted }}>
+                  Regional Manager
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {tab === "dashboard" && <Dashboard s={s} />}
+          {tab === "live" && <Overview s={s} />}
+          {tab === "bulk" && <Bulk s={s} />}
+          {tab === "violations" && <Violations s={s} />}
+          {tab === "photos" && <PhotoReport s={s} />}
+          {tab === "reports" && <Reports s={s} />}
+          {tab === "messages" && <Messages s={s} />}
+          {tab === "billing" && <Billing s={s} />}
+          <div className="text-center pt-4">
+            <ResetButton />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Portfolio dashboard ----------
+
+interface PropRow {
+  name: string;
+  address: string;
+  units: number;
+  buildings: number;
+  serviced: number;
+  bldgServiced: number;
+  violations: number;
+  callbacks: number;
+  status: "Complete" | "In progress" | "Scheduled";
+  checkIn?: string;
+}
+
+const PORTFOLIO_SEED: PropRow[] = [
+  { name: "Harbor View Apartments", address: "1120 Harbor Dr, San Diego", units: 212, buildings: 4, serviced: 212, bldgServiced: 4, violations: 3, callbacks: 2, status: "Complete", checkIn: "6:58 PM" },
+  { name: "Mission Hills Lofts", address: "3905 Goldfinch St, San Diego", units: 86, buildings: 2, serviced: 86, bldgServiced: 2, violations: 0, callbacks: 1, status: "Complete", checkIn: "7:02 PM" },
+  { name: "Del Mar Terrace", address: "2250 Jimmy Durante Blvd, Del Mar", units: 164, buildings: 3, serviced: 97, bldgServiced: 1, violations: 1, callbacks: 0, status: "In progress", checkIn: "7:31 PM" },
+  { name: "Chula Vista Commons", address: "780 Otay Lakes Rd, Chula Vista", units: 240, buildings: 6, serviced: 0, bldgServiced: 0, violations: 0, callbacks: 0, status: "Scheduled" },
+];
+
+// Oak Park is the live property driven by the demo; the rest are sample data.
+function portfolio(s: DemoState): PropRow[] {
+  const p = progress(s);
+  const bldgDone = PROPERTY.buildings.filter((b) => PROPERTY.floors.flatMap((f) => unitsFor(b, f)).every((u) => s.doors[u] && s.doors[u].status !== "pending")).length;
+  const a = s.attendant.status;
+  const live: PropRow = {
+    name: PROPERTY.name,
+    address: PROPERTY.address,
+    units: p.total,
+    buildings: PROPERTY.buildings.length,
+    serviced: p.done,
+    bldgServiced: bldgDone,
+    violations: violations(s).length,
+    callbacks: s.callbacks.length,
+    status: a === "done" ? "Complete" : a === "off" ? "Scheduled" : "In progress",
+    checkIn: s.attendant.checkIn ? fmtTime(s.attendant.checkIn) : undefined,
+  };
+  return [live, ...PORTFOLIO_SEED];
+}
+const PORTFOLIO = [PROPERTY.name, ...PORTFOLIO_SEED.map((p) => p.name)];
+
+// Nightly history for the trend chart (sample data, deterministic).
+function trend(days: number) {
+  let seed = 11;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  return Array.from({ length: days }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (days - i));
+    return {
+      label: d.toLocaleDateString([], days <= 7 ? { weekday: "short" } : { month: "numeric", day: "numeric" }),
+      full: d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }),
+      doors: 790 + Math.floor(rnd() * 18),
+      violations: Math.floor(rnd() * 7),
+    };
+  });
+}
+
+function Ring({ value, total, color }: { value: number; total: number; color: string }) {
+  const r = 20;
+  const c = 2 * Math.PI * r;
+  const pct = total ? value / total : 0;
+  return (
+    <svg viewBox="0 0 48 48" className="w-12 h-12 -rotate-90">
+      <circle cx="24" cy="24" r={r} fill="none" stroke="#e5e7eb" strokeWidth="5" />
+      <circle cx="24" cy="24" r={r} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${c * pct} ${c}`} />
+    </svg>
+  );
+}
+
+function Dashboard({ s }: { s: DemoState }) {
+  const [range, setRange] = useState(7);
+  const [q, setQ] = useState("");
+  const rows = portfolio(s);
+  const data = trend(range);
+  const todayViol = rows.reduce((n, r) => n + r.violations, 0);
+  const bldgTotal = rows.reduce((n, r) => n + r.buildings, 0);
+  const bldgDone = rows.reduce((n, r) => n + r.bldgServiced, 0);
+  const checkedIn = rows.filter((r) => r.checkIn).length;
+  const openTasks = s.callbacks.filter((c) => c.status === "open").length + s.bulk.filter((b) => b.status === "submitted" || b.status === "quoted" || b.status === "approved").length;
+  const totalTasks = s.callbacks.length + s.bulk.filter((b) => b.status !== "declined").length;
+  const filtered = rows.filter((r) => (r.name + r.address).toLowerCase().includes(q.toLowerCase()));
+
+  return (
+    <>
+      {/* Filters: one row above everything they scope */}
+      <div className="flex flex-wrap gap-2">
+        {[7, 30, 90].map((d) => (
+          <button
+            key={d}
+            onClick={() => setRange(d)}
+            className="rounded-full px-3 py-1.5 text-sm border font-medium"
+            style={range === d ? { backgroundColor: C.navy, color: "#fff", borderColor: C.navy } : { backgroundColor: "#fff", borderColor: C.border }}
+          >
+            Last {d} nights
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="relative overflow-hidden">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="text-sm font-semibold" style={{ color: C.muted }}>
+                New violations tonight
+              </div>
+              <div className="font-heading text-4xl mt-1" style={{ color: todayViol ? C.red : C.navy }}>
+                {todayViol}
+              </div>
+            </div>
+            <span className="rounded-full p-2" style={{ backgroundColor: "#fee2e2", color: C.red }}>
+              <IconAlertTriangle size={18} />
+            </span>
+          </div>
+          <Spark values={data.map((d) => d.violations)} color={C.accent} />
+          <div className="text-xs mt-1" style={{ color: C.muted }}>
+            {data.reduce((n, d) => n + d.violations, 0)} in the last {range} nights, all with photos
+          </div>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <TrendChart data={data} />
+        </Card>
+      </div>
+
+      <div className="grid sm:grid-cols-3 gap-4">
+          {[
+            { label: "Buildings pending", v: bldgTotal - bldgDone, done: bldgDone, total: bldgTotal, color: C.teal },
+            { label: "Check-in pending", v: rows.length - checkedIn, done: checkedIn, total: rows.length, color: C.accent },
+            { label: "Open tasks", v: openTasks, done: totalTasks - openTasks, total: totalTasks, color: C.navy },
+          ].map((k) => (
+            <Card key={k.label} className="flex items-center justify-between !py-3">
+              <div>
+                <div className="text-sm font-semibold" style={{ color: C.muted }}>
+                  {k.label}
+                </div>
+                <div className="font-heading text-2xl" style={{ color: C.navy }}>
+                  {k.v}
+                </div>
+              </div>
+              <Ring value={k.done} total={k.total} color={k.color} />
+            </Card>
+          ))}
+      </div>
+
+      <Card className="!p-0">
+        <div className="flex flex-wrap items-center gap-3 p-4">
+          <div className="font-heading text-lg" style={{ color: C.navy }}>
+            Daily report · Tonight
+          </div>
+          <div className="ml-auto relative">
+            <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: C.muted }} />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search by property…"
+              className="rounded-xl border pl-9 pr-3 py-2 text-sm w-56"
+              style={{ borderColor: C.border }}
+            />
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wider" style={{ color: C.muted, backgroundColor: "#f8fafc" }}>
+                <th className="p-3">#</th>
+                <th className="p-3">Property</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Check-in</th>
+                <th className="p-3">Units serviced</th>
+                <th className="p-3">Buildings serviced</th>
+                <th className="p-3">Violations</th>
+                <th className="p-3">Callbacks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((r, i) => {
+                const pill =
+                  r.status === "Complete"
+                    ? { color: C.green, bg: "#dcfce7" }
+                    : r.status === "In progress"
+                      ? { color: C.teal, bg: "#e6f6f7" }
+                      : { color: "#4b5563", bg: "#f3f4f6" };
+                return (
+                  <tr key={r.name} className="border-t" style={{ borderColor: C.border }}>
+                    <td className="p-3" style={{ color: C.muted }}>
+                      {i + 1}
+                    </td>
+                    <td className="p-3 min-w-[12rem]">
+                      <div className="font-semibold">{r.name}</div>
+                      <div className="text-xs" style={{ color: C.muted }}>
+                        {r.address}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <Pill {...pill}>{r.status}</Pill>
+                    </td>
+                    <td className="p-3 whitespace-nowrap">{r.checkIn ?? "—"}</td>
+                    <td className="p-3 whitespace-nowrap">
+                      <b>{r.serviced}</b> / {r.units}
+                      <div className="h-1.5 w-20 rounded-full bg-gray-100 mt-1">
+                        <div className="h-full rounded-full" style={{ width: `${(r.serviced / r.units) * 100}%`, backgroundColor: C.teal }} />
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      {r.bldgServiced} / {r.buildings}
+                    </td>
+                    <td className="p-3" style={{ color: r.violations ? C.red : undefined }}>
+                      {r.violations}
+                    </td>
+                    <td className="p-3">{r.callbacks}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="p-4 text-xs border-t" style={{ color: C.muted, borderColor: C.border }}>
+          Showing {filtered.length} of {rows.length} properties · {PROPERTY.name} is live, the others are sample data
+        </div>
+      </Card>
+    </>
+  );
+}
+
+function Spark({ values, color }: { values: number[]; color: string }) {
+  const max = Math.max(1, ...values);
+  const w = 200;
+  const h = 44;
+  const pts = values.map((v, i) => [(i / Math.max(1, values.length - 1)) * w, h - 4 - (v / max) * (h - 8)]);
+  const d = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-11 mt-2" preserveAspectRatio="none" aria-hidden="true">
+      <path d={`${d} L${w} ${h} L0 ${h} Z`} fill={color} opacity="0.12" />
+      <path d={d} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+// Single-series line with crosshair tooltip. Violations live in their own
+// card: doors (~800/night) and violations (~0–6) don't share a scale.
+function TrendChart({ data }: { data: ReturnType<typeof trend> }) {
+  const [hover, setHover] = useState<number | null>(null);
+  const W = 560;
+  const H = 200;
+  const pad = { l: 40, r: 16, t: 16, b: 28 };
+  const vals = data.map((d) => d.doors);
+  const lo = Math.floor((Math.min(...vals) - 10) / 10) * 10;
+  const hi = Math.ceil((Math.max(...vals) + 10) / 10) * 10;
+  const x = (i: number) => pad.l + (i / Math.max(1, data.length - 1)) * (W - pad.l - pad.r);
+  const y = (v: number) => pad.t + (1 - (v - lo) / (hi - lo)) * (H - pad.t - pad.b);
+  const path = data.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(d.doors).toFixed(1)}`).join(" ");
+  const ticks = [lo, Math.round((lo + hi) / 2), hi];
+  const labelEvery = Math.ceil(data.length / 7);
+
+  const onMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const px = ((e.clientX - r.left) / r.width) * W;
+    const i = Math.round(((px - pad.l) / (W - pad.l - pad.r)) * (data.length - 1));
+    setHover(Math.max(0, Math.min(data.length - 1, i)));
+  };
+  const h = hover !== null ? data[hover] : null;
+
+  return (
+    <div>
+      <div className="flex items-baseline justify-between">
+        <div className="font-heading" style={{ color: C.navy }}>
+          Doors serviced per night
+        </div>
+        <div className="text-xs" style={{ color: C.muted }}>
+          All properties · {data.length} nights
+        </div>
+      </div>
+      <div className="relative">
+        <svg
+          viewBox={`0 0 ${W} ${H}`}
+          className="w-full h-auto touch-none"
+          onPointerMove={onMove}
+          onPointerLeave={() => setHover(null)}
+          role="img"
+          aria-label={`Doors serviced per night, ${data.length} nights, between ${Math.min(...vals)} and ${Math.max(...vals)}`}
+        >
+          {ticks.map((t) => (
+            <g key={t}>
+              <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} stroke="#e5e7eb" />
+              <text x={pad.l - 6} y={y(t) + 4} textAnchor="end" fontSize="11" fill={C.muted}>
+                {t}
+              </text>
+            </g>
+          ))}
+          {data.map((d, i) =>
+            i % labelEvery === 0 || i === data.length - 1 ? (
+              <text key={i} x={x(i)} y={H - 8} textAnchor="middle" fontSize="11" fill={C.muted}>
+                {d.label}
+              </text>
+            ) : null,
+          )}
+          <path d={`${path} L${x(data.length - 1)} ${H - pad.b} L${x(0)} ${H - pad.b} Z`} fill={C.teal} opacity="0.08" />
+          <path d={path} fill="none" stroke={C.teal} strokeWidth="2" strokeLinejoin="round" />
+          <circle cx={x(data.length - 1)} cy={y(vals[vals.length - 1])} r="4" fill={C.teal} stroke="#fff" strokeWidth="2" />
+          {hover !== null && (
+            <>
+              <line x1={x(hover)} x2={x(hover)} y1={pad.t} y2={H - pad.b} stroke={C.ink} strokeOpacity="0.25" />
+              <circle cx={x(hover)} cy={y(data[hover].doors)} r="5" fill={C.teal} stroke="#fff" strokeWidth="2" />
+            </>
+          )}
+        </svg>
+        {h && hover !== null && (
+          <div
+            className="absolute pointer-events-none bg-white rounded-lg shadow-lg border px-3 py-2 text-xs"
+            style={{ borderColor: C.border, top: 4, left: `${(x(hover) / W) * 100}%`, transform: hover > data.length / 2 ? "translateX(-105%)" : "translateX(8px)" }}
+          >
+            <div style={{ color: C.muted }}>{h.full}</div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="w-3 h-0.5" style={{ backgroundColor: C.teal }} />
+              <b className="text-sm">{h.doors}</b> doors
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-0.5" style={{ backgroundColor: C.accent }} />
+              <b className="text-sm">{h.violations}</b> violations
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---------- Plan & billing ----------
+
+const RATE = 12.5; // per-unit monthly rate
+
+function Billing({ s }: { s: DemoState }) {
+  const units = 126;
+  const base = units * RATE;
+  const bulkLines = s.bulk.filter((b) => b.status === "approved" || b.status === "completed");
+  const bulkTotal = bulkLines.reduce((n, b) => n + (b.quote ?? 0), 0);
+  const callbacksMonth = 23 + s.callbacks.length;
+  const next = new Date();
+  next.setMonth(next.getMonth() + 1, 1);
+  const invoices = [1, 2, 3, 4].map((m) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - m, 1);
+    return { id: `INV-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}-OPR`, date: d.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }), amount: base + [185, 0, 370, 95][m - 1] };
+  });
+  const money = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+
+  return (
+    <div className="grid lg:grid-cols-3 gap-4 items-start">
+      <Card className="lg:col-span-2 space-y-4">
+        <div className="flex flex-wrap items-start gap-3">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.muted }}>
+              Current plan
+            </div>
+            <div className="font-heading text-2xl" style={{ color: C.navy }}>
+              Nightly Valet · 5 nights/week
+            </div>
+            <div className="text-sm" style={{ color: C.muted }}>
+              {PROPERTY.name} · {units} units · Sun – Thu, {PROPERTY.window}
+            </div>
+          </div>
+          <span className="ml-auto">
+            <Pill color={C.green} bg="#dcfce7">
+              Active
+            </Pill>
+          </span>
+        </div>
+        <div className="grid sm:grid-cols-3 gap-3">
+          {[
+            ["Door-to-door pickup", "Every scheduled night"],
+            ["Resident callbacks", "Unlimited while on property"],
+            ["Recycling", "Included, reported monthly"],
+            ["Violation reporting", "Photo + resident notice"],
+            ["Manager portal", "Unlimited users"],
+            ["Support", "Same-day response"],
+          ].map(([k, v]) => (
+            <div key={k} className="rounded-xl p-3" style={{ backgroundColor: C.surface }}>
+              <div className="text-sm font-semibold flex items-center gap-1.5">
+                <IconCheck size={14} style={{ color: C.teal }} /> {k}
+              </div>
+              <div className="text-xs" style={{ color: C.muted }}>
+                {v}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div>
+          <div className="font-heading mb-2" style={{ color: C.navy }}>
+            This month so far
+          </div>
+          <table className="w-full text-sm">
+            <tbody>
+              <tr className="border-t" style={{ borderColor: C.border }}>
+                <td className="py-2.5">
+                  Valet service · {units} units × {money(RATE)}
+                </td>
+                <td className="py-2.5 text-right font-semibold">{money(base)}</td>
+              </tr>
+              <tr className="border-t" style={{ borderColor: C.border }}>
+                <td className="py-2.5">Resident callbacks · {callbacksMonth} this month</td>
+                <td className="py-2.5 text-right" style={{ color: C.green }}>
+                  Included
+                </td>
+              </tr>
+              {bulkLines.map((b) => (
+                <tr key={b.id} className="border-t" style={{ borderColor: C.border }}>
+                  <td className="py-2.5">
+                    Bulk pickup · {b.category}
+                    <span className="text-xs ml-2" style={{ color: C.muted }}>
+                      {b.status === "completed" ? "removed" : `scheduled ${b.scheduledFor}`}
+                    </span>
+                  </td>
+                  <td className="py-2.5 text-right font-semibold">{money(b.quote ?? 0)}</td>
+                </tr>
+              ))}
+              <tr className="border-t-2" style={{ borderColor: C.navy }}>
+                <td className="py-3 font-heading" style={{ color: C.navy }}>
+                  Estimated next invoice · {next.toLocaleDateString([], { month: "short", day: "numeric" })}
+                </td>
+                <td className="py-3 text-right font-heading text-lg" style={{ color: C.navy }}>
+                  {money(base + bulkTotal)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <div className="space-y-4">
+        <Card className="space-y-2">
+          <div className="font-heading" style={{ color: C.navy }}>
+            Payment method
+          </div>
+          <div className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: C.surface }}>
+            <IconBuildingBank size={22} style={{ color: C.navy }} />
+            <div className="text-sm">
+              <div className="font-semibold">ACH bank transfer</div>
+              <div className="text-xs" style={{ color: C.muted }}>
+                Operating account ending 6021
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span>Autopay on the 1st</span>
+            <Pill color={C.green} bg="#dcfce7">
+              On
+            </Pill>
+          </div>
+          <div className="text-xs" style={{ color: C.muted }}>
+            Net 15 terms · invoices emailed to accounts payable
+          </div>
+        </Card>
+
+        <Card>
+          <div className="font-heading mb-2" style={{ color: C.navy }}>
+            Invoices
+          </div>
+          <ul className="text-sm">
+            {invoices.map((inv) => (
+              <li key={inv.id} className="flex items-center gap-2 py-2 border-t first:border-t-0" style={{ borderColor: C.border }}>
+                <IconFileInvoice size={18} style={{ color: C.muted }} />
+                <span className="flex-1">
+                  <span className="font-medium">{inv.date}</span>
+                  <span className="block text-xs" style={{ color: C.muted }}>
+                    {inv.id}
+                  </span>
+                </span>
+                <span className="font-semibold">{money(inv.amount)}</span>
+                <Pill color={C.green} bg="#dcfce7">
+                  Paid
+                </Pill>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
     </div>
   );
 }
