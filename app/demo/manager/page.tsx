@@ -17,6 +17,7 @@ import {
   IconSearch,
   IconBuildingBank,
   IconFileInvoice,
+  IconPhoto,
 } from "@tabler/icons-react";
 import {
   useDemo,
@@ -32,11 +33,13 @@ import {
   BulkRequest,
 } from "@/lib/demo/store";
 import { AttendantBanner, Btn, C, Card, LogoMark, PhotoThumb, Pill, ResetButton, StatusDot, Wordmark } from "@/components/demo/ui";
+import PhotoReport from "@/components/demo/PhotoReport";
 
 const TABS = [
   { id: "dashboard", label: "Dashboard", icon: IconLayoutDashboard },
   { id: "live", label: "Live tracking", icon: IconMapPin },
   { id: "violations", label: "Violations", icon: IconAlertTriangle },
+  { id: "photos", label: "Photo report", icon: IconPhoto },
   { id: "bulk", label: "Bulk pickup", icon: IconTruckLoading },
   { id: "reports", label: "Service reports", icon: IconChartBar },
   { id: "messages", label: "Messages", icon: IconSpeakerphone },
@@ -140,6 +143,7 @@ export default function ManagerPortal() {
           {tab === "live" && <Overview s={s} />}
           {tab === "bulk" && <Bulk s={s} />}
           {tab === "violations" && <Violations s={s} />}
+          {tab === "photos" && <PhotoReport s={s} />}
           {tab === "reports" && <Reports s={s} />}
           {tab === "messages" && <Messages s={s} />}
           {tab === "billing" && <Billing s={s} />}
@@ -483,7 +487,7 @@ function TrendChart({ data }: { data: ReturnType<typeof trend> }) {
 
 // ---------- Plan & billing ----------
 
-const RATE = 27; // sample per-unit monthly rate for the demo
+const RATE = 12.5; // per-unit monthly rate
 
 function Billing({ s }: { s: DemoState }) {
   const units = 126;

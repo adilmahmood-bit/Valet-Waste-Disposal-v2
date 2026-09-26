@@ -94,6 +94,7 @@ export interface DemoState {
   broadcasts: Broadcast[];
   alerts: AlertPrefs;
   lang: "en" | "es";
+  residentLang: "en" | "es";
 }
 
 export const PROPERTY = {
@@ -136,6 +137,7 @@ function initial(): DemoState {
     broadcasts: [],
     alerts: defaultAlerts(),
     lang: "en",
+    residentLang: "en",
   };
 }
 
@@ -182,6 +184,9 @@ export function resetDemo() {
 }
 
 const serverSnapshot = initial();
+
+// True for the placeholder state rendered before localStorage is read.
+export const isPlaceholder = (s: DemoState) => s === serverSnapshot;
 
 export function useDemo(): DemoState {
   return useSyncExternalStore(
