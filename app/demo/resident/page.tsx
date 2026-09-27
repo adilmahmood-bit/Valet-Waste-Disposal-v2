@@ -44,7 +44,9 @@ const REASON_ES: Record<string, string> = {
   "Extra bag": "Bolsa adicional",
 };
 const VIOLATION_ES: Record<string, string> = {
-  "Not bagged": "Sin bolsa",
+  "Not in bin": "Fuera del contenedor",
+  "Overflowing bin": "Contenedor desbordado",
+  "Boxes not broken down": "Cajas sin desarmar",
   "Bag leaking": "Bolsa con fugas",
   "Oversized item": "Artículo demasiado grande",
   "Out after cutoff": "Sacada después de la hora límite",
@@ -88,7 +90,7 @@ const T = {
     guidelines: "Pickup guidelines",
     rules: [
       "Trash out between 6:00 and 7:00 PM, Sunday – Thursday",
-      "Tie bags and keep them under 25 lb",
+      "Tie bags and put them inside your valet bin, lid closed",
       "Break down boxes. Recycling goes in clear bags",
       "Furniture and large items: ask your leasing office for a bulk pickup",
     ],
@@ -141,7 +143,7 @@ const T = {
     guidelines: "Reglas de recolección",
     rules: [
       "Saque la basura entre 6:00 y 7:00 PM, de domingo a jueves",
-      "Amarre las bolsas y que pesen menos de 25 lb",
+      "Amarre las bolsas y póngalas dentro de su contenedor, con la tapa cerrada",
       "Desarme las cajas. El reciclaje va en bolsas transparentes",
       "Muebles y artículos grandes: pida una recolección especial a su oficina",
     ],

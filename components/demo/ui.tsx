@@ -70,7 +70,7 @@ export function statusDetail(a: DemoState["attendant"], lang: "en" | "es" = "en"
       case "enroute":
         return `${a.name} marcó entrada a las ${fmtTime(a.clockIn)} · llegará pronto`;
       case "onsite":
-        return `${a.name} · Edificio ${a.building ?? "A"} · desde las ${fmtTime(a.checkIn)}`;
+        return `${a.name} · Edificio ${a.building ?? "1"} · desde las ${fmtTime(a.checkIn)}`;
       case "done":
         return `${a.name} salió a las ${fmtTime(a.checkOut)}`;
     }
@@ -80,7 +80,7 @@ export function statusDetail(a: DemoState["attendant"], lang: "en" | "es" = "en"
     case "enroute":
       return `${a.name} clocked in at ${fmtTime(a.clockIn)} · arriving shortly`;
     case "onsite":
-      return `${a.name} · Building ${a.building ?? "A"} · since ${fmtTime(a.checkIn)}`;
+      return `${a.name} · Building ${a.building ?? "1"} · since ${fmtTime(a.checkIn)}`;
     case "done":
       return `${a.name} checked out at ${fmtTime(a.checkOut)}`;
   }

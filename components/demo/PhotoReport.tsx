@@ -1,15 +1,15 @@
 "use client";
 import { useState } from "react";
 import { IconX, IconQrcode, IconMapPinCheck } from "@tabler/icons-react";
-import { ALL_UNITS, DemoState, PROPERTY, fmtTime, serviceNights } from "@/lib/demo/store";
-import { samplePhoto, PhotoKind } from "@/lib/demo/samplePhotos";
+import { DemoState, ENCLOSURES, PROPERTY, fmtTime, serviceNights } from "@/lib/demo/store";
+type PhotoKind = "violation" | "bulk" | "pad";
 import { C, Card, Pill } from "@/components/demo/ui";
 
 interface PhotoEntry {
   id: string;
   kind: PhotoKind;
   unit: string;
-  bldg: string;
+  bldgs: string[];
   at: number;
   src: string;
   detail: string;
@@ -22,47 +22,47 @@ const KIND_META: Record<PhotoKind, { label: string; color: string; bg: string }>
   pad: { label: "Pad / compactor", color: C.navy, bg: "#e0eef7" },
 };
 
-// Photos from earlier nights (illustrated samples).
+// Example photos from earlier nights (public/demo/photos). Each violation
+// photo is paired with the reason it shows.
+const SAMPLE_VIOLATIONS = [
+  { unit: "6-6205", reason: "Not in bin", src: "/demo/photos/violation-not-binned.jpg", night: 0, time: [19, 22] },
+  { unit: "1-5308", reason: "Boxes not broken down", src: "/demo/photos/violation-boxes.jpg", night: 0, time: [19, 47] },
+  { unit: "2-2104", reason: "Overflowing bin", src: "/demo/photos/violation-overflowing.jpg", night: 1, time: [19, 35] },
+  { unit: "4-3201", reason: "Bag leaking", src: "/demo/photos/violation-leaking.jpg", night: 2, time: [20, 4] },
+];
+const PAD_PHOTOS = ["/demo/photos/pad-1.jpg", "/demo/photos/pad-2.jpg"];
+
 function earlierPhotos(): PhotoEntry[] {
-  let seed = 3;
-  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-  const kinds: PhotoKind[] = ["violation", "violation", "bulk", "violation", "violation", "violation"];
-  const reasons = ["Not bagged", "Bag leaking", "Out after cutoff"];
   const nights = serviceNights(3);
-  const doors: PhotoEntry[] = kinds.map((kind, i) => {
-    const d = new Date(nights[Math.floor(i / 2)]);
-    d.setHours(19 + Math.floor(rnd() * 2), Math.floor(rnd() * 59), 0, 0);
-    const unit = kind === "bulk" ? "C-110" : ALL_UNITS[Math.floor(rnd() * ALL_UNITS.length)];
-    return {
-      id: `s${i}`,
-      kind,
-      unit,
-      bldg: unit[0],
-      at: d.getTime(),
-      // Odd seeds draw a bag, even seeds loose trash; match the image to the reason.
-      src: samplePhoto(kind, kind === "violation" && reasons[i % reasons.length] === "Not bagged" ? 2 * i + 2 : 2 * i + 1),
-      detail: kind === "violation" ? reasons[i % reasons.length] : "Couch and boxes, removed",
-      night: "earlier",
-    };
-  });
-  // One pad / compactor photo per building per night, taken after the route.
-  const pads: PhotoEntry[] = nights.flatMap((night, n) =>
-    PROPERTY.buildings.map((b, i) => {
-      const d = new Date(night);
-      d.setHours(20, 24 + i * 7 + n * 3, 0, 0);
-      return {
-        id: `p${n}${b}`,
-        kind: "pad" as PhotoKind,
-        unit: `Building ${b} trash pad`,
-        bldg: b,
-        at: d.getTime(),
-        src: samplePhoto("pad", n * 3 + i),
-        detail: "Compactor leveled · pad swept",
-        night: "earlier" as const,
-      };
-    }),
+  const at = (night: number, h: number, m: number) => {
+    const d = new Date(nights[night]);
+    d.setHours(h, m, 0, 0);
+    return d.getTime();
+  };
+  const violations: PhotoEntry[] = SAMPLE_VIOLATIONS.map((v, i) => ({
+    id: `s${i}`,
+    kind: "violation",
+    unit: v.unit,
+    bldgs: [v.unit[0]],
+    at: at(v.night, v.time[0], v.time[1]),
+    src: v.src,
+    detail: v.reason,
+    night: "earlier",
+  }));
+  // One pad / compactor photo per trash enclosure per night, taken after the route.
+  const pads: PhotoEntry[] = nights.flatMap((_, n) =>
+    ENCLOSURES.map((e, i) => ({
+      id: `p${n}${e.id}`,
+      kind: "pad" as PhotoKind,
+      unit: `Enclosure ${e.id} (Bldg ${e.buildings.join(" & ")})`,
+      bldgs: e.buildings,
+      at: at(n, 20, 18 + i * 9 + n * 3),
+      src: PAD_PHOTOS[(n + i) % PAD_PHOTOS.length],
+      detail: "Compactor leveled · pad swept",
+      night: "earlier" as const,
+    })),
   );
-  return [...doors, ...pads];
+  return [...violations, ...pads];
 }
 
 function tonightPhotos(s: DemoState): PhotoEntry[] {
@@ -72,7 +72,7 @@ function tonightPhotos(s: DemoState): PhotoEntry[] {
       id: unit,
       kind: "violation",
       unit,
-      bldg: unit[0],
+      bldgs: [unit[0]],
       at: d.at ?? 0,
       src: d.photo!,
       detail: `${d.violation}${d.note ? ` · "${d.note}"` : ""}`,
@@ -80,14 +80,23 @@ function tonightPhotos(s: DemoState): PhotoEntry[] {
     }));
   const bulk: PhotoEntry[] = s.bulk
     .filter((b) => b.photo)
-    .map((b) => ({ id: b.id, kind: "bulk", unit: b.location, bldg: "", at: b.createdAt, src: b.photo!, detail: `${b.category} · ${b.status}`, night: "tonight" }));
+    .map((b) => ({
+      id: b.id,
+      kind: "bulk",
+      unit: b.location,
+      bldgs: [...b.location.matchAll(/Building (\d)/g)].map((m) => m[1]),
+      at: b.createdAt,
+      src: b.photo!,
+      detail: `${b.category} · ${b.status}`,
+      night: b.createdAt >= new Date().setHours(0, 0, 0, 0) ? "tonight" : "earlier",
+    }));
   const pads: PhotoEntry[] = Object.entries(s.pads)
     .filter(([, p]) => p.photo)
-    .map(([b, p]) => ({
-      id: `pad-${b}`,
+    .map(([id, p]) => ({
+      id: `pad-${id}`,
       kind: "pad",
-      unit: `Building ${b} trash pad`,
-      bldg: b,
+      unit: `Enclosure ${id} (Bldg ${ENCLOSURES.find((e) => e.id === id)?.buildings.join(" & ")})`,
+      bldgs: ENCLOSURES.find((e) => e.id === id)?.buildings ?? [],
       at: p.at,
       src: p.photo!,
       detail: [p.leveled && "Compactor leveled", p.swept && "pad swept"].filter(Boolean).join(" · ") || "Pad checked",
@@ -104,7 +113,7 @@ export default function PhotoReport({ s }: { s: DemoState }) {
 
   const all = [...tonightPhotos(s), ...earlierPhotos()].sort((a, b) => b.at - a.at);
   const shown = all.filter(
-    (p) => (kind === "all" || p.kind === kind) && (night === "all" || p.night === night) && (bldg === "all" || p.bldg === bldg),
+    (p) => (kind === "all" || p.kind === kind) && (night === "all" || p.night === night) && (bldg === "all" || p.bldgs.includes(bldg)),
   );
   const count = (k: PhotoKind) => all.filter((p) => p.kind === k).length;
   const chip = (active: boolean) =>

@@ -20,10 +20,10 @@ const SECTIONS: { title: string; path: string; intro: string; features: [string,
       ["Geofenced property check-in", "Attendant checks in when within range of the property; check-out marks the night complete."],
       ["Route by building and floor", "Every door on the property, grouped by building and floor, with live progress (doors done / total)."],
       ["QR code door verification", "Scan the QR tag at each door to mark it serviced with a timestamp."],
-      ["Violation reporting", "Types: not bagged, bag leaking, oversized item, out after cutoff, recycling mixed. Includes a note and photo."],
+      ["Violation reporting", "Types: not in bin, bag leaking, overflowing bin, boxes not broken down, oversized item, out after cutoff, recycling mixed. Includes a note and photo."],
       ["Resident callback alerts", "Callback requests from residents appear at the top of the route; one tap marks them picked up."],
       ["Finish building", "Marks all remaining doors in a building as serviced."],
-      ["Trash pad / compactor proof", "After each building, the attendant photographs the trash pad and compactor and checks off “compactor leveled” and “pad swept.” The photos go to the manager’s photo report and the nightly service report."],
+      ["Trash pad / compactor proof", "At each trash enclosure, the attendant photographs the pad and compactor and checks off “compactor leveled” and “pad swept.” The photos go to the manager’s photo report and the nightly service report."],
       ["English / Spanish", "The whole attendant app switches between English and Spanish."],
     ],
   },
@@ -50,11 +50,11 @@ const SECTIONS: { title: string; path: string; intro: string; features: [string,
     features: [
       ["Portfolio dashboard", "Covers all properties. Shows new violations with a trend, a chart of doors checked vs. doors set out per service night (the axis starts at zero), buildings pending, check-ins pending, and open tasks."],
       ["Daily report table", "For each property: status, check-in time, doors checked, buildings serviced, violations, and callbacks. Searchable."],
-      ["Live tracking", "Property map with the attendant’s current building. Shows tonight’s doors checked, pads and compactors cleared (with photos), when the hallways were clear, violations, and a live activity feed."],
+      ["Live tracking", "The property’s own site map, showing each building’s progress, each trash enclosure’s status, and where the attendant is. Shows tonight’s doors checked, pads and compactors cleared (with photos), when the hallways were clear, violations, and a live activity feed."],
       ["Violations", "Violations by type and by building for the last 30 days, plus tonight's violations with photos."],
-      ["Photo report", "Trash pad and compactor checks for each building each night, violation photos, and bulk pickup photos. Filter by type, night, and building. Each photo shows a time stamp and geofence check; violation photos also show the door QR scan."],
+      ["Photo report", "Trash pad and compactor checks for each enclosure each night, violation photos, and bulk pickup photos. Filter by type, night, and building. Each photo shows a time stamp and geofence check; violation photos also show the door QR scan."],
       ["Bulk pickup requests", "The manager sends a photo, category, and location. Valet Waste Disposal sends back a quote, and the manager approves or declines it. Progress is tracked through to removal."],
-      ["Service reports", "Scheduled nights only (Sunday – Thursday). For each night: doors checked (every door, every night, e.g. 126/126), doors where residents set trash out, when the hallways were clear, pads leveled, violations, callbacks, and recycling in pounds. Shows the average time trash sits in hallways (from 6:00 PM set-out to cleared). The monthly report is emailed automatically to the regional manager and the site manager."],
+      ["Service reports", "Scheduled nights only (Sunday – Thursday). For each night: doors checked (every door, every night, e.g. 72/72), doors where residents set trash out, when the hallways were clear, pads leveled, violations, callbacks, and recycling in pounds. Shows the average time trash sits in hallways (from 6:00 PM set-out to cleared). The monthly report is emailed automatically to the regional manager and the site manager."],
       ["Messages", "Broadcast to all residents by app and text. Includes a log of resident callbacks."],
       ["Plan & Billing", "Nightly valet plan (Sunday – Thursday) at $12.50 per unit per month. Resident callbacks are included, and approved bulk pickups are added to the invoice. Resident billing: an option to pass the fee through to residents at cost, plus a per-unit CSV export for the resident ledger or billing company. Also shows the payment method and past invoices."],
     ],
@@ -83,7 +83,7 @@ export default function Features() {
       <p className="mt-3 text-gray-700">
         One app with three views: the attendant on the route, the residents at each door, and the property manager&apos;s
         office. The interactive demo at <Link href="/demo" className="underline">/demo</Link> uses sample data for a
-        126-unit property (Oak Park Residences, 3 buildings). Geofence, QR scans, texts, and emailed reports are simulated
+        72-unit property (Center City Apartments: 6 three-story buildings and 4 trash enclosures). Geofence, QR scans, texts, and emailed reports are simulated
         in the demo.
       </p>
 

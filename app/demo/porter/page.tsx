@@ -25,6 +25,8 @@ import {
   DemoState,
   now,
   clockAtLeast,
+  ENCLOSURES,
+  enclosureFor,
   advance,
 } from "@/lib/demo/store";
 import { AppHeader, AttendantBanner, Btn, C, Card, PhoneApp, PhotoThumb, Pill, ResetButton } from "@/components/demo/ui";
@@ -38,7 +40,8 @@ const T = {
     progress: "Tonight's route",
     callbacks: "Resident callbacks",
     pickedUp: "Picked up",
-    padTitle: "Trash pad / compactor · Building",
+    padTitle: "Trash enclosure",
+    serves: "Bldg",
     padPhoto: "Take pad photo",
     retake: "Retake photo",
     leveled: "Compactor leveled",
@@ -63,7 +66,8 @@ const T = {
     progress: "Ruta de esta noche",
     callbacks: "Solicitudes de residentes",
     pickedUp: "Recogido",
-    padTitle: "Área de basura / compactador · Edificio",
+    padTitle: "Área de basura",
+    serves: "Edif.",
     padPhoto: "Tomar foto del área",
     retake: "Tomar otra foto",
     leveled: "Compactador nivelado",
@@ -82,7 +86,7 @@ const T = {
   },
 };
 
-const VIOLATIONS: ViolationType[] = ["Not bagged", "Bag leaking", "Oversized item", "Out after cutoff", "Recycling mixed"];
+const VIOLATIONS: ViolationType[] = ["Not in bin", "Bag leaking", "Overflowing bin", "Boxes not broken down", "Oversized item", "Out after cutoff", "Recycling mixed"];
 
 function markDone(unit: string) {
   update((s) => ({ ...s, doors: { ...s.doors, [unit]: { status: "done", at: now() } } }));
@@ -92,7 +96,7 @@ export default function PorterApp() {
   const s = useDemo();
   const t = T[s.lang];
   const a = s.attendant;
-  const bldg = a.building ?? "A";
+  const bldg = a.building ?? "1";
   const [sheet, setSheet] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const p = progress(s);
@@ -110,14 +114,15 @@ export default function PorterApp() {
     }, 900);
   };
 
-  // A building takes ~25 minutes; spread door times across that span.
+  // About 1 minute per door; spread door times across that span.
   const finishBuilding = () =>
     update((st) => {
       const doors = { ...st.doors };
       const start = now(st);
       const pending = PROPERTY.floors.flatMap((f) => unitsFor(bldg, f)).filter((u) => !doors[u] || doors[u].status === "pending");
-      pending.forEach((u, i) => (doors[u] = { status: "done", at: start + ((i + 1) / pending.length) * 25 * 60000 }));
-      return { ...st, doors, clock: pending.length ? advance(st, 25) : st.clock };
+      const mins = Math.max(6, Math.round(pending.length * 1.1));
+      pending.forEach((u, i) => (doors[u] = { status: "done", at: start + ((i + 1) / pending.length) * mins * 60000 }));
+      return { ...st, doors, clock: pending.length ? advance(st, mins) : st.clock };
     });
 
   return (
@@ -261,7 +266,7 @@ export default function PorterApp() {
               </Btn>
             </div>
 
-            <PadCard key={bldg} bldg={bldg} s={s} t={t} />
+            <PadCard key={enclosureFor(bldg).id} enc={enclosureFor(bldg)} s={s} t={t} />
 
             {PROPERTY.floors.map((f) => (
               <div key={f}>
@@ -337,8 +342,8 @@ export default function PorterApp() {
 }
 
 // Nightly trash pad / compactor proof for the selected building.
-function PadCard({ bldg, s, t }: { bldg: string; s: DemoState; t: (typeof T)["en"] }) {
-  const saved = s.pads[bldg];
+function PadCard({ enc, s, t }: { enc: (typeof ENCLOSURES)[number]; s: DemoState; t: (typeof T)["en"] }) {
+  const saved = s.pads[enc.id];
   const [photo, setPhoto] = useState<string | undefined>(saved?.photo);
   const [leveled, setLeveled] = useState(saved?.leveled ?? false);
   const [swept, setSwept] = useState(saved?.swept ?? false);
@@ -347,7 +352,7 @@ function PadCard({ bldg, s, t }: { bldg: string; s: DemoState; t: (typeof T)["en
   if (saved)
     return (
       <Card className="flex items-center gap-3" style={{ borderColor: "#bbf7d0", backgroundColor: "#f0fdf4" }}>
-        <PhotoThumb src={saved.photo} alt={`Building ${bldg} pad`} className="w-14 h-14 shrink-0" />
+        <PhotoThumb src={saved.photo} alt={`Enclosure ${enc.id} pad`} className="w-14 h-14 shrink-0" />
         <div className="flex-1 text-sm">
           <div className="font-semibold" style={{ color: C.green }}>
             {t.padDone} · {fmtTime(saved.at)}
@@ -370,7 +375,7 @@ function PadCard({ bldg, s, t }: { bldg: string; s: DemoState; t: (typeof T)["en
   return (
     <Card className="space-y-3">
       <div className="flex items-center gap-2 font-semibold text-sm" style={{ color: C.navy }}>
-        <IconTrash size={18} /> {t.padTitle} {bldg}
+        <IconTrash size={18} /> {t.padTitle} {enc.id} · {t.serves} {enc.buildings.join(" & ")}
       </div>
       <input ref={ref} type="file" accept="image/*" capture="environment" hidden onChange={async (e) => e.target.files?.[0] && setPhoto(await readPhoto(e.target.files[0]))} />
       <div className="flex items-center gap-3">
@@ -386,7 +391,7 @@ function PadCard({ bldg, s, t }: { bldg: string; s: DemoState; t: (typeof T)["en
       <Btn
         className="w-full"
         disabled={!photo}
-        onClick={() => update((st) => ({ ...st, pads: { ...st.pads, [bldg]: { at: now(), photo, leveled, swept } } }))}
+        onClick={() => update((st) => ({ ...st, pads: { ...st.pads, [enc.id]: { at: now(), photo, leveled, swept } } }))}
       >
         {t.padSave}
       </Btn>
@@ -396,7 +401,7 @@ function PadCard({ bldg, s, t }: { bldg: string; s: DemoState; t: (typeof T)["en
 
 function DoorSheet({ unit, s, t, onClose }: { unit: string; s: DemoState; t: (typeof T)["en"]; onClose: () => void }) {
   const [mode, setMode] = useState<"menu" | "violation">("menu");
-  const [type, setType] = useState<ViolationType>("Not bagged");
+  const [type, setType] = useState<ViolationType>("Not in bin");
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState<string>();
   const fileRef = useRef<HTMLInputElement>(null);
