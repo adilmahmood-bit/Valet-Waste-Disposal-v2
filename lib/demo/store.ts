@@ -6,7 +6,14 @@ import { useSyncExternalStore } from "react";
 
 export type AttendantStatus = "off" | "enroute" | "onsite" | "done";
 export type DoorStatus = "pending" | "done" | "violation";
-export type ViolationType = "Not bagged" | "Bag leaking" | "Oversized item" | "Out after cutoff" | "Recycling mixed";
+export type ViolationType =
+  | "Not in bin"
+  | "Bag leaking"
+  | "Overflowing bin"
+  | "Boxes not broken down"
+  | "Oversized item"
+  | "Out after cutoff"
+  | "Recycling mixed";
 
 export interface Door {
   status: DoorStatus;
@@ -99,7 +106,7 @@ export interface DemoState {
   clock: { real: number; demo: number };
 }
 
-// Nightly trash pad / compactor check, one per building.
+// Nightly trash pad / compactor check, one per enclosure (keyed by enclosure id).
 export interface Pad {
   at: number;
   photo?: string;
@@ -107,24 +114,54 @@ export interface Pad {
   swept: boolean;
 }
 
+// Layout follows the property site map (public/demo/site-map.webp): six
+// three-story buildings. `stacks` are the first-floor unit numbers shown on
+// the map; floors 2 and 3 repeat each stack (5101 → 5201 → 5301).
 export const PROPERTY = {
-  name: "Oak Park Residences",
-  address: "4410 Oak Park Dr, San Diego, CA",
+  name: "Center City Apartments",
+  address: "650 N Centre City Pkwy, Escondido, CA 92025",
   window: "7:00 – 9:00 PM",
-  buildings: ["A", "B", "C"],
+  buildings: ["1", "2", "3", "4", "5", "6"],
   floors: [1, 2, 3],
-  perFloor: 14,
+  stacks: {
+    "1": ["5101", "5105", "5106", "5108", "5109", "5111"],
+    "2": ["2103", "2104", "2106", "2108"],
+    "3": ["1101", "1104"],
+    "4": ["3101", "3104"],
+    "5": ["4101", "4104", "4105"],
+    "6": ["6103", "6104", "6105", "6106", "6107", "6108", "6109"],
+  } as Record<string, string[]>,
 };
 
-export const RESIDENT_UNIT = "B-214";
+// Trash enclosures ("T" on the site map). x / y are percentages of the map image.
+export const ENCLOSURES = [
+  { id: "T1", buildings: ["1"], x: 15.5, y: 9.2 },
+  { id: "T2", buildings: ["2"], x: 82.2, y: 21.9 },
+  { id: "T3", buildings: ["5", "6"], x: 11.8, y: 51.5 },
+  { id: "T4", buildings: ["3", "4"], x: 78.5, y: 73.1 },
+];
+
+export const enclosureFor = (building: string) => ENCLOSURES.find((e) => e.buildings.includes(building))!;
+
+// Building label positions on the site map, in percent.
+export const BUILDING_POS: Record<string, { x: number; y: number }> = {
+  "1": { x: 25.5, y: 30 },
+  "2": { x: 65.7, y: 27.8 },
+  "3": { x: 70.4, y: 66.5 },
+  "4": { x: 57.2, y: 67.3 },
+  "5": { x: 39.8, y: 64.3 },
+  "6": { x: 20.5, y: 65.8 },
+};
+
+export const RESIDENT_UNIT = "5-4105";
 
 export function unitsFor(building: string, floor: number) {
-  return Array.from({ length: PROPERTY.perFloor }, (_, i) => `${building}-${floor}${String(i + 1).padStart(2, "0")}`);
+  return PROPERTY.stacks[building].map((n) => `${building}-${n[0]}${floor}${n.slice(2)}`);
 }
 
 export const ALL_UNITS = PROPERTY.buildings.flatMap((b) => PROPERTY.floors.flatMap((f) => unitsFor(b, f)));
 
-const KEY = "vwd-demo-v2";
+const KEY = "vwd-demo-v4";
 
 // ---- Demo clock ----
 // The demo always plays out on an evening, whatever time it's shown. Demo time
@@ -147,9 +184,10 @@ function initial(): DemoState {
       {
         id: "bk-seed",
         createdAt: atToday(10, 20, -1),
-        location: "Building C — breezeway by C-110",
+        location: "Building 6 — breezeway by 6-6109",
         category: "Move-out / furniture",
-        notes: "Couch and two dressers left after move-out.",
+        notes: "Mattress, wardrobe, fridge, and chairs left after move-out.",
+        photo: "/demo/photos/bulk-1.jpg",
         status: "completed",
         quote: 185,
         scheduledFor: "Yesterday",
@@ -165,7 +203,7 @@ function initial(): DemoState {
   };
 }
 
-// Oak Park is serviced Sunday – Thursday.
+// Center City Apartments is serviced Sunday – Thursday.
 export const SERVICE_DAYS = [0, 1, 2, 3, 4];
 
 /** The last `n` scheduled service nights before tonight, most recent first. */

@@ -34,6 +34,8 @@ import {
   BulkRequest,
   now,
   ALL_UNITS,
+  ENCLOSURES,
+  BUILDING_POS,
   serviceNights,
   serviceNightsThisMonth,
 } from "@/lib/demo/store";
@@ -183,7 +185,7 @@ const PORTFOLIO_SEED: PropRow[] = [
   { name: "Chula Vista Commons", address: "780 Otay Lakes Rd, Chula Vista", units: 240, buildings: 6, serviced: 0, bldgServiced: 0, violations: 0, callbacks: 0, status: "Scheduled" },
 ];
 
-// Oak Park is the live property driven by the demo; the rest are sample data.
+// Center City Apartments is the live property driven by the demo; the rest are sample data.
 function portfolio(s: DemoState): PropRow[] {
   const p = progress(s);
   const bldgDone = PROPERTY.buildings.filter((b) => PROPERTY.floors.flatMap((f) => unitsFor(b, f)).every((u) => s.doors[u] && s.doors[u].status !== "pending")).length;
@@ -528,7 +530,7 @@ function exportUnits(s: DemoState) {
   const csv = rows.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-  a.download = `oak-park-valet-trash-per-unit-${new Date().toISOString().slice(0, 7)}.csv`;
+  a.download = `center-city-apartments-valet-trash-per-unit-${new Date().toISOString().slice(0, 7)}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
 }
@@ -762,9 +764,9 @@ function Overview({ s }: { s: DemoState }) {
         <Stat label="Doors checked" value={`${p.done}`} sub={`of ${p.total} tonight`} />
         <Stat
           label="Pads & compactors"
-          value={`${pads.length}/${PROPERTY.buildings.length}`}
-          sub={pads.length ? `clear, ${pads.filter((x) => x.leveled).length} leveled · photos in report` : "photo check after each building"}
-          color={pads.length === PROPERTY.buildings.length ? C.green : C.navy}
+          value={`${pads.length}/${ENCLOSURES.length}`}
+          sub={pads.length ? `enclosures clear, ${pads.filter((x) => x.leveled).length} leveled · photos in report` : "photo check at each trash enclosure"}
+          color={pads.length === ENCLOSURES.length ? C.green : C.navy}
         />
         <Stat
           label="Hallways"
@@ -780,8 +782,8 @@ function Overview({ s }: { s: DemoState }) {
         />
         <Stat label="Violations" value={v.length} sub={`tonight, with photos · ${cbDone}/${s.callbacks.length} callbacks done`} color={v.length ? C.red : C.navy} />
       </div>
-      <div className="grid lg:grid-cols-5 gap-4">
-        <Card className="lg:col-span-3">
+      <div className="grid gap-4">
+        <Card>
           <div className="flex items-center justify-between mb-3">
             <div className="font-heading" style={{ color: C.navy }}>
               Live property map
@@ -792,7 +794,7 @@ function Overview({ s }: { s: DemoState }) {
           </div>
           <SiteMap s={s} />
         </Card>
-        <Card className="lg:col-span-2">
+        <Card>
           <div className="font-heading mb-3" style={{ color: C.navy }}>
             Tonight&apos;s activity
           </div>
@@ -803,46 +805,75 @@ function Overview({ s }: { s: DemoState }) {
   );
 }
 
-const BLDG_POS: Record<string, { x: number; y: number }> = { A: { x: 40, y: 40 }, B: { x: 230, y: 40 }, C: { x: 135, y: 170 } };
-
+// The property's own site map, with live status laid over each building and
+// trash enclosure. Positions are percentages of the image.
 function SiteMap({ s }: { s: DemoState }) {
-  const at = s.attendant.status === "onsite" ? BLDG_POS[s.attendant.building ?? "A"] : null;
+  const a = s.attendant;
+  const at = a.status === "onsite" ? BUILDING_POS[a.building ?? "1"] : null;
   return (
-    <svg viewBox="0 0 420 290" className="w-full h-auto rounded-xl" style={{ backgroundColor: "#eef5f1" }}>
-      <path d="M0 150 H420" stroke="#d6dbd4" strokeWidth="18" />
-      <path d="M200 0 V290" stroke="#d6dbd4" strokeWidth="14" />
-      <rect x="330" y="200" width="70" height="70" rx="6" fill="#e5e0d4" />
-      <text x="365" y="240" textAnchor="middle" fontSize="10" fill="#7c776d">
-        Compactor
-      </text>
+    <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: "1293 / 684" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/demo/site-map.webp" alt={`${PROPERTY.name} site map`} className="absolute inset-0 w-full h-full" />
       {PROPERTY.buildings.map((b) => {
-        const { x, y } = BLDG_POS[b];
         const units = PROPERTY.floors.flatMap((f) => unitsFor(b, f));
         const done = units.filter((u) => s.doors[u] && s.doors[u].status !== "pending").length;
         const viol = units.filter((u) => s.doors[u]?.status === "violation").length;
-        const pct = done / units.length;
+        const complete = done === units.length;
+        const { x, y } = BUILDING_POS[b];
         return (
-          <g key={b}>
-            <rect x={x} y={y} width="150" height="90" rx="10" fill="#fff" stroke={C.navy} strokeWidth="2" />
-            <rect x={x} y={y + 90 - 90 * pct} width="150" height={90 * pct} rx="10" fill={C.teal} opacity="0.25" />
-            <text x={x + 75} y={y + 40} textAnchor="middle" fontSize="18" fontWeight="800" fill={C.navy}>
-              Bldg {b}
-            </text>
-            <text x={x + 75} y={y + 60} textAnchor="middle" fontSize="11" fill="#4b5563">
-              {done}/{units.length} doors{viol ? ` · ${viol} ⚠` : ""}
-            </text>
-          </g>
+          <div
+            key={b}
+            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-lg px-1.5 py-0.5 text-center shadow-md leading-tight"
+            style={{
+              left: `${x}%`,
+              top: `${y}%`,
+              backgroundColor: complete ? C.green : done ? C.teal : C.navy,
+              color: "#fff",
+            }}
+          >
+            <div className="text-[10px] sm:text-xs font-bold whitespace-nowrap">Bldg {b}</div>
+            <div className="text-[9px] sm:text-[11px] whitespace-nowrap opacity-90">
+              {done}/{units.length}
+              {viol ? ` · ${viol}⚠` : ""}
+            </div>
+          </div>
+        );
+      })}
+      {ENCLOSURES.map((e) => {
+        const pad = s.pads[e.id];
+        return (
+          <div
+            key={e.id}
+            title={pad ? `Enclosure ${e.id} clear at ${fmtTime(pad.at)}` : `Enclosure ${e.id} not checked yet`}
+            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center text-[10px] font-bold text-white border-2 border-white shadow"
+            style={{ left: `${e.x}%`, top: `${e.y}%`, backgroundColor: pad ? C.green : "#9ca3af" }}
+          >
+            {pad ? <IconCheck size={14} /> : e.id}
+          </div>
         );
       })}
       {at && (
-        <g style={{ transition: "transform 1s ease", transform: `translate(${at.x + 140}px, ${at.y + 10}px)` }}>
-          <circle r="16" fill={C.teal} opacity="0.3">
-            <animate attributeName="r" values="8;20;8" dur="1.8s" repeatCount="indefinite" />
-          </circle>
-          <circle r="8" fill={C.teal} stroke="#fff" strokeWidth="3" />
-        </g>
+        <span
+          className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-1000"
+          style={{ left: `${at.x}%`, top: `calc(${at.y}% - 26px)` }}
+          aria-label={`${a.name} at Building ${a.building}`}
+        >
+          <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: C.accent, opacity: 0.5 }} />
+          <span className="relative block w-4 h-4 rounded-full border-2 border-white shadow" style={{ backgroundColor: C.accent }} />
+        </span>
       )}
-    </svg>
+      <div className="absolute bottom-2 left-2 flex flex-wrap gap-2 text-[10px] sm:text-[11px] bg-white/90 rounded-lg px-2 py-1">
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: C.accent }} /> Attendant
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded" style={{ backgroundColor: C.green }} /> Building done
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: C.green }} /> Enclosure clear
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -858,7 +889,7 @@ function Activity({ s }: { s: DemoState }) {
     if (c.doneAt) ev.push({ t: c.doneAt, text: `Callback picked up at ${c.unit}`, color: C.green });
   }
   for (const [b, p] of Object.entries(s.pads))
-    ev.push({ t: p.at, text: `Building ${b} pad clear${p.leveled ? " · compactor leveled" : ""} (photo)`, color: C.green });
+    ev.push({ t: p.at, text: `Enclosure ${b} pad clear${p.leveled ? " · compactor leveled" : ""} (photo)`, color: C.green });
   for (const b of s.bulk.filter((x) => x.status !== "completed")) ev.push({ t: b.createdAt, text: `Bulk pickup requested: ${b.category}`, color: C.navy });
   ev.sort((x, y) => y.t - x.t);
   if (!ev.length) return <div className="text-sm" style={{ color: C.muted }}>Waiting for tonight&apos;s shift to start.</div>;
@@ -945,7 +976,7 @@ function Bulk({ s }: { s: DemoState }) {
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            placeholder="Where is it? (e.g. Bldg A dumpster enclosure)"
+            placeholder="Where is it? (e.g. enclosure T3 by Building 6)"
             className="w-full rounded-xl border p-3 text-sm"
             style={{ borderColor: C.border }}
           />
@@ -1049,10 +1080,18 @@ function BulkCard({ b }: { b: BulkRequest }) {
 function Violations({ s }: { s: DemoState }) {
   const tonight = violations(s);
   // 30-day history seed plus tonight
-  const byType: Record<string, number> = { "Not bagged": 14, "Bag leaking": 6, "Oversized item": 9, "Out after cutoff": 11, "Recycling mixed": 5 };
+  const byType: Record<string, number> = {
+    "Not in bin": 12,
+    "Overflowing bin": 8,
+    "Boxes not broken down": 10,
+    "Bag leaking": 6,
+    "Out after cutoff": 9,
+    "Oversized item": 4,
+    "Recycling mixed": 3,
+  };
   tonight.forEach((v) => v.violation && (byType[v.violation] = (byType[v.violation] ?? 0) + 1));
   const max = Math.max(...Object.values(byType));
-  const byBldg = { A: 17, B: 19, C: 9 };
+  const byBldg: Record<string, number> = { "1": 9, "2": 7, "3": 3, "4": 4, "5": 6, "6": 11 };
   return (
     <div className="grid lg:grid-cols-2 gap-4 items-start">
       <Card>
@@ -1130,12 +1169,12 @@ function history() {
     return {
       date: d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }),
       checked: ALL_UNITS.length,
-      setOut: 104 + Math.floor(rnd() * 16),
+      setOut: Math.round(ALL_UNITS.length * (0.82 + rnd() * 0.12)),
       violations: Math.floor(rnd() * 4),
       callbacks: Math.floor(rnd() * 3),
       recycling: 60 + Math.floor(rnd() * 40),
       finishMin,
-      pads: PROPERTY.buildings.length,
+      pads: ENCLOSURES.length,
     };
   });
 }
@@ -1159,7 +1198,7 @@ function Reports() {
           sub={`PM avg · trash out ${Math.floor(outFor / 60)}h ${outFor % 60}m from 6:00 PM set-out`}
         />
         <Stat label="Recycling" value={`${(recyclingTotal / 1000).toFixed(1)}k`} sub="lb diverted, last 14 nights" color={C.teal} />
-        <Stat label="Pads & compactors" value={`${rows.length * PROPERTY.buildings.length}`} sub="photo-verified checks, 14 nights" color={C.navy} />
+        <Stat label="Pads & compactors" value={`${rows.length * ENCLOSURES.length}`} sub="photo-verified checks, 14 nights" color={C.navy} />
       </div>
       <Card className="flex flex-wrap items-center gap-3">
         <IconMail size={22} style={{ color: C.teal }} />
@@ -1246,7 +1285,7 @@ function Messages({ s }: { s: DemoState }) {
         </div>
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} className="w-full rounded-xl border p-3 text-sm" style={{ borderColor: C.border }} placeholder="Type a message…" />
         <Btn className="w-full" onClick={send} disabled={!text.trim()}>
-          Send to 126 units (app + text)
+          Send to {ALL_UNITS.length} units (app + text)
         </Btn>
       </Card>
       <Card className="space-y-3">
@@ -1258,7 +1297,7 @@ function Messages({ s }: { s: DemoState }) {
           <div key={b.id} className="text-sm border-l-4 pl-3" style={{ borderColor: C.teal }}>
             {b.text}
             <div className="text-xs" style={{ color: C.muted }}>
-              {fmtTime(b.at)} · delivered to 126 units
+              {fmtTime(b.at)} · delivered to {ALL_UNITS.length} units
             </div>
           </div>
         ))}

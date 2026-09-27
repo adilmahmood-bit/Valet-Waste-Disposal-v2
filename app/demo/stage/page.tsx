@@ -7,7 +7,7 @@ import { C, LogoMark, ResetButton } from "@/components/demo/ui";
 // so actions in one frame show up in the others instantly.
 const FRAMES = [
   { src: "/demo/porter", label: "Attendant", w: 390 },
-  { src: "/demo/resident", label: "Resident · B-214", w: 390 },
+  { src: "/demo/resident", label: "Resident · 5-4105", w: 390 },
   { src: "/demo/manager", label: "Property Manager", w: 0 },
 ];
 
