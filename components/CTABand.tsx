@@ -1,46 +1,7 @@
-"use client";
-import { useState } from "react";
+import Script from "next/script";
 import { IconPhone, IconMail, IconMapPin } from "@tabler/icons-react";
-import { createClient } from "@/lib/supabase/client";
 
 export default function CTABand() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    property_name: "",
-    notes: "",
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const supabase = createClient();
-    const { error: sbError } = await supabase
-      .from("quote_requests")
-      .insert([{
-        name: form.name,
-        email: form.email,
-        phone: form.phone || null,
-        property_name: form.property_name || null,
-        notes: form.notes || null,
-      }]);
-
-    setLoading(false);
-
-    if (sbError) {
-      setError("Something went wrong — please try again or call us directly.");
-      console.error(sbError);
-    } else {
-      setSubmitted(true);
-    }
-  }
-
   return (
     <section id="contact" className="py-20 px-4" style={{ backgroundColor: "#1B4F72" }}>
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-start">
@@ -75,105 +36,25 @@ export default function CTABand() {
           </div>
         </div>
 
-        {/* Right — form card */}
-        <div className="bg-white rounded-3xl shadow-xl p-8">
-          {submitted ? (
-            <div className="text-center py-8">
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{ backgroundColor: "#0E9AA7" }}
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              </div>
-              <h3
-                className="text-xl font-bold text-ink mb-2"
-                style={{ fontFamily: "var(--font-libre-franklin)" }}
-              >
-                Request received!
-              </h3>
-              <p className="text-ink-mid">We&apos;ll be in touch within one business day.</p>
-            </div>
-          ) : (
-            <>
-              <h3
-                className="text-xl font-bold text-ink mb-1"
-                style={{ fontFamily: "var(--font-libre-franklin)" }}
-              >
-                Request a Free Quote
-              </h3>
-              <p className="text-ink-mid text-sm mb-6">We&apos;ll follow up within one business day.</p>
+        {/* Right — HubSpot quote form */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 overflow-hidden">
+          <h3
+            className="text-xl font-bold text-ink mb-1"
+            style={{ fontFamily: "var(--font-libre-franklin)" }}
+          >
+            Request a Free Quote
+          </h3>
+          <p className="text-ink-mid text-sm">We will follow-up today.</p>
 
-              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-ink-mid">Your Name *</label>
-                    <input
-                      required
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className="border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-gray-400"
-                      placeholder="Pete Mitchell"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-ink-mid">Email *</label>
-                    <input
-                      required
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className="border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-gray-400"
-                      placeholder="maverick@topliving.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-ink-mid">Phone</label>
-                  <input
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    className="border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-gray-400"
-                    placeholder="(619) 555-0100"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-ink-mid">Property Name</label>
-                  <input
-                    value={form.property_name}
-                    onChange={(e) => setForm({ ...form, property_name: e.target.value })}
-                    className="border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-gray-400"
-                    placeholder="Graves Top Living"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-ink-mid">Anything else?</label>
-                  <textarea
-                    rows={3}
-                    value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    className="border border-border rounded-lg px-3 py-2 text-sm text-ink outline-none focus:border-gray-400 resize-none"
-                    placeholder="Unit count, service concerns, current vendor issues…"
-                  />
-                </div>
-
-                {error && (
-                  <p className="text-sm text-red-600 text-center">{error}</p>
-                )}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-primary w-full py-3 rounded-lg text-white font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {loading ? "Sending…" : "Request a Free Quote →"}
-                </button>
-              </form>
-            </>
-          )}
+          {/* The form renders in an iframe with its own padding; negative
+              margins pull it flush with the card so the spacing stays tight. */}
+          <div
+            className="hs-form-frame min-h-[420px] -mx-8 -mt-9 -mb-10"
+            data-region="na2"
+            data-form-id="bfe62776-5fcc-449f-aac4-e267292a157f"
+            data-portal-id="246187700"
+          />
+          <Script src="https://js-na2.hsforms.net/forms/embed/246187700.js" strategy="afterInteractive" />
         </div>
       </div>
     </section>
