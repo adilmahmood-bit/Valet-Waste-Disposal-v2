@@ -14,6 +14,7 @@ import {
   AlertPrefs,
   DemoState,
   isPlaceholder,
+  now,
 } from "@/lib/demo/store";
 import {
   AppHeader,
@@ -392,7 +393,7 @@ function Home({ s, openAlerts }: { s: DemoState; openAlerts: () => void }) {
   const callBack = () =>
     update((st) => ({
       ...st,
-      callbacks: [...st.callbacks, { id: uid(), unit: RESIDENT_UNIT, reason, createdAt: Date.now(), status: "open" }],
+      callbacks: [...st.callbacks, { id: uid(), unit: RESIDENT_UNIT, reason, createdAt: now(), status: "open" }],
     }));
 
   return (

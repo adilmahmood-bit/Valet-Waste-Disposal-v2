@@ -10,6 +10,7 @@ import {
   IconClock,
   IconLogout,
   IconX,
+  IconTrash,
 } from "@tabler/icons-react";
 import {
   useDemo,
@@ -22,6 +23,9 @@ import {
   readPhoto,
   ViolationType,
   DemoState,
+  now,
+  clockAtLeast,
+  advance,
 } from "@/lib/demo/store";
 import { AppHeader, AttendantBanner, Btn, C, Card, PhoneApp, PhotoThumb, Pill, ResetButton } from "@/components/demo/ui";
 
@@ -34,7 +38,13 @@ const T = {
     progress: "Tonight's route",
     callbacks: "Resident callbacks",
     pickedUp: "Picked up",
-    withPhoto: "Picked up + photo",
+    padTitle: "Trash pad / compactor · Building",
+    padPhoto: "Take pad photo",
+    retake: "Retake photo",
+    leveled: "Compactor leveled",
+    swept: "Pad swept",
+    padSave: "Mark pad clear",
+    padDone: "Pad clear",
     violation: "Report violation",
     checkout: "Check out of property",
     finishBldg: "Finish building",
@@ -53,7 +63,13 @@ const T = {
     progress: "Ruta de esta noche",
     callbacks: "Solicitudes de residentes",
     pickedUp: "Recogido",
-    withPhoto: "Recogido + foto",
+    padTitle: "Área de basura / compactador · Edificio",
+    padPhoto: "Tomar foto del área",
+    retake: "Tomar otra foto",
+    leveled: "Compactador nivelado",
+    swept: "Área barrida",
+    padSave: "Marcar área limpia",
+    padDone: "Área limpia",
     violation: "Reportar infracción",
     checkout: "Registrar salida",
     finishBldg: "Terminar edificio",
@@ -68,8 +84,8 @@ const T = {
 
 const VIOLATIONS: ViolationType[] = ["Not bagged", "Bag leaking", "Oversized item", "Out after cutoff", "Recycling mixed"];
 
-function markDone(unit: string, photo?: string) {
-  update((s) => ({ ...s, doors: { ...s.doors, [unit]: { status: "done", at: Date.now(), photo } } }));
+function markDone(unit: string) {
+  update((s) => ({ ...s, doors: { ...s.doors, [unit]: { status: "done", at: now() } } }));
 }
 
 export default function PorterApp() {
@@ -94,12 +110,14 @@ export default function PorterApp() {
     }, 900);
   };
 
+  // A building takes ~25 minutes; spread door times across that span.
   const finishBuilding = () =>
     update((st) => {
       const doors = { ...st.doors };
-      for (const f of PROPERTY.floors)
-        for (const u of unitsFor(bldg, f)) if (!doors[u] || doors[u].status === "pending") doors[u] = { status: "done", at: Date.now() };
-      return { ...st, doors };
+      const start = now(st);
+      const pending = PROPERTY.floors.flatMap((f) => unitsFor(bldg, f)).filter((u) => !doors[u] || doors[u].status === "pending");
+      pending.forEach((u, i) => (doors[u] = { status: "done", at: start + ((i + 1) / pending.length) * 25 * 60000 }));
+      return { ...st, doors, clock: pending.length ? advance(st, 25) : st.clock };
     });
 
   return (
@@ -131,7 +149,7 @@ export default function PorterApp() {
             </div>
             <Btn
               className="w-full"
-              onClick={() => update((st) => ({ ...st, attendant: { ...st.attendant, status: "enroute", clockIn: Date.now() } }))}
+              onClick={() => update((st) => { const clock = clockAtLeast(st, 18, 45); return { ...st, clock, attendant: { ...st.attendant, status: "enroute", clockIn: clock.demo } }; })}
             >
               {t.start}
             </Btn>
@@ -156,7 +174,7 @@ export default function PorterApp() {
             <Btn
               className="w-full"
               onClick={() =>
-                update((st) => ({ ...st, attendant: { ...st.attendant, status: "onsite", checkIn: Date.now(), building: bldg } }))
+                update((st) => { const clock = clockAtLeast(st, 18, 55); return { ...st, clock, attendant: { ...st.attendant, status: "onsite", checkIn: clock.demo, building: bldg } }; })
               }
             >
               {t.arrive}
@@ -185,8 +203,8 @@ export default function PorterApp() {
                       onClick={() =>
                         update((st) => ({
                           ...st,
-                          callbacks: st.callbacks.map((x) => (x.id === c.id ? { ...x, status: "done", doneAt: Date.now() } : x)),
-                          doors: { ...st.doors, [c.unit]: { status: "done", at: Date.now() } },
+                          callbacks: st.callbacks.map((x) => (x.id === c.id ? { ...x, status: "done", doneAt: now() } : x)),
+                          doors: { ...st.doors, [c.unit]: { status: "done", at: now() } },
                         }))
                       }
                     >
@@ -243,6 +261,8 @@ export default function PorterApp() {
               </Btn>
             </div>
 
+            <PadCard key={bldg} bldg={bldg} s={s} t={t} />
+
             {PROPERTY.floors.map((f) => (
               <div key={f}>
                 <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: C.muted }}>
@@ -273,7 +293,7 @@ export default function PorterApp() {
             <Btn
               variant="navy"
               className="w-full flex items-center justify-center gap-2"
-              onClick={() => update((st) => ({ ...st, attendant: { ...st.attendant, status: "done", checkOut: Date.now() } }))}
+              onClick={() => update((st) => { const clock = clockAtLeast(st, 19, 30); return { ...st, clock, attendant: { ...st.attendant, status: "done", checkOut: clock.demo } }; })}
             >
               <IconLogout size={18} /> {t.checkout}
             </Btn>
@@ -316,13 +336,70 @@ export default function PorterApp() {
   );
 }
 
+// Nightly trash pad / compactor proof for the selected building.
+function PadCard({ bldg, s, t }: { bldg: string; s: DemoState; t: (typeof T)["en"] }) {
+  const saved = s.pads[bldg];
+  const [photo, setPhoto] = useState<string | undefined>(saved?.photo);
+  const [leveled, setLeveled] = useState(saved?.leveled ?? false);
+  const [swept, setSwept] = useState(saved?.swept ?? false);
+  const ref = useRef<HTMLInputElement>(null);
+
+  if (saved)
+    return (
+      <Card className="flex items-center gap-3" style={{ borderColor: "#bbf7d0", backgroundColor: "#f0fdf4" }}>
+        <PhotoThumb src={saved.photo} alt={`Building ${bldg} pad`} className="w-14 h-14 shrink-0" />
+        <div className="flex-1 text-sm">
+          <div className="font-semibold" style={{ color: C.green }}>
+            {t.padDone} · {fmtTime(saved.at)}
+          </div>
+          <div className="text-xs" style={{ color: C.muted }}>
+            {[saved.leveled && t.leveled, saved.swept && t.swept].filter(Boolean).join(" · ")}
+          </div>
+        </div>
+        <IconCheck size={22} style={{ color: C.green }} />
+      </Card>
+    );
+
+  const check = (on: boolean, set: (v: boolean) => void, label: string) => (
+    <label className="flex items-center gap-2 text-sm cursor-pointer">
+      <input type="checkbox" checked={on} onChange={(e) => set(e.target.checked)} className="w-5 h-5 accent-[#0E9AA7]" />
+      {label}
+    </label>
+  );
+
+  return (
+    <Card className="space-y-3">
+      <div className="flex items-center gap-2 font-semibold text-sm" style={{ color: C.navy }}>
+        <IconTrash size={18} /> {t.padTitle} {bldg}
+      </div>
+      <input ref={ref} type="file" accept="image/*" capture="environment" hidden onChange={async (e) => e.target.files?.[0] && setPhoto(await readPhoto(e.target.files[0]))} />
+      <div className="flex items-center gap-3">
+        <Btn variant="ghost" className="flex items-center gap-2 !py-2" onClick={() => ref.current?.click()}>
+          <IconCamera size={18} /> {photo ? t.retake : t.padPhoto}
+        </Btn>
+        {photo && <PhotoThumb src={photo} alt="Pad" className="w-12 h-12" />}
+      </div>
+      <div className="flex flex-wrap gap-x-5 gap-y-2">
+        {check(leveled, setLeveled, t.leveled)}
+        {check(swept, setSwept, t.swept)}
+      </div>
+      <Btn
+        className="w-full"
+        disabled={!photo}
+        onClick={() => update((st) => ({ ...st, pads: { ...st.pads, [bldg]: { at: now(), photo, leveled, swept } } }))}
+      >
+        {t.padSave}
+      </Btn>
+    </Card>
+  );
+}
+
 function DoorSheet({ unit, s, t, onClose }: { unit: string; s: DemoState; t: (typeof T)["en"]; onClose: () => void }) {
   const [mode, setMode] = useState<"menu" | "violation">("menu");
   const [type, setType] = useState<ViolationType>("Not bagged");
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState<string>();
   const fileRef = useRef<HTMLInputElement>(null);
-  const proofRef = useRef<HTMLInputElement>(null);
   const d = s.doors[unit];
 
   const onFile = async (f?: File) => {
@@ -357,33 +434,15 @@ function DoorSheet({ unit, s, t, onClose }: { unit: string; s: DemoState; t: (ty
 
         {mode === "menu" ? (
           <div className="grid gap-2">
-            <input
-              ref={proofRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              hidden
-              onChange={async (e) => {
-                const f = e.target.files?.[0];
-                if (!f) return;
-                markDone(unit, await readPhoto(f));
+            <Btn
+              className="flex items-center justify-center gap-2"
+              onClick={() => {
+                markDone(unit);
                 onClose();
               }}
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <Btn
-                className="flex items-center justify-center gap-2"
-                onClick={() => {
-                  markDone(unit);
-                  onClose();
-                }}
-              >
-                <IconCheck size={18} /> {t.pickedUp}
-              </Btn>
-              <Btn variant="navy" className="flex items-center justify-center gap-2" onClick={() => proofRef.current?.click()}>
-                <IconCamera size={18} /> {t.withPhoto}
-              </Btn>
-            </div>
+            >
+              <IconCheck size={18} /> {t.pickedUp}
+            </Btn>
             <Btn variant="danger" className="flex items-center justify-center gap-2" onClick={() => setMode("violation")}>
               <IconAlertTriangle size={18} /> {t.violation}
             </Btn>
@@ -423,7 +482,7 @@ function DoorSheet({ unit, s, t, onClose }: { unit: string; s: DemoState; t: (ty
               onClick={() => {
                 update((st) => ({
                   ...st,
-                  doors: { ...st.doors, [unit]: { status: "violation", at: Date.now(), violation: type, note, photo } },
+                  doors: { ...st.doors, [unit]: { status: "violation", at: now(), violation: type, note, photo } },
                 }));
                 onClose();
               }}

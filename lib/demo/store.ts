@@ -95,6 +95,16 @@ export interface DemoState {
   alerts: AlertPrefs;
   lang: "en" | "es";
   residentLang: "en" | "es";
+  pads: Record<string, Pad>;
+  clock: { real: number; demo: number };
+}
+
+// Nightly trash pad / compactor check, one per building.
+export interface Pad {
+  at: number;
+  photo?: string;
+  leveled: boolean;
+  swept: boolean;
 }
 
 export const PROPERTY = {
@@ -114,7 +124,19 @@ export function unitsFor(building: string, floor: number) {
 
 export const ALL_UNITS = PROPERTY.buildings.flatMap((b) => PROPERTY.floors.flatMap((f) => unitsFor(b, f)));
 
-const KEY = "vwd-demo-v1";
+const KEY = "vwd-demo-v2";
+
+// ---- Demo clock ----
+// The demo always plays out on an evening, whatever time it's shown. Demo time
+// runs 6x real time, so a 10-minute walkthrough covers an hour of service.
+const SPEED = 6;
+
+export function atToday(h: number, m: number, dayOffset = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + dayOffset);
+  d.setHours(h, m, 0, 0);
+  return d.getTime();
+}
 
 function initial(): DemoState {
   return {
@@ -124,21 +146,61 @@ function initial(): DemoState {
     bulk: [
       {
         id: "bk-seed",
-        createdAt: Date.now() - 1000 * 60 * 60 * 26,
+        createdAt: atToday(10, 20, -1),
         location: "Building C — breezeway by C-110",
         category: "Move-out / furniture",
         notes: "Couch and two dressers left after move-out.",
         status: "completed",
         quote: 185,
         scheduledFor: "Yesterday",
-        completedAt: Date.now() - 1000 * 60 * 60 * 20,
+        completedAt: atToday(13, 5, -1),
       },
     ],
     broadcasts: [],
     alerts: defaultAlerts(),
     lang: "en",
     residentLang: "en",
+    pads: {},
+    clock: { real: Date.now(), demo: atToday(18, 30) },
   };
+}
+
+// Oak Park is serviced Sunday – Thursday.
+export const SERVICE_DAYS = [0, 1, 2, 3, 4];
+
+/** The last `n` scheduled service nights before tonight, most recent first. */
+export function serviceNights(n: number) {
+  const out: Date[] = [];
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  while (out.length < n) {
+    d.setDate(d.getDate() - 1);
+    if (SERVICE_DAYS.includes(d.getDay())) out.push(new Date(d));
+  }
+  return out;
+}
+
+/** Scheduled service nights so far this month, tonight included if it's one. */
+export function serviceNightsThisMonth() {
+  const d = new Date();
+  let n = 0;
+  for (let day = 1; day <= d.getDate(); day++) if (SERVICE_DAYS.includes(new Date(d.getFullYear(), d.getMonth(), day).getDay())) n++;
+  return n;
+}
+
+/** Current demo time (an evening timestamp), capped at 11:30 PM. */
+export function now(s: DemoState = state) {
+  return Math.min(s.clock.demo + (Date.now() - s.clock.real) * SPEED, atToday(23, 30));
+}
+
+/** Clock moved forward by `minutes` of demo time (e.g. finishing a whole building). */
+export function advance(s: DemoState, minutes: number) {
+  return { real: Date.now(), demo: Math.min(now(s) + minutes * 60000, atToday(23, 0)) };
+}
+
+/** Clock that reads at least h:m tonight, e.g. check-in never shows before 6:55 PM. */
+export function clockAtLeast(s: DemoState, h: number, m: number) {
+  return { real: Date.now(), demo: Math.max(now(s), atToday(h, m)) };
 }
 
 let state: DemoState = initial();

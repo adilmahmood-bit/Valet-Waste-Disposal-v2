@@ -17,6 +17,7 @@ import {
   IconSearch,
   IconBuildingBank,
   IconFileInvoice,
+  IconDownload,
   IconPhoto,
 } from "@tabler/icons-react";
 import {
@@ -31,6 +32,10 @@ import {
   unitsFor,
   DemoState,
   BulkRequest,
+  now,
+  ALL_UNITS,
+  serviceNights,
+  serviceNightsThisMonth,
 } from "@/lib/demo/store";
 import { AttendantBanner, Btn, C, Card, LogoMark, PhotoThumb, Pill, ResetButton, StatusDot, Wordmark } from "@/components/demo/ui";
 import PhotoReport from "@/components/demo/PhotoReport";
@@ -144,7 +149,7 @@ export default function ManagerPortal() {
           {tab === "bulk" && <Bulk s={s} />}
           {tab === "violations" && <Violations s={s} />}
           {tab === "photos" && <PhotoReport s={s} />}
-          {tab === "reports" && <Reports s={s} />}
+          {tab === "reports" && <Reports />}
           {tab === "messages" && <Messages s={s} />}
           {tab === "billing" && <Billing s={s} />}
           <div className="text-center pt-4">
@@ -200,19 +205,20 @@ function portfolio(s: DemoState): PropRow[] {
 const PORTFOLIO = [PROPERTY.name, ...PORTFOLIO_SEED.map((p) => p.name)];
 
 // Nightly history for the trend chart (sample data, deterministic).
-function trend(days: number) {
+const PORTFOLIO_DOORS = ALL_UNITS.length + PORTFOLIO_SEED.reduce((n, p) => n + p.units, 0);
+
+function trend(nights: number) {
   let seed = 11;
   const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-  return Array.from({ length: days }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (days - i));
-    return {
-      label: d.toLocaleDateString([], days <= 7 ? { weekday: "short" } : { month: "numeric", day: "numeric" }),
+  return serviceNights(nights)
+    .reverse()
+    .map((d) => ({
+      label: d.toLocaleDateString([], nights <= 7 ? { weekday: "short" } : { month: "numeric", day: "numeric" }),
       full: d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }),
-      doors: 790 + Math.floor(rnd() * 18),
+      checked: PORTFOLIO_DOORS,
+      setOut: Math.round(PORTFOLIO_DOORS * (0.82 + rnd() * 0.1)),
       violations: Math.floor(rnd() * 7),
-    };
-  });
+    }));
 }
 
 function Ring({ value, total, color }: { value: number; total: number; color: string }) {
@@ -251,7 +257,7 @@ function Dashboard({ s }: { s: DemoState }) {
             className="rounded-full px-3 py-1.5 text-sm border font-medium"
             style={range === d ? { backgroundColor: C.navy, color: "#fff", borderColor: C.navy } : { backgroundColor: "#fff", borderColor: C.border }}
           >
-            Last {d} nights
+            Last {d} service nights
           </button>
         ))}
       </div>
@@ -326,7 +332,7 @@ function Dashboard({ s }: { s: DemoState }) {
                 <th className="p-3">Property</th>
                 <th className="p-3">Status</th>
                 <th className="p-3">Check-in</th>
-                <th className="p-3">Units serviced</th>
+                <th className="p-3">Doors checked</th>
                 <th className="p-3">Buildings serviced</th>
                 <th className="p-3">Violations</th>
                 <th className="p-3">Callbacks</th>
@@ -396,20 +402,21 @@ function Spark({ values, color }: { values: number[]; color: string }) {
   );
 }
 
-// Single-series line with crosshair tooltip. Violations live in their own
-// card: doors (~800/night) and violations (~0–6) don't share a scale.
+// Doors checked is constant (every door, every night), so it's a dashed
+// reference line; doors set out is the one data series. Axis starts at zero.
+// Violations live in their own card: a 0–6 count doesn't share this scale.
 function TrendChart({ data }: { data: ReturnType<typeof trend> }) {
   const [hover, setHover] = useState<number | null>(null);
   const W = 560;
   const H = 200;
   const pad = { l: 40, r: 16, t: 16, b: 28 };
-  const vals = data.map((d) => d.doors);
-  const lo = Math.floor((Math.min(...vals) - 10) / 10) * 10;
-  const hi = Math.ceil((Math.max(...vals) + 10) / 10) * 10;
+  const vals = data.map((d) => d.setOut);
+  const lo = 0;
+  const hi = Math.ceil((PORTFOLIO_DOORS * 1.08) / 100) * 100;
   const x = (i: number) => pad.l + (i / Math.max(1, data.length - 1)) * (W - pad.l - pad.r);
   const y = (v: number) => pad.t + (1 - (v - lo) / (hi - lo)) * (H - pad.t - pad.b);
-  const path = data.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(d.doors).toFixed(1)}`).join(" ");
-  const ticks = [lo, Math.round((lo + hi) / 2), hi];
+  const path = data.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(d.setOut).toFixed(1)}`).join(" ");
+  const ticks = [0, Math.round(hi / 2), hi];
   const labelEvery = Math.ceil(data.length / 7);
 
   const onMove = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -424,11 +431,19 @@ function TrendChart({ data }: { data: ReturnType<typeof trend> }) {
     <div>
       <div className="flex items-baseline justify-between">
         <div className="font-heading" style={{ color: C.navy }}>
-          Doors serviced per night
+          Doors per service night
         </div>
         <div className="text-xs" style={{ color: C.muted }}>
           All properties · {data.length} nights
         </div>
+      </div>
+      <div className="flex flex-wrap gap-4 text-xs mt-1" style={{ color: C.muted }}>
+        <span className="flex items-center gap-1.5">
+          <span className="w-4 border-t-2 border-dashed" style={{ borderColor: C.ink }} /> Checked ({PORTFOLIO_DOORS}, every door)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-4 h-0.5" style={{ backgroundColor: C.teal }} /> Trash set out by residents
+        </span>
       </div>
       <div className="relative">
         <svg
@@ -437,8 +452,9 @@ function TrendChart({ data }: { data: ReturnType<typeof trend> }) {
           onPointerMove={onMove}
           onPointerLeave={() => setHover(null)}
           role="img"
-          aria-label={`Doors serviced per night, ${data.length} nights, between ${Math.min(...vals)} and ${Math.max(...vals)}`}
+          aria-label={`All ${PORTFOLIO_DOORS} doors checked each of ${data.length} nights; trash set out at between ${Math.min(...vals)} and ${Math.max(...vals)} doors`}
         >
+          <line x1={pad.l} x2={W - pad.r} y1={y(PORTFOLIO_DOORS)} y2={y(PORTFOLIO_DOORS)} stroke={C.ink} strokeOpacity="0.6" strokeWidth="1.5" strokeDasharray="5 4" />
           {ticks.map((t) => (
             <g key={t}>
               <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} stroke="#e5e7eb" />
@@ -460,7 +476,7 @@ function TrendChart({ data }: { data: ReturnType<typeof trend> }) {
           {hover !== null && (
             <>
               <line x1={x(hover)} x2={x(hover)} y1={pad.t} y2={H - pad.b} stroke={C.ink} strokeOpacity="0.25" />
-              <circle cx={x(hover)} cy={y(data[hover].doors)} r="5" fill={C.teal} stroke="#fff" strokeWidth="2" />
+              <circle cx={x(hover)} cy={y(data[hover].setOut)} r="5" fill={C.teal} stroke="#fff" strokeWidth="2" />
             </>
           )}
         </svg>
@@ -471,8 +487,15 @@ function TrendChart({ data }: { data: ReturnType<typeof trend> }) {
           >
             <div style={{ color: C.muted }}>{h.full}</div>
             <div className="flex items-center gap-2 mt-0.5">
+              <span className="w-3 border-t-2 border-dashed" style={{ borderColor: C.ink }} />
+              <b className="text-sm">
+                {h.checked}/{h.checked}
+              </b>{" "}
+              checked
+            </div>
+            <div className="flex items-center gap-2">
               <span className="w-3 h-0.5" style={{ backgroundColor: C.teal }} />
-              <b className="text-sm">{h.doors}</b> doors
+              <b className="text-sm">{h.setOut}</b> set out
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-0.5" style={{ backgroundColor: C.accent }} />
@@ -489,8 +512,30 @@ function TrendChart({ data }: { data: ReturnType<typeof trend> }) {
 
 const RATE = 12.5; // per-unit monthly rate
 
+// Per-unit statement for managers who bill residents (at cost) for valet trash.
+function exportUnits(s: DemoState) {
+  const month = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const rows = [["Unit", "Building", "Month", "Valet trash fee (at cost)", "Callbacks this month", "Violations tonight"]];
+  for (const u of ALL_UNITS)
+    rows.push([
+      u,
+      u[0],
+      month,
+      RATE.toFixed(2),
+      String(s.callbacks.filter((c) => c.unit === u).length),
+      s.doors[u]?.status === "violation" ? "1" : "0",
+    ]);
+  const csv = rows.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = `oak-park-valet-trash-per-unit-${new Date().toISOString().slice(0, 7)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 function Billing({ s }: { s: DemoState }) {
-  const units = 126;
+  const [passThrough, setPassThrough] = useState(false);
+  const units = ALL_UNITS.length;
   const base = units * RATE;
   const bulkLines = s.bulk.filter((b) => b.status === "approved" || b.status === "completed");
   const bulkTotal = bulkLines.reduce((n, b) => n + (b.quote ?? 0), 0);
@@ -582,12 +627,56 @@ function Billing({ s }: { s: DemoState }) {
                   {money(base + bulkTotal)}
                 </td>
               </tr>
+              {passThrough && (
+                <>
+                  <tr>
+                    <td className="py-1.5 text-sm" style={{ color: C.muted }}>
+                      Recovered from residents at cost · {units} × {money(RATE)}
+                    </td>
+                    <td className="py-1.5 text-right text-sm" style={{ color: C.green }}>
+                      −{money(base)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-1.5 text-sm font-semibold">Net cost to property</td>
+                    <td className="py-1.5 text-right text-sm font-semibold">{money(bulkTotal)}</td>
+                  </tr>
+                </>
+              )}
             </tbody>
           </table>
         </div>
       </Card>
 
       <div className="space-y-4">
+        <Card className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="font-heading" style={{ color: C.navy }}>
+              Resident billing
+            </div>
+            <button
+              role="switch"
+              aria-checked={passThrough}
+              aria-label="Pass valet fee through to residents"
+              onClick={() => setPassThrough(!passThrough)}
+              className="relative w-12 h-7 rounded-full transition-colors shrink-0"
+              style={{ backgroundColor: passThrough ? C.teal : "#d1d5db" }}
+            >
+              <span className="absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all" style={{ left: passThrough ? 24 : 4 }} />
+            </button>
+          </div>
+          <div className="text-sm">
+            Pass the valet fee through to residents <b>at cost</b>: {money(RATE)} per unit per month, the same rate the property pays.
+          </div>
+          <div className="text-xs" style={{ color: C.muted }}>
+            The per-unit export lists each unit&apos;s valet fee for the month, ready for your resident ledger or utility billing
+            company. It documents that resident charges match the actual cost of service.
+          </div>
+          <Btn variant="ghost" className="w-full flex items-center justify-center gap-2" onClick={() => exportUnits(s)}>
+            <IconDownload size={16} /> Download per-unit CSV ({units} units)
+          </Btn>
+        </Card>
+
         <Card className="space-y-2">
           <div className="font-heading" style={{ color: C.navy }}>
             Payment method
@@ -661,14 +750,35 @@ function Overview({ s }: { s: DemoState }) {
   const p = progress(s);
   const v = violations(s);
   const cbDone = s.callbacks.filter((c) => c.status === "done").length;
+  const pads = Object.values(s.pads);
+  const a = s.attendant;
+  const setOutAt = new Date(a.checkOut ?? now(s));
+  setOutAt.setHours(18, 0, 0, 0);
+  const outMin = a.checkOut ? Math.round((a.checkOut - setOutAt.getTime()) / 60000) : 0;
   return (
     <>
-      <AttendantBanner a={s.attendant} />
+      <AttendantBanner a={a} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Stat label="Doors serviced" value={`${p.done}`} sub={`of ${p.total} tonight`} />
-        <Stat label="Violations" value={v.length} sub="tonight, with photos" color={v.length ? C.red : C.navy} />
-        <Stat label="Callbacks" value={`${cbDone}/${s.callbacks.length}`} sub="resolved tonight" color={C.accent} />
-        <Stat label="On-time rate" value="99.4%" sub="last 30 nights" color={C.green} />
+        <Stat label="Doors checked" value={`${p.done}`} sub={`of ${p.total} tonight`} />
+        <Stat
+          label="Pads & compactors"
+          value={`${pads.length}/${PROPERTY.buildings.length}`}
+          sub={pads.length ? `clear, ${pads.filter((x) => x.leveled).length} leveled · photos in report` : "photo check after each building"}
+          color={pads.length === PROPERTY.buildings.length ? C.green : C.navy}
+        />
+        <Stat
+          label="Hallways"
+          value={a.status === "done" ? fmtTime(a.checkOut) : a.status === "off" ? "—" : "Clearing"}
+          sub={
+            a.status === "done"
+              ? `all clear · trash out ${Math.floor(outMin / 60)}h ${outMin % 60}m after 6:00 PM set-out`
+              : a.status === "off"
+                ? "set-out opens 6:00 PM"
+                : "trash out since 6:00 PM"
+          }
+          color={a.status === "done" ? C.green : C.navy}
+        />
+        <Stat label="Violations" value={v.length} sub={`tonight, with photos · ${cbDone}/${s.callbacks.length} callbacks done`} color={v.length ? C.red : C.navy} />
       </div>
       <div className="grid lg:grid-cols-5 gap-4">
         <Card className="lg:col-span-3">
@@ -747,6 +857,8 @@ function Activity({ s }: { s: DemoState }) {
     ev.push({ t: c.createdAt, text: `${c.unit} requested a callback`, color: C.accent });
     if (c.doneAt) ev.push({ t: c.doneAt, text: `Callback picked up at ${c.unit}`, color: C.green });
   }
+  for (const [b, p] of Object.entries(s.pads))
+    ev.push({ t: p.at, text: `Building ${b} pad clear${p.leveled ? " · compactor leveled" : ""} (photo)`, color: C.green });
   for (const b of s.bulk.filter((x) => x.status !== "completed")) ev.push({ t: b.createdAt, text: `Bulk pickup requested: ${b.category}`, color: C.navy });
   ev.sort((x, y) => y.t - x.t);
   if (!ev.length) return <div className="text-sm" style={{ color: C.muted }}>Waiting for tonight&apos;s shift to start.</div>;
@@ -789,7 +901,7 @@ function Bulk({ s }: { s: DemoState }) {
     update((st) => ({
       ...st,
       bulk: [
-        { id: uid(), createdAt: Date.now(), photo, category, location: location || "Not specified", notes, status: "submitted" },
+        { id: uid(), createdAt: now(), photo, category, location: location || "Not specified", notes, status: "submitted" },
         ...st.bulk,
       ],
     }));
@@ -1008,41 +1120,53 @@ function Violations({ s }: { s: DemoState }) {
 
 // ---------- Reports ----------
 
+// Scheduled nights only (Sun – Thu). Every door is checked every night;
+// "set out" is how many residents actually put trash out.
 function history() {
   let seed = 7;
-  const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
-  return Array.from({ length: 14 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (i + 1));
-    const serviced = 118 + Math.floor(rnd() * 8);
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  return serviceNights(14).map((d) => {
+    const finishMin = 20 * 60 + 22 + Math.floor(rnd() * 34); // 8:22 – 8:55 PM
     return {
       date: d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }),
-      serviced,
+      checked: ALL_UNITS.length,
+      setOut: 104 + Math.floor(rnd() * 16),
       violations: Math.floor(rnd() * 4),
       callbacks: Math.floor(rnd() * 3),
       recycling: 60 + Math.floor(rnd() * 40),
-      finished: `8:${String(20 + Math.floor(rnd() * 35)).padStart(2, "0")} PM`,
+      finishMin,
+      pads: PROPERTY.buildings.length,
     };
   });
 }
 
-function Reports({ s }: { s: DemoState }) {
+const clockStr = (min: number) => `${Math.floor(min / 60) - 12}:${String(min % 60).padStart(2, "0")} PM`;
+const SET_OUT_START = 18 * 60; // residents set trash out from 6:00 PM
+
+function Reports() {
   const rows = history();
   const recyclingTotal = rows.reduce((n, r) => n + r.recycling, 0);
+  const avgFinish = Math.round(rows.reduce((n, r) => n + r.finishMin, 0) / rows.length);
+  const outFor = avgFinish - SET_OUT_START;
+  const nights = serviceNightsThisMonth();
   return (
     <>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Stat label="Nights serviced" value="30/30" sub="this month" color={C.green} />
-        <Stat label="Avg finish" value="8:41" sub="PM · window ends 9:00" />
-        <Stat label="Recycling" value={`${(recyclingTotal / 1000).toFixed(1)}k`} sub="lb diverted, 14 days" color={C.teal} />
-        <Stat label="Bulk pickups" value={s.bulk.filter((b) => b.status === "completed" || b.status === "approved").length} sub="this month" color={C.accent} />
+        <Stat label="Nights serviced" value={`${nights}/${nights}`} sub="scheduled nights this month (Sun – Thu)" color={C.green} />
+        <Stat
+          label="Hallways clear by"
+          value={clockStr(avgFinish).replace(" PM", "")}
+          sub={`PM avg · trash out ${Math.floor(outFor / 60)}h ${outFor % 60}m from 6:00 PM set-out`}
+        />
+        <Stat label="Recycling" value={`${(recyclingTotal / 1000).toFixed(1)}k`} sub="lb diverted, last 14 nights" color={C.teal} />
+        <Stat label="Pads & compactors" value={`${rows.length * PROPERTY.buildings.length}`} sub="photo-verified checks, 14 nights" color={C.navy} />
       </div>
       <Card className="flex flex-wrap items-center gap-3">
         <IconMail size={22} style={{ color: C.teal }} />
         <div className="flex-1 min-w-[12rem]">
           <div className="font-semibold">Monthly service report</div>
           <div className="text-sm" style={{ color: C.muted }}>
-            Emailed automatically on the 1st to Dana K. and the regional manager
+            Emailed automatically on the 1st to Dana K. and the site manager. Includes door checks, pad photos, violations, and recycling.
           </div>
         </div>
         <Pill color={C.green} bg="#dcfce7">
@@ -1054,8 +1178,10 @@ function Reports({ s }: { s: DemoState }) {
           <thead>
             <tr className="text-left text-xs uppercase tracking-wider" style={{ color: C.muted }}>
               <th className="p-3">Night</th>
-              <th className="p-3">Doors</th>
-              <th className="p-3">Finished</th>
+              <th className="p-3">Doors checked</th>
+              <th className="p-3">Set out</th>
+              <th className="p-3">Hallways clear</th>
+              <th className="p-3">Pads</th>
               <th className="p-3">Violations</th>
               <th className="p-3">Callbacks</th>
               <th className="p-3">
@@ -1069,8 +1195,16 @@ function Reports({ s }: { s: DemoState }) {
             {rows.map((r) => (
               <tr key={r.date} className="border-t" style={{ borderColor: C.border }}>
                 <td className="p-3 whitespace-nowrap">{r.date}</td>
-                <td className="p-3">{r.serviced}/126</td>
-                <td className="p-3 whitespace-nowrap">{r.finished}</td>
+                <td className="p-3 whitespace-nowrap">
+                  <span className="inline-flex items-center gap-1" style={{ color: C.green }}>
+                    <IconCheck size={14} /> {r.checked}/{r.checked}
+                  </span>
+                </td>
+                <td className="p-3">{r.setOut}</td>
+                <td className="p-3 whitespace-nowrap">{clockStr(r.finishMin)}</td>
+                <td className="p-3 whitespace-nowrap">
+                  {r.pads}/{r.pads} leveled
+                </td>
                 <td className="p-3">{r.violations}</td>
                 <td className="p-3">{r.callbacks}</td>
                 <td className="p-3">{r.recycling} lb</td>
@@ -1079,6 +1213,10 @@ function Reports({ s }: { s: DemoState }) {
           </tbody>
         </table>
       </Card>
+      <p className="text-xs" style={{ color: C.muted }}>
+        Every door is checked every scheduled night. &ldquo;Set out&rdquo; counts doors where a resident put trash out. Hallways clear is when the attendant
+        checked out with all doors done.
+      </p>
     </>
   );
 }
@@ -1089,7 +1227,7 @@ function Messages({ s }: { s: DemoState }) {
   const [text, setText] = useState("");
   const send = () => {
     if (!text.trim()) return;
-    update((st) => ({ ...st, broadcasts: [...st.broadcasts, { id: uid(), at: Date.now(), text: text.trim() }] }));
+    update((st) => ({ ...st, broadcasts: [...st.broadcasts, { id: uid(), at: now(), text: text.trim() }] }));
     setText("");
   };
   const presets = ["No trash service Thursday for the holiday.", "Reminder: please tie all bags before setting them out.", "Pool area closed Saturday for maintenance."];

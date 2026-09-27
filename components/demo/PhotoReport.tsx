@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { IconX, IconQrcode, IconMapPinCheck } from "@tabler/icons-react";
-import { ALL_UNITS, DemoState, PROPERTY, fmtTime } from "@/lib/demo/store";
+import { ALL_UNITS, DemoState, PROPERTY, fmtTime, serviceNights } from "@/lib/demo/store";
 import { samplePhoto, PhotoKind } from "@/lib/demo/samplePhotos";
 import { C, Card, Pill } from "@/components/demo/ui";
 
@@ -9,6 +9,7 @@ interface PhotoEntry {
   id: string;
   kind: PhotoKind;
   unit: string;
+  bldg: string;
   at: number;
   src: string;
   detail: string;
@@ -16,50 +17,83 @@ interface PhotoEntry {
 }
 
 const KIND_META: Record<PhotoKind, { label: string; color: string; bg: string }> = {
-  proof: { label: "Proof of service", color: C.green, bg: "#dcfce7" },
   violation: { label: "Violation", color: C.red, bg: "#fee2e2" },
   bulk: { label: "Bulk pickup", color: C.accent, bg: "#fdf3ec" },
+  pad: { label: "Pad / compactor", color: C.navy, bg: "#e0eef7" },
 };
 
 // Photos from earlier nights (illustrated samples).
 function earlierPhotos(): PhotoEntry[] {
   let seed = 3;
   const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-  const kinds: PhotoKind[] = ["proof", "proof", "violation", "proof", "proof", "violation", "proof", "bulk", "proof", "violation", "proof", "proof"];
+  const kinds: PhotoKind[] = ["violation", "violation", "bulk", "violation", "violation", "violation"];
   const reasons = ["Not bagged", "Bag leaking", "Out after cutoff"];
-  return kinds.map((kind, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (1 + Math.floor(i / 4)));
+  const nights = serviceNights(3);
+  const doors: PhotoEntry[] = kinds.map((kind, i) => {
+    const d = new Date(nights[Math.floor(i / 2)]);
     d.setHours(19 + Math.floor(rnd() * 2), Math.floor(rnd() * 59), 0, 0);
     const unit = kind === "bulk" ? "C-110" : ALL_UNITS[Math.floor(rnd() * ALL_UNITS.length)];
     return {
       id: `s${i}`,
       kind,
       unit,
+      bldg: unit[0],
       at: d.getTime(),
-      src: samplePhoto(kind, i + 1),
-      detail: kind === "violation" ? reasons[i % reasons.length] : kind === "bulk" ? "Couch and boxes, removed" : "Doorstep clear after pickup",
+      // Odd seeds draw a bag, even seeds loose trash; match the image to the reason.
+      src: samplePhoto(kind, kind === "violation" && reasons[i % reasons.length] === "Not bagged" ? 2 * i + 2 : 2 * i + 1),
+      detail: kind === "violation" ? reasons[i % reasons.length] : "Couch and boxes, removed",
       night: "earlier",
     };
   });
+  // One pad / compactor photo per building per night, taken after the route.
+  const pads: PhotoEntry[] = nights.flatMap((night, n) =>
+    PROPERTY.buildings.map((b, i) => {
+      const d = new Date(night);
+      d.setHours(20, 24 + i * 7 + n * 3, 0, 0);
+      return {
+        id: `p${n}${b}`,
+        kind: "pad" as PhotoKind,
+        unit: `Building ${b} trash pad`,
+        bldg: b,
+        at: d.getTime(),
+        src: samplePhoto("pad", n * 3 + i),
+        detail: "Compactor leveled · pad swept",
+        night: "earlier" as const,
+      };
+    }),
+  );
+  return [...doors, ...pads];
 }
 
 function tonightPhotos(s: DemoState): PhotoEntry[] {
   const doors: PhotoEntry[] = Object.entries(s.doors)
-    .filter(([, d]) => d.photo)
+    .filter(([, d]) => d.status === "violation" && d.photo)
     .map(([unit, d]) => ({
       id: unit,
-      kind: d.status === "violation" ? "violation" : "proof",
+      kind: "violation",
       unit,
+      bldg: unit[0],
       at: d.at ?? 0,
       src: d.photo!,
-      detail: d.status === "violation" ? `${d.violation}${d.note ? ` · "${d.note}"` : ""}` : "Doorstep clear after pickup",
+      detail: `${d.violation}${d.note ? ` · "${d.note}"` : ""}`,
       night: "tonight",
     }));
   const bulk: PhotoEntry[] = s.bulk
     .filter((b) => b.photo)
-    .map((b) => ({ id: b.id, kind: "bulk", unit: b.location, at: b.createdAt, src: b.photo!, detail: `${b.category} · ${b.status}`, night: "tonight" }));
-  return [...doors, ...bulk];
+    .map((b) => ({ id: b.id, kind: "bulk", unit: b.location, bldg: "", at: b.createdAt, src: b.photo!, detail: `${b.category} · ${b.status}`, night: "tonight" }));
+  const pads: PhotoEntry[] = Object.entries(s.pads)
+    .filter(([, p]) => p.photo)
+    .map(([b, p]) => ({
+      id: `pad-${b}`,
+      kind: "pad",
+      unit: `Building ${b} trash pad`,
+      bldg: b,
+      at: p.at,
+      src: p.photo!,
+      detail: [p.leveled && "Compactor leveled", p.swept && "pad swept"].filter(Boolean).join(" · ") || "Pad checked",
+      night: "tonight",
+    }));
+  return [...doors, ...bulk, ...pads];
 }
 
 export default function PhotoReport({ s }: { s: DemoState }) {
@@ -70,7 +104,7 @@ export default function PhotoReport({ s }: { s: DemoState }) {
 
   const all = [...tonightPhotos(s), ...earlierPhotos()].sort((a, b) => b.at - a.at);
   const shown = all.filter(
-    (p) => (kind === "all" || p.kind === kind) && (night === "all" || p.night === night) && (bldg === "all" || p.unit.startsWith(`${bldg}-`)),
+    (p) => (kind === "all" || p.kind === kind) && (night === "all" || p.night === night) && (bldg === "all" || p.bldg === bldg),
   );
   const count = (k: PhotoKind) => all.filter((p) => p.kind === k).length;
   const chip = (active: boolean) =>
@@ -80,7 +114,7 @@ export default function PhotoReport({ s }: { s: DemoState }) {
   return (
     <>
       <div className="grid grid-cols-3 gap-3">
-        {(["proof", "violation", "bulk"] as PhotoKind[]).map((k) => (
+        {(["pad", "violation", "bulk"] as PhotoKind[]).map((k) => (
           <Card key={k} className="!py-3">
             <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: C.muted }}>
               {KIND_META[k].label}
@@ -93,7 +127,7 @@ export default function PhotoReport({ s }: { s: DemoState }) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {(["all", "proof", "violation", "bulk"] as const).map((k) => (
+        {(["all", "pad", "violation", "bulk"] as const).map((k) => (
           <button key={k} onClick={() => setKind(k)} className="rounded-full px-3 py-1.5 text-sm border font-medium" style={chip(kind === k)}>
             {k === "all" ? "All photos" : KIND_META[k].label}
           </button>
@@ -178,7 +212,7 @@ export default function PhotoReport({ s }: { s: DemoState }) {
                 <span className="flex items-center gap-1" style={{ color: C.green }}>
                   <IconMapPinCheck size={14} /> Geofence verified
                 </span>
-                {open.kind !== "bulk" && (
+                {open.kind === "violation" && (
                   <span className="flex items-center gap-1" style={{ color: C.green }}>
                     <IconQrcode size={14} /> QR scanned
                   </span>

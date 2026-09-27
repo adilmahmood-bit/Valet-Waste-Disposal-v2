@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { IconTruckLoading, IconPhoneCall, IconCheck } from "@tabler/icons-react";
-import { useDemo, update, fmtTime, BulkRequest, PROPERTY } from "@/lib/demo/store";
+import { useDemo, update, fmtTime, BulkRequest, PROPERTY, now } from "@/lib/demo/store";
 import { AppHeader, AttendantBanner, Btn, C, Card, PhoneApp, PhotoThumb, Pill, ResetButton } from "@/components/demo/ui";
 
 export default function Dispatch() {
@@ -114,7 +114,7 @@ function QuoteCard({ b }: { b: BulkRequest }) {
           <div className="text-sm flex-1" style={{ color: C.green }}>
             Approved ${b.quote} · {b.scheduledFor}
           </div>
-          <Btn className="!py-2 flex items-center gap-1" onClick={() => patch({ status: "completed", completedAt: Date.now() })}>
+          <Btn className="!py-2 flex items-center gap-1" onClick={() => patch({ status: "completed", completedAt: now() })}>
             <IconCheck size={16} /> Mark removed
           </Btn>
         </div>

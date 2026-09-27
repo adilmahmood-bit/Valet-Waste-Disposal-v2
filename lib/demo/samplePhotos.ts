@@ -1,12 +1,34 @@
 // Illustrated stand-ins for attendant photos so the photo report has history
 // before anyone takes a real picture in the demo.
 
-export type PhotoKind = "proof" | "violation" | "bulk";
+export type PhotoKind = "violation" | "bulk" | "pad";
+
+// Clean trash enclosure: swept concrete pad, compactor with a level load.
+function padSvg(seed: number) {
+  const wall = ["#b9b2a6", "#a9b0a8", "#c1b7a8"][seed % 3];
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+    <rect width="400" height="300" fill="#dfe6ea"/>
+    <rect x="0" y="60" width="400" height="160" fill="${wall}"/>
+    <path d="M0 60 H400" stroke="#8f887d" stroke-width="6"/>
+    <rect x="0" y="210" width="400" height="90" fill="#c9c6bf"/>
+    <path d="M0 250 H400 M130 210 L110 300 M270 210 L290 300" stroke="#b5b1a9" stroke-width="2"/>
+    <rect x="60" y="100" width="190" height="115" rx="6" fill="#2f6b4f"/>
+    <rect x="60" y="100" width="190" height="16" rx="4" fill="#24553f"/>
+    <rect x="76" y="126" width="158" height="24" fill="#3c3c3c"/>
+    <path d="M78 138 H232" stroke="#555" stroke-width="3"/>
+    <rect x="250" y="128" width="46" height="87" rx="4" fill="#6c757d"/>
+    <rect x="258" y="140" width="30" height="16" rx="2" fill="#d9e2e8"/>
+    <circle cx="273" cy="178" r="6" fill="#c0392b"/>
+    <rect x="320" y="150" width="46" height="65" rx="5" fill="#1f5e9e"/>
+    <rect x="316" y="146" width="54" height="10" rx="3" fill="#184b7e"/>
+  </svg>`;
+}
 
 const WALLS = ["#d9d3c7", "#cfd6dc", "#e0d6c8", "#d4d9cf"];
 const DOORS = ["#7a5a3c", "#35526b", "#6b6f73", "#8a4f3a"];
 
 function svg(kind: PhotoKind, seed: number) {
+  if (kind === "pad") return padSvg(seed);
   const wall = WALLS[seed % WALLS.length];
   const door = DOORS[(seed >> 1) % DOORS.length];
   const bag = kind === "violation" && seed % 2 ? "#3a3a3a" : "#2b2b2b";
@@ -21,11 +43,7 @@ function svg(kind: PhotoKind, seed: number) {
     <rect x="160" y="62" width="50" height="16" rx="2" fill="#f5f1ea"/>`;
 
   let items = "";
-  if (kind === "proof") {
-    // Empty doorstep after pickup, with a small QR tag on the frame.
-    items = `<rect x="264" y="92" width="22" height="22" fill="#fff"/><rect x="268" y="96" width="6" height="6" fill="#111"/><rect x="276" y="104" width="6" height="6" fill="#111"/><rect x="268" y="106" width="4" height="4" fill="#111"/>
-      <ellipse cx="200" cy="262" rx="70" ry="6" fill="#000" opacity="0.08"/>`;
-  } else if (kind === "violation") {
+  if (kind === "violation") {
     items =
       seed % 2
         ? // leaking / untied bag
