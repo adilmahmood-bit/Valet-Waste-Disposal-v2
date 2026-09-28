@@ -6,35 +6,35 @@ import { AttendantBanner, C, LogoMark, ResetButton, Wordmark } from "@/component
 
 const ROLES = [
   {
-    href: "/demo/porter",
+    href: "/app/porter",
     title: "Attendant App",
     who: "For the porter on the route",
     icon: IconTruck,
     points: ["Clock in and property check-in", "QR scan and photo at every door", "Violation reports and resident callbacks"],
   },
   {
-    href: "/demo/resident",
+    href: "/app/resident",
     title: "Resident App",
     who: "For residents at the property",
     icon: IconHome,
     points: ["Live attendant status", "Unlimited callbacks while we're on property", "Violation notices with photos"],
   },
   {
-    href: "/demo/manager",
+    href: "/app/manager",
     title: "Property Manager Portal",
     who: "For the leasing office",
     icon: IconBuildingSkyscraper,
     points: ["Live map and tonight's progress", "Bulk trash requests: send a photo, get a quote", "Violation insights and service reports"],
   },
   {
-    href: "/demo/dispatch",
+    href: "/app/dispatch",
     title: "Dispatch",
     who: "For the Valet Waste office",
     icon: IconHeadset,
     points: ["Quote bulk pickup requests", "Monitor callbacks across properties"],
   },
   {
-    href: "/demo/report",
+    href: "/app/report",
     title: "Nightly Report",
     who: "Emailed to managers after every service night",
     icon: IconReportAnalytics,
@@ -107,7 +107,7 @@ export default function DemoHome() {
         </div>
 
         <Link
-          href="/demo/stage"
+          href="/app/stage"
           className="hidden md:flex items-center gap-3 rounded-2xl p-5 text-white"
           style={{ backgroundColor: C.navyDeep }}
         >
@@ -122,7 +122,7 @@ export default function DemoHome() {
         <div className="flex items-center justify-between text-xs pt-2" style={{ color: C.muted }}>
           <span>
             Demo data only. Nothing here is saved to a server. ·{" "}
-            <Link href="/demo/features" className="underline">
+            <Link href="/app/features" className="underline">
               Full feature list
             </Link>
           </span>

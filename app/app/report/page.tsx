@@ -12,14 +12,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// The report is a standalone HTML file (its own styles; photos from /demo/photos) served from
-// /public/demo. Rendering it in an iframe keeps its styles scoped away from the site.
+// The report is a standalone HTML file (its own styles; photos from /app/photos) served from
+// /public/app. Rendering it in an iframe keeps its styles scoped away from the site.
 export default function NightlyReport() {
   return (
     <div className="min-h-dvh flex flex-col" style={{ backgroundColor: SURFACE }}>
       <header className="text-white" style={{ backgroundColor: NAVY }}>
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link href="/demo" className="flex items-center gap-1 text-sm text-white/80 hover:text-white">
+          <Link href="/app" className="flex items-center gap-1 text-sm text-white/80 hover:text-white">
             <IconArrowLeft size={18} /> Demo
           </Link>
           <span className="font-heading text-lg ml-2">Nightly Report</span>
@@ -27,7 +27,7 @@ export default function NightlyReport() {
         </div>
       </header>
       <iframe
-        src="/demo/nightly-report.html"
+        src="/app/nightly-report.html"
         title="Sample nightly completion report"
         className="flex-1 w-full border-0"
         style={{ minHeight: "calc(100dvh - 52px)" }}
