@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { IconArrowLeft } from "@tabler/icons-react";
-import { C } from "@/components/demo/ui";
+// Brand colors are inlined: this is a server component, and the shared palette
+// lives in a "use client" module whose exports arrive empty on the server.
+const NAVY = "#1B4F72";
+const SURFACE = "#FAF8F4";
 
 export const metadata: Metadata = {
   title: "Nightly Report | Valet Waste Disposal",
@@ -9,12 +12,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// The report is a self-contained HTML file (styles and photos embedded) served from
+// The report is a standalone HTML file (its own styles; photos from /demo/photos) served from
 // /public/demo. Rendering it in an iframe keeps its styles scoped away from the site.
 export default function NightlyReport() {
   return (
-    <div className="min-h-dvh flex flex-col" style={{ backgroundColor: C.surface }}>
-      <header className="text-white" style={{ backgroundColor: C.navy }}>
+    <div className="min-h-dvh flex flex-col" style={{ backgroundColor: SURFACE }}>
+      <header className="text-white" style={{ backgroundColor: NAVY }}>
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
           <Link href="/demo" className="flex items-center gap-1 text-sm text-white/80 hover:text-white">
             <IconArrowLeft size={18} /> Demo

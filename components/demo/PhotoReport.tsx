@@ -24,13 +24,20 @@ const KIND_META: Record<PhotoKind, { label: string; color: string; bg: string }>
 
 // Example photos from earlier nights (public/demo/photos). Each violation
 // photo is paired with the reason it shows.
+// The most recent night matches the sample nightly report: same units, photos and times.
 const SAMPLE_VIOLATIONS = [
-  { unit: "6-6205", reason: "Not in bin", src: "/demo/photos/violation-not-binned.jpg", night: 0, time: [19, 22] },
-  { unit: "1-5308", reason: "Boxes not broken down", src: "/demo/photos/violation-boxes.jpg", night: 0, time: [19, 47] },
-  { unit: "2-2104", reason: "Overflowing bin", src: "/demo/photos/violation-overflowing.jpg", night: 1, time: [19, 35] },
-  { unit: "4-3201", reason: "Bag leaking", src: "/demo/photos/violation-leaking.jpg", night: 2, time: [20, 4] },
+  { unit: "1-5308", reason: "Boxes not broken down", src: "/demo/photos/violation-boxes.jpg", night: 0, time: [19, 8] },
+  { unit: "2-2104", reason: "Overflowing bin", src: "/demo/photos/violation-overflowing.jpg", night: 0, time: [19, 26] },
+  { unit: "6-6205", reason: "Not in bin", src: "/demo/photos/violation-not-binned.jpg", night: 0, time: [19, 41] },
+  { unit: "4-3201", reason: "Bag leaking", src: "/demo/photos/violation-leaking.jpg", night: 0, time: [20, 3] },
 ];
-const PAD_PHOTOS = ["/demo/photos/pad-1.jpg", "/demo/photos/pad-2.jpg"];
+// Each enclosure has its own photo, the same place night after night.
+const PAD_PHOTOS: Record<string, string> = {
+  T1: "/demo/photos/pad-3.jpg",
+  T2: "/demo/photos/pad-1.jpg",
+  T3: "/demo/photos/pad-2.jpg",
+  T4: "/demo/photos/pad-4.jpg",
+};
 
 function earlierPhotos(): PhotoEntry[] {
   const nights = serviceNights(3);
@@ -56,8 +63,8 @@ function earlierPhotos(): PhotoEntry[] {
       kind: "pad" as PhotoKind,
       unit: `Enclosure ${e.id} (Bldg ${e.buildings.join(" & ")})`,
       bldgs: e.buildings,
-      at: at(n, 20, 18 + i * 9 + n * 3),
-      src: PAD_PHOTOS[(n + i) % PAD_PHOTOS.length],
+      at: at(n, 20, 13 + i * 3 + n), // night 0: 8:13, 8:16, 8:19, 8:22 PM as in the report
+      src: PAD_PHOTOS[e.id],
       detail: "Compactor leveled · pad swept",
       night: "earlier" as const,
     })),

@@ -115,14 +115,14 @@ export interface Pad {
 }
 
 // Layout follows the property site map (public/demo/site-map.webp): six
-// three-story buildings. `stacks` are the first-floor unit numbers shown on
-// the map; floors 2 and 3 repeat each stack (5101 → 5201 → 5301).
+// five-story buildings. `stacks` are the first-floor unit numbers shown on
+// the map; floors 2–5 repeat each stack (5101 → 5201 … 5501): 120 units.
 export const PROPERTY = {
   name: "Center City Apartments",
   address: "650 N Centre City Pkwy, Escondido, CA 92025",
   window: "7:00 – 9:00 PM",
   buildings: ["1", "2", "3", "4", "5", "6"],
-  floors: [1, 2, 3],
+  floors: [1, 2, 3, 4, 5],
   stacks: {
     "1": ["5101", "5105", "5106", "5108", "5109", "5111"],
     "2": ["2103", "2104", "2106", "2108"],
@@ -161,7 +161,7 @@ export function unitsFor(building: string, floor: number) {
 
 export const ALL_UNITS = PROPERTY.buildings.flatMap((b) => PROPERTY.floors.flatMap((f) => unitsFor(b, f)));
 
-const KEY = "vwd-demo-v4";
+const KEY = "vwd-demo-v5";
 
 // ---- Demo clock ----
 // The demo always plays out on an evening, whatever time it's shown. Demo time
