@@ -152,7 +152,7 @@ export function AppHeader({ title, subtitle, right }: { title: string; subtitle?
       style={{ top: 0, backgroundColor: C.navy, paddingTop: "env(safe-area-inset-top, 0px)" }}
     >
       <div className="flex items-center gap-2 px-4 h-14">
-        <Link href="/demo" className="flex items-center gap-1.5" aria-label="Demo home">
+        <Link href="/app" className="flex items-center gap-1.5" aria-label="Demo home">
           <LogoMark size={34} />
         </Link>
         <div className="min-w-0 flex-1">

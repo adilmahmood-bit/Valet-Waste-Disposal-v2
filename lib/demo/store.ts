@@ -114,7 +114,7 @@ export interface Pad {
   swept: boolean;
 }
 
-// Layout follows the property site map (public/demo/site-map.webp): six
+// Layout follows the property site map (public/app/site-map.webp): six
 // five-story buildings. `stacks` are the first-floor unit numbers shown on
 // the map; floors 2–5 repeat each stack (5101 → 5201 … 5501): 120 units.
 export const PROPERTY = {
@@ -187,7 +187,7 @@ function initial(): DemoState {
         location: "Building 6 — breezeway by 6-6109",
         category: "Move-out / furniture",
         notes: "Mattress, wardrobe, fridge, and chairs left after move-out.",
-        photo: "/demo/photos/bulk-1.jpg",
+        photo: "/app/photos/bulk-1.jpg",
         status: "completed",
         quote: 185,
         scheduledFor: "Yesterday",

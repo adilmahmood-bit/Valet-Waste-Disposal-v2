@@ -14,7 +14,7 @@ export default function Nav() {
   }, []);
 
   // The app demo has its own chrome.
-  if (pathname?.startsWith("/demo")) return null;
+  if (pathname?.startsWith("/app")) return null;
 
   const links = [
     { label: "Services", href: "#services" },

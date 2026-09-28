@@ -3,7 +3,13 @@
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  // The app demo moved from /demo to /app; keep old shared links working.
+  async redirects() {
+    return [
+      { source: "/demo", destination: "/app", permanent: true },
+      { source: "/demo/:path*", destination: "/app/:path*", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

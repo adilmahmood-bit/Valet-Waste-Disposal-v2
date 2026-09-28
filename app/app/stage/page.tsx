@@ -6,16 +6,16 @@ import { C, LogoMark, ResetButton } from "@/components/demo/ui";
 // Presenter view: each role runs in its own frame; they share localStorage,
 // so actions in one frame show up in the others instantly.
 const FRAMES = [
-  { src: "/demo/porter", label: "Attendant", w: 390 },
-  { src: "/demo/resident", label: "Resident · 5-4105", w: 390 },
-  { src: "/demo/manager", label: "Property Manager", w: 0 },
+  { src: "/app/porter", label: "Attendant", w: 390 },
+  { src: "/app/resident", label: "Resident · 5-4105", w: 390 },
+  { src: "/app/manager", label: "Property Manager", w: 0 },
 ];
 
 export default function Stage() {
   return (
     <div className="min-h-dvh flex flex-col" style={{ backgroundColor: C.navyDeep }}>
       <div className="flex items-center gap-3 px-4 h-12 text-white">
-        <Link href="/demo" className="flex items-center gap-1 text-sm opacity-80 hover:opacity-100">
+        <Link href="/app" className="flex items-center gap-1 text-sm opacity-80 hover:opacity-100">
           <IconArrowLeft size={16} /> Demo home
         </Link>
         <LogoMark size={30} />

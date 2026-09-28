@@ -74,7 +74,7 @@ export default function ManagerPortal() {
         className="hidden lg:flex flex-col w-64 shrink-0 sticky top-0 h-dvh text-white p-4"
         style={{ background: `linear-gradient(180deg, ${C.navy} 0%, ${C.navyDeep} 100%)` }}
       >
-        <Link href="/demo" className="flex items-center gap-2 px-2 py-2">
+        <Link href="/app" className="flex items-center gap-2 px-2 py-2">
           <LogoMark size={44} />
           <Wordmark small />
         </Link>
@@ -102,7 +102,7 @@ export default function ManagerPortal() {
         <header className="sticky top-0 z-20 lg:bg-transparent text-white lg:text-inherit" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
           <div className="lg:hidden" style={{ backgroundColor: C.navy }}>
             <div className="px-4 h-14 flex items-center gap-2">
-              <Link href="/demo">
+              <Link href="/app">
                 <LogoMark size={36} />
               </Link>
               <Wordmark small />
@@ -813,7 +813,7 @@ function SiteMap({ s }: { s: DemoState }) {
   return (
     <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: "1293 / 684" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/demo/site-map.webp" alt={`${PROPERTY.name} site map`} className="absolute inset-0 w-full h-full" />
+      <img src="/app/site-map.webp" alt={`${PROPERTY.name} site map`} className="absolute inset-0 w-full h-full" />
       {PROPERTY.buildings.map((b) => {
         const units = PROPERTY.floors.flatMap((f) => unitsFor(b, f));
         const done = units.filter((u) => s.doors[u] && s.doors[u].status !== "pending").length;
@@ -1176,7 +1176,7 @@ function history() {
       finishMin,
       pads: ENCLOSURES.length,
     };
-    // The sample nightly report (public/demo/nightly-report.html) is for this
+    // The sample nightly report (public/app/nightly-report.html) is for this
     // night; keep the numbers identical so the two can be compared side by side.
     if (d.getFullYear() === 2026 && d.getMonth() === 8 && d.getDate() === 24)
       Object.assign(row, { setOut: 106, finishMin: 20 * 60 + 10, violations: 4, callbacks: 2, recycling: 310 });

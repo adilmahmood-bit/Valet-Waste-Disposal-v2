@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const SECTIONS: { title: string; path: string; intro: string; features: [string, string][] }[] = [
   {
     title: "Attendant App",
-    path: "/demo/porter",
+    path: "/app/porter",
     intro: "Used by the porter on the route each night. Works on any phone browser.",
     features: [
       ["Clock in / clock out", "Starts the shift and records the time for timesheets."],
@@ -29,7 +29,7 @@ const SECTIONS: { title: string; path: string; intro: string; features: [string,
   },
   {
     title: "Resident App",
-    path: "/demo/resident",
+    path: "/app/resident",
     intro: "Used by residents of the property.",
     features: [
       ["Live attendant status", "Off duty → En route → On property (with building and arrival time) → Service complete."],
@@ -45,7 +45,7 @@ const SECTIONS: { title: string; path: string; intro: string; features: [string,
   },
   {
     title: "Property Manager Portal",
-    path: "/demo/manager",
+    path: "/app/manager",
     intro: "Used by leasing offices and regional managers, on a desktop or a phone.",
     features: [
       ["Portfolio dashboard", "Covers all properties. Shows new violations with a trend, a chart of doors checked vs. doors set out per service night (the axis starts at zero), buildings pending, check-ins pending, and open tasks."],
@@ -61,7 +61,7 @@ const SECTIONS: { title: string; path: string; intro: string; features: [string,
   },
   {
     title: "Dispatch (Valet Waste Disposal office)",
-    path: "/demo/dispatch",
+    path: "/app/dispatch",
     intro: "Used by our office.",
     features: [
       ["Quote bulk pickups", "Review the manager's photo, then set the price, pickup window, and notes, and send the quote."],
@@ -75,14 +75,14 @@ export default function Features() {
   return (
     <main className="max-w-3xl mx-auto px-4 py-10" style={{ backgroundColor: "#FAF8F4" }}>
       <p className="text-sm" style={{ color: "#0E9AA7" }}>
-        <Link href="/demo">← Back to the interactive demo</Link>
+        <Link href="/app">← Back to the interactive demo</Link>
       </p>
       <h1 className="font-heading text-3xl mt-2" style={{ color: "#1B4F72" }}>
         Valet Waste Disposal App: Features
       </h1>
       <p className="mt-3 text-gray-700">
         One app with three views: the attendant on the route, the residents at each door, and the property manager&apos;s
-        office. The interactive demo at <Link href="/demo" className="underline">/demo</Link> uses sample data for a
+        office. The interactive demo at <Link href="/app" className="underline">/app</Link> uses sample data for a
         120-unit property (Center City Apartments: 6 five-story buildings and 4 trash enclosures). Geofence, QR scans, texts, and emailed reports are simulated
         in the demo.
       </p>
