@@ -1165,17 +1165,22 @@ function history() {
   let seed = 7;
   const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
   return serviceNights(14).map((d) => {
-    const finishMin = 20 * 60 + 22 + Math.floor(rnd() * 34); // 8:22 – 8:55 PM
-    return {
+    const finishMin = 20 * 60 + 2 + Math.floor(rnd() * 20); // 8:02 – 8:21 PM
+    const row = {
       date: d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }),
       checked: ALL_UNITS.length,
       setOut: Math.round(ALL_UNITS.length * (0.82 + rnd() * 0.12)),
       violations: Math.floor(rnd() * 4),
       callbacks: Math.floor(rnd() * 3),
-      recycling: 60 + Math.floor(rnd() * 40),
+      recycling: 280 + Math.floor(rnd() * 60),
       finishMin,
       pads: ENCLOSURES.length,
     };
+    // The sample nightly report (public/demo/nightly-report.html) is for this
+    // night; keep the numbers identical so the two can be compared side by side.
+    if (d.getFullYear() === 2026 && d.getMonth() === 8 && d.getDate() === 24)
+      Object.assign(row, { setOut: 106, finishMin: 20 * 60 + 10, violations: 4, callbacks: 2, recycling: 310 });
+    return row;
   });
 }
 

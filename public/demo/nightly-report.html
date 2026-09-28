@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nightly Completion Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ocean:#0E3B5C; --ocean-2:#15507a; --teal:#1B8A8F; --teal-soft:#dff0ef;
+  --sand:#F3F1EB; --paper:#ffffff; --ink:#15232f; --muted:#5b6b78; --line:#dfe3e4;
+  --ok:#1f8a4c; --ok-soft:#e3f3e9; --warn:#b5651d; --warn-soft:#fbeedd; --crit:#b3372f; --crit-soft:#f9e3e1;
+  --head-ink:#ffffff; --head-sub:#b9d3e3;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ocean:#0b2a42; --ocean-2:#12395a; --teal:#4cc0c4; --teal-soft:#123a3d;
+    --sand:#0f1a22; --paper:#15232e; --ink:#e6edf1; --muted:#98a9b5; --line:#263744;
+    --ok:#5fd08f; --ok-soft:#163427; --warn:#e7a15e; --warn-soft:#3a2a17; --crit:#f08a80; --crit-soft:#3d1f1d;
+    --head-sub:#9dbcd0;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ocean:#0b2a42; --ocean-2:#12395a; --teal:#4cc0c4; --teal-soft:#123a3d;
+  --sand:#0f1a22; --paper:#15232e; --ink:#e6edf1; --muted:#98a9b5; --line:#263744;
+  --ok:#5fd08f; --ok-soft:#163427; --warn:#e7a15e; --warn-soft:#3a2a17; --crit:#f08a80; --crit-soft:#3d1f1d;
+  --head-sub:#9dbcd0;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sand);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding:24px 16px 48px;}
+.wrap{max-width:780px;margin:0 auto;display:grid;gap:20px}
+.demo-flag{font-size:12px;color:var(--muted);text-align:center}
+.demo-flag b{color:var(--teal);font-weight:600}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+.label{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* header */
+.head{background:var(--ocean);color:var(--head-ink);border-radius:14px;padding:24px 24px 22px;display:grid;gap:18px}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-weight:800;letter-spacing:.06em;font-size:13px;line-height:1.15}
+.logo span{display:block;color:var(--head-sub);font-weight:700}
+.status{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600}
+.status i{width:8px;height:8px;border-radius:50%;background:#5fd08f;display:block}
+.head h1{font-size:clamp(24px,5vw,32px);font-weight:800;letter-spacing:-.01em}
+.head .sub{color:var(--head-sub);font-size:14px;margin-top:4px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13px;color:var(--head-sub)}
+.meta b{color:var(--head-ink);font-weight:600}
+
+/* sections */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;gap:16px}
+.card-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.card-h h2{font-size:18px;font-weight:700}
+.card-h .note{font-size:13px;color:var(--muted)}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.kpi{background:var(--paper);padding:14px 14px 12px;display:grid;gap:2px;align-content:start}
+.kpi .v{font-family:var(--display);font-weight:800;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:15px;color:var(--muted);font-weight:600}
+.kpi .d{font-size:12px;color:var(--muted)}
+.kpi .v.good{color:var(--ok)}
+@media (max-width:620px){.kpis{grid-template-columns:repeat(2,1fr)}}
+
+.summary{font-size:15px;max-width:65ch;margin:0}
+
+/* timeline */
+.tl{list-style:none;margin:0;padding:0;display:grid}
+.tl li{display:grid;grid-template-columns:74px 18px 1fr;gap:10px;align-items:start;padding:7px 0}
+.tl .t{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:right;padding-top:1px}
+.tl .dot{position:relative;height:100%}
+.tl .dot::before{content:"";position:absolute;left:8px;top:0;bottom:-14px;width:2px;background:var(--line)}
+.tl li:last-child .dot::before{display:none}
+.tl .dot::after{content:"";position:absolute;left:3px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid var(--teal)}
+.tl li.k .dot::after{background:var(--teal)}
+.tl li.v .dot::after{border-color:var(--crit)}
+.tl li.c .dot::after{border-color:var(--warn)}
+.tl .e{font-size:14px}
+.tl .e span{color:var(--muted);font-size:13px}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:left;padding:10px 12px;background:var(--sand);border-bottom:1px solid var(--line)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right}
+tfoot td{font-weight:600;background:var(--sand)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.teal{background:var(--teal-soft);color:var(--teal)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;min-width:70px}
+.bar i{display:block;height:100%;background:var(--teal)}
+
+/* dumpsters */
+.encl{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:680px){.encl{grid-template-columns:1fr}}
+.enc{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px;align-content:start}
+.enc-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.enc-h h3{font-size:15px;font-weight:700}
+.enc-h span{font-size:12px;color:var(--muted)}
+.ph{aspect-ratio:4/3;max-width:100%;width:100%;border-radius:8px;position:relative;overflow:hidden;background:var(--line);margin:0}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph .stamp{position:absolute;left:0;right:0;bottom:0;padding:4px 7px;font-family:var(--mono);font-size:10px;color:#fff;background:rgba(10,25,35,.66);display:flex;justify-content:space-between;gap:6px}
+.checks{display:flex;flex-wrap:wrap;gap:6px}
+
+/* violations */
+.viol{display:grid;gap:12px}
+.vi{display:grid;grid-template-columns:130px 1fr;gap:14px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:12px}
+@media (max-width:480px){.vi{grid-template-columns:1fr}}
+.vi h3{font-size:15px;font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.vi p{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.vi .sent{margin-top:8px;font-size:12px;color:var(--teal);font-weight:600}
+
+/* MTD */
+.mtd{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:620px){.mtd{grid-template-columns:repeat(2,1fr)}}
+.mtd div{display:grid;gap:2px}
+.mtd .v{font-family:var(--display);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+.spark{width:100%;height:auto;display:block}
+
+.foot{font-size:12px;color:var(--muted);display:grid;gap:6px;padding:0 4px}
+.foot b{color:var(--ink);font-weight:600}
+</style>
+</head>
+<body>
+
+<style>
+.logo-img{height:96px;width:auto;display:block}
+@media (max-width:480px){.logo-img{height:72px}}
+.encl{grid-template-columns:repeat(2,1fr)}
+@media (max-width:620px){.encl{grid-template-columns:1fr}}
+.vi{grid-template-columns:200px 1fr}
+@media (max-width:520px){.vi{grid-template-columns:1fr}}
+</style>
+<div class="wrap">
+  <div class="demo-flag"><b>Sample report</b> · Emailed automatically when the attendant checks out. Demo data for Center City Apartments.</div>
+
+  <header class="head">
+    <div class="brand">
+      <img class="logo-img" src="/logo/vwd-logo-white.png" alt="Valet Waste Disposal" width="139" height="200">
+      <div class="status"><i></i>Service complete · 8:25 PM</div>
+    </div>
+    <div>
+      <div class="label" style="color:var(--head-sub)">Nightly completion report</div>
+      <h1>Center City Apartments</h1>
+      <div class="sub">650 N Centre City Pkwy, Escondido, CA 92025 · 120 units · 6 buildings · 4 trash enclosures</div>
+    </div>
+    <div class="meta">
+      <div>Service night <b>Thu, Sep 24, 2026</b></div>
+      <div>Attendant <b>Marco R.</b></div>
+      <div>Check-in <b class="mono">7:00 PM</b></div>
+      <div>Check-out <b class="mono">8:25 PM</b></div>
+      <div>Time on site <b class="mono">1 h 25 m</b></div>
+    </div>
+  </header>
+
+  <section class="card" aria-labelledby="s-tonight">
+    <div class="card-h"><h2 id="s-tonight">Tonight at a glance</h2><span class="note">Set-out 6:00 – 7:00 PM · service 7:00 – 9:00 PM</span></div>
+    <div class="kpis">
+      <div class="kpi"><span class="label">Doors checked</span><span class="v good">120<small> / 120</small></span><span class="d">Every door, QR verified</span></div>
+      <div class="kpi"><span class="label">Trash set out</span><span class="v">106</span><span class="d">88% of units</span></div>
+      <div class="kpi"><span class="label">Hallways clear</span><span class="v">8:10<small> PM</small></span><span class="d">All 6 buildings</span></div>
+      <div class="kpi"><span class="label">Avg. time in hallway</span><span class="v">1:35</span><span class="d">From 6:00 PM set-out</span></div>
+      <div class="kpi"><span class="label">Trash enclosures</span><span class="v good">4<small> / 4</small></span><span class="d">Leveled, swept, photographed</span></div>
+      <div class="kpi"><span class="label">Violations</span><span class="v">4</span><span class="d">All with photos</span></div>
+      <div class="kpi"><span class="label">Resident callbacks</span><span class="v">2<small> / 2</small></span><span class="d">Both picked up</span></div>
+      <div class="kpi"><span class="label">Recycling</span><span class="v">310<small> lb</small></span><span class="d">Diverted from landfill</span></div>
+    </div>
+    <p class="summary">All 120 doors were checked and every hallway was clear by 8:10 PM. Four doors received violation notices with photos, and both resident callbacks were picked up before check-out. All four trash enclosures were leveled, swept and photographed. Nothing needs follow-up from the office tonight.</p>
+  </section>
+
+  <section class="card" aria-labelledby="s-bldg">
+    <div class="card-h"><h2 id="s-bldg">Buildings</h2><span class="note">5 floors each · listed in route order</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Building</th><th>Units</th><th class="n">Doors checked</th><th class="n">Set out</th><th>Progress</th><th class="n">Cleared</th><th class="n">Violations</th></tr></thead>
+        <tbody>
+          <tr><td><b>Building 1</b></td><td class="mono">5101 – 5511</td><td class="n mono">30 / 30</td><td class="n mono">27</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="n mono">7:19 PM</td><td class="n"><span class="pill crit">1</span></td></tr>
+          <tr><td><b>Building 2</b></td><td class="mono">2103 – 2508</td><td class="n mono">20 / 20</td><td class="n mono">18</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="n mono">7:31 PM</td><td class="n"><span class="pill crit">1</span></td></tr>
+          <tr><td><b>Building 6</b></td><td class="mono">6103 – 6509</td><td class="n mono">35 / 35</td><td class="n mono">31</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="n mono">7:53 PM</td><td class="n"><span class="pill crit">1</span></td></tr>
+          <tr><td><b>Building 5</b></td><td class="mono">4101 – 4505</td><td class="n mono">15 / 15</td><td class="n mono">13</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="n mono">8:00 PM</td><td class="n mono">0</td></tr>
+          <tr><td><b>Building 4</b></td><td class="mono">3101 – 3504</td><td class="n mono">10 / 10</td><td class="n mono">9</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="n mono">8:05 PM</td><td class="n"><span class="pill crit">1</span></td></tr>
+          <tr><td><b>Building 3</b></td><td class="mono">1101 – 1504</td><td class="n mono">10 / 10</td><td class="n mono">8</td><td><div class="bar"><i style="width:100%"></i></div></td><td class="n mono">8:10 PM</td><td class="n mono">0</td></tr>
+        </tbody>
+        <tfoot><tr><td>Total</td><td></td><td class="n mono">120 / 120</td><td class="n mono">106</td><td></td><td class="n mono">8:10 PM</td><td class="n mono">4</td></tr></tfoot>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="s-encl">
+    <div class="card-h"><h2 id="s-encl">Trash enclosures</h2><span class="note">Time-stamped, geofence-verified photos</span></div>
+    <div class="encl">
+      <div class="enc">
+        <div class="enc-h"><h3>Enclosure T1</h3><span>Serves Building 1</span></div>
+        <figure class="ph"><img src="/demo/photos/pad-3.jpg" alt="Enclosure T1, green and black dumpsters against a white wall, pad swept" loading="lazy"><figcaption class="stamp"><span>T1 · Geofence ✓</span><span>8:13 PM</span></figcaption></figure>
+        <div class="checks"><span class="pill ok">✓ Trash leveled</span><span class="pill ok">✓ Pad swept</span><span class="pill ok">✓ Lids closed</span></div>
+      </div>
+      <div class="enc">
+        <div class="enc-h"><h3>Enclosure T2</h3><span>Serves Building 2</span></div>
+        <figure class="ph"><img src="/demo/photos/pad-1.jpg" alt="Enclosure T2, pad hosed down" loading="lazy"><figcaption class="stamp"><span>T2 · Geofence ✓</span><span>8:16 PM</span></figcaption></figure>
+        <div class="checks"><span class="pill ok">✓ Trash leveled</span><span class="pill ok">✓ Pad swept</span><span class="pill ok">✓ Lids closed</span></div>
+      </div>
+      <div class="enc">
+        <div class="enc-h"><h3>Enclosure T3</h3><span>Serves Buildings 5 &amp; 6</span></div>
+        <figure class="ph"><img src="/demo/photos/pad-2.jpg" alt="Enclosure T3, doors open, pad clear" loading="lazy"><figcaption class="stamp"><span>T3 · Geofence ✓</span><span>8:19 PM</span></figcaption></figure>
+        <div class="checks"><span class="pill ok">✓ Trash leveled</span><span class="pill ok">✓ Pad swept</span><span class="pill ok">✓ Lids closed</span></div>
+      </div>
+      <div class="enc">
+        <div class="enc-h"><h3>Enclosure T4</h3><span>Serves Buildings 3 &amp; 4</span></div>
+        <figure class="ph"><img src="/demo/photos/pad-4.jpg" alt="Enclosure T4, two green dumpsters behind a screened fence" loading="lazy"><figcaption class="stamp"><span>T4 · Geofence ✓</span><span>8:22 PM</span></figcaption></figure>
+        <div class="checks"><span class="pill ok">✓ Trash leveled</span><span class="pill ok">✓ Pad swept</span><span class="pill ok">✓ Lids closed</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="s-viol">
+    <div class="card-h"><h2 id="s-viol">Violations</h2><span class="note">Resident notified in the app with photo</span></div>
+    <div class="viol">
+      <div class="vi">
+        <figure class="ph"><img src="/demo/photos/violation-boxes.jpg" alt="Unbroken cardboard boxes in the hallway at unit 1-5308" loading="lazy"><figcaption class="stamp"><span>Unit 1-5308</span><span>7:08 PM</span></figcaption></figure>
+        <div>
+          <h3>Unit 1-5308 · Bldg 1 <span class="pill warn">Boxes not broken down</span></h3>
+          <p>Three shipping boxes left whole beside two bags on the hallway carpet. Boxes broken down and taken to recycling.</p>
+          <div class="label" style="margin-top:8px">QR scan ✓ · Geofence ✓ · 7:08 PM</div>
+        </div>
+      </div>
+      <div class="vi">
+        <figure class="ph"><img src="/demo/photos/violation-overflowing.jpg" alt="Overflowing bin at unit 2-2104" loading="lazy"><figcaption class="stamp"><span>Unit 2-2104</span><span>7:26 PM</span></figcaption></figure>
+        <div>
+          <h3>Unit 2-2104 · Bldg 2 <span class="pill warn">Overflowing bin</span></h3>
+          <p>Two bags stacked above the valet can. Both collected. Reminder sent: one can's worth per night, extra bags by callback.</p>
+          <div class="label" style="margin-top:8px">QR scan ✓ · Geofence ✓ · 7:26 PM</div>
+        </div>
+      </div>
+      <div class="vi">
+        <figure class="ph"><img src="/demo/photos/violation-not-binned.jpg" alt="Loose bags on the floor by the elevator near unit 6-6205" loading="lazy"><figcaption class="stamp"><span>Unit 6-6205</span><span>7:41 PM</span></figcaption></figure>
+        <div>
+          <h3>Unit 6-6205 · Bldg 6 <span class="pill warn">Not in bin</span></h3>
+          <p>Three loose bags, including a grocery bag, left on the floor by the elevator instead of in the valet can. Collected.</p>
+          <div class="label" style="margin-top:8px">QR scan ✓ · Geofence ✓ · 7:41 PM</div>
+        </div>
+      </div>
+      <div class="vi">
+        <figure class="ph"><img src="/demo/photos/violation-leaking.jpg" alt="Leaking trash bag at unit 4-3201" loading="lazy"><figcaption class="stamp"><span>Unit 4-3201</span><span>8:03 PM</span></figcaption></figure>
+        <div>
+          <h3>Unit 4-3201 · Bldg 4 <span class="pill crit">Bag leaking</span></h3>
+          <p>Bag torn at the bottom with liquid on the walkway. Collected, double-bagged and the spill wiped.</p>
+          <div class="label" style="margin-top:8px">QR scan ✓ · Geofence ✓ · 8:03 PM</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="s-cb">
+    <div class="card-h"><h2 id="s-cb">Resident callbacks</h2><span class="note">Unlimited while the attendant is on property · included in your plan</span></div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Unit</th><th>Reason</th><th class="n">Requested</th><th class="n">Picked up</th><th class="n">Response</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><b>5-4105</b> · Bldg 5</td><td>Got home late</td><td class="n mono">8:12 PM</td><td class="n mono">8:15 PM</td><td class="n mono">3 min</td><td><span class="pill ok">Completed</span></td></tr>
+          <tr><td><b>3-1104</b> · Bldg 3</td><td>Extra bag</td><td class="n mono">8:18 PM</td><td class="n mono">8:21 PM</td><td class="n mono">3 min</td><td><span class="pill ok">Completed</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="s-tl">
+    <div class="card-h"><h2 id="s-tl">Shift timeline</h2><span class="note">From the attendant app</span></div>
+    <ol class="tl">
+      <li class="k"><span class="t">6:50 PM</span><span class="dot"></span><span class="e">Attendant clocked in <span>· en route</span></span></li>
+      <li class="k"><span class="t">7:00 PM</span><span class="dot"></span><span class="e">Checked in on property <span>· geofence verified</span></span></li>
+      <li class="v"><span class="t">7:08 PM</span><span class="dot"></span><span class="e">Violation at unit 1-5308 <span>· boxes not broken down</span></span></li>
+      <li><span class="t">7:19 PM</span><span class="dot"></span><span class="e">Building 1 complete <span>· 30 / 30 doors</span></span></li>
+      <li class="v"><span class="t">7:26 PM</span><span class="dot"></span><span class="e">Violation at unit 2-2104 <span>· overflowing bin</span></span></li>
+      <li><span class="t">7:31 PM</span><span class="dot"></span><span class="e">Building 2 complete <span>· 20 / 20 doors</span></span></li>
+      <li class="v"><span class="t">7:41 PM</span><span class="dot"></span><span class="e">Violation at unit 6-6205 <span>· not in bin</span></span></li>
+      <li><span class="t">7:53 PM</span><span class="dot"></span><span class="e">Building 6 complete <span>· 35 / 35 doors</span></span></li>
+      <li><span class="t">8:00 PM</span><span class="dot"></span><span class="e">Building 5 complete <span>· 15 / 15 doors</span></span></li>
+      <li class="v"><span class="t">8:03 PM</span><span class="dot"></span><span class="e">Violation at unit 4-3201 <span>· bag leaking</span></span></li>
+      <li><span class="t">8:05 PM</span><span class="dot"></span><span class="e">Building 4 complete <span>· 10 / 10 doors</span></span></li>
+      <li class="k"><span class="t">8:10 PM</span><span class="dot"></span><span class="e">Building 3 complete <span>· all hallways clear</span></span></li>
+      <li><span class="t">8:13 PM</span><span class="dot"></span><span class="e">Enclosure T1 leveled and swept</span></li>
+      <li class="c"><span class="t">8:15 PM</span><span class="dot"></span><span class="e">Callback completed at unit 5-4105</span></li>
+      <li><span class="t">8:16 PM</span><span class="dot"></span><span class="e">Enclosure T2 leveled and swept</span></li>
+      <li><span class="t">8:19 PM</span><span class="dot"></span><span class="e">Enclosure T3 leveled and swept</span></li>
+      <li class="c"><span class="t">8:21 PM</span><span class="dot"></span><span class="e">Callback completed at unit 3-1104</span></li>
+      <li><span class="t">8:22 PM</span><span class="dot"></span><span class="e">Enclosure T4 leveled and swept <span>· all 4 enclosures done</span></span></li>
+      <li class="k"><span class="t">8:25 PM</span><span class="dot"></span><span class="e">Checked out <span>· service complete sent to residents</span></span></li>
+    </ol>
+  </section>
+
+  <section class="card" aria-labelledby="s-mtd">
+    <div class="card-h"><h2 id="s-mtd">September to date</h2><span class="note">18 service nights · Sun – Thu</span></div>
+    <div class="mtd">
+      <div><span class="label">Doors checked</span><span class="v">2,160 / 2,160</span></div>
+      <div><span class="label">Missed doors</span><span class="v" style="color:var(--ok)">0</span></div>
+      <div><span class="label">Avg. hallway clear</span><span class="v">8:12 PM</span></div>
+      <div><span class="label">Violations</span><span class="v">52</span></div>
+      <div><span class="label">Callbacks</span><span class="v">37</span></div>
+      <div><span class="label">Recycling</span><span class="v">5,420 lb</span></div>
+    </div>
+    <div>
+      <div class="label" style="margin-bottom:6px">Trash set out per night (of 120 doors)</div>
+      <svg class="spark" viewBox="0 0 720 110" role="img" aria-label="Doors with trash set out per night, September 1 to 24, ranging from 94 to 108">
+        <g stroke="var(--line)" stroke-width="1">
+          <line x1="30" y1="10" x2="712" y2="10"/><line x1="30" y1="50" x2="712" y2="50"/><line x1="30" y1="90" x2="712" y2="90"/>
+        </g>
+        <g fill="var(--muted)" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="end">
+          <text x="24" y="13">120</text><text x="24" y="53">60</text><text x="24" y="93">0</text>
+        </g>
+        <g id="bars"></g>
+        <g fill="var(--muted)" font-family="JetBrains Mono, monospace" font-size="10">
+          <text x="36" y="106">Sep 1</text><text x="712" y="106" text-anchor="end">Sep 24</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>Sent to <b>Site Manager</b> and <b>Regional Manager</b> after check-out. Full photo set, live map and 30-day trends are in the Property Manager Portal.</div>
+    <div>Valet Waste Disposal · Nightly valet trash, Sunday – Thursday · yourdoorstepdisposal.com</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var total=120, data=[98,101,95,104,99,102,107,97,96,105,100,103,108,99,94,102,104,106];
+  var g=document.getElementById('bars'); if(!g) return;
+  var x0=34,x1=708,n=data.length,step=(x1-x0)/n,w=step*0.62,ns='http://www.w3.org/2000/svg';
+  data.forEach(function(v,i){
+    var h=v/total*80, r=document.createElementNS(ns,'rect');
+    r.setAttribute('x',(x0+i*step+(step-w)/2).toFixed(1));
+    r.setAttribute('y',(90-h).toFixed(1));
+    r.setAttribute('width',w.toFixed(1)); r.setAttribute('height',h.toFixed(1)); r.setAttribute('rx','2');
+    r.setAttribute('fill','var(--teal)'); r.setAttribute('opacity', i===n-1?'1':'.45');
+    var t=document.createElementNS(ns,'title'); t.textContent=v+' of '+total+' doors'; r.appendChild(t);
+    g.appendChild(r);
+  });
+})();
+</script>
+
+</body>
+</html>

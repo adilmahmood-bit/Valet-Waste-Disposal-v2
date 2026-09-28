@@ -7,7 +7,7 @@ const stats = [
     sub: "We show up every scheduled night — no exceptions.",
   },
   {
-    num: "3–7×",
+    num: "3–5×",
     label: "Nights per week",
     sub: "Schedules built around your property's actual trash patterns.",
   },

@@ -114,13 +114,13 @@ export default function PorterApp() {
     }, 900);
   };
 
-  // About 1 minute per door; spread door times across that span.
+  // About 35 seconds per door (120 doors in ~70 minutes); spread door times across that span.
   const finishBuilding = () =>
     update((st) => {
       const doors = { ...st.doors };
       const start = now(st);
       const pending = PROPERTY.floors.flatMap((f) => unitsFor(bldg, f)).filter((u) => !doors[u] || doors[u].status === "pending");
-      const mins = Math.max(6, Math.round(pending.length * 1.1));
+      const mins = Math.max(5, Math.round(pending.length * 0.58));
       pending.forEach((u, i) => (doors[u] = { status: "done", at: start + ((i + 1) / pending.length) * mins * 60000 }));
       return { ...st, doors, clock: pending.length ? advance(st, mins) : st.clock };
     });
@@ -154,7 +154,7 @@ export default function PorterApp() {
             </div>
             <Btn
               className="w-full"
-              onClick={() => update((st) => { const clock = clockAtLeast(st, 18, 45); return { ...st, clock, attendant: { ...st.attendant, status: "enroute", clockIn: clock.demo } }; })}
+              onClick={() => update((st) => { const clock = clockAtLeast(st, 18, 50); return { ...st, clock, attendant: { ...st.attendant, status: "enroute", clockIn: clock.demo } }; })}
             >
               {t.start}
             </Btn>
@@ -179,7 +179,7 @@ export default function PorterApp() {
             <Btn
               className="w-full"
               onClick={() =>
-                update((st) => { const clock = clockAtLeast(st, 18, 55); return { ...st, clock, attendant: { ...st.attendant, status: "onsite", checkIn: clock.demo, building: bldg } }; })
+                update((st) => { const clock = clockAtLeast(st, 19, 0); return { ...st, clock, attendant: { ...st.attendant, status: "onsite", checkIn: clock.demo, building: bldg } }; })
               }
             >
               {t.arrive}

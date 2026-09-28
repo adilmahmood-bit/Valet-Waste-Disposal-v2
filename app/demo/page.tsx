@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { IconBuildingSkyscraper, IconHome, IconTruck, IconHeadset, IconLayoutColumns, IconArrowRight } from "@tabler/icons-react";
+import { IconBuildingSkyscraper, IconHome, IconTruck, IconHeadset, IconLayoutColumns, IconArrowRight, IconReportAnalytics } from "@tabler/icons-react";
 import { useDemo, PROPERTY } from "@/lib/demo/store";
 import { AttendantBanner, C, LogoMark, ResetButton, Wordmark } from "@/components/demo/ui";
 
@@ -32,6 +32,13 @@ const ROLES = [
     who: "For the Valet Waste office",
     icon: IconHeadset,
     points: ["Quote bulk pickup requests", "Monitor callbacks across properties"],
+  },
+  {
+    href: "/demo/report",
+    title: "Nightly Report",
+    who: "Emailed to managers after every service night",
+    icon: IconReportAnalytics,
+    points: ["Every door checked, with time stamps", "Trash pad and violation photos", "Callbacks, timeline, and month-to-date totals"],
   },
 ];
 
