@@ -1,25 +1,100 @@
 "use client";
-import { IconCheck } from "@tabler/icons-react";
+import { useEffect, useState } from "react";
+import { IconCheck, IconMaximize, IconX } from "@tabler/icons-react";
 import { BUILDING_POS, DemoState, ENCLOSURES, PROPERTY, fmtTime, unitsFor } from "@/lib/demo/store";
 import { C } from "@/components/demo/ui";
 
-// The property's own site map, with live status laid over each building and
-// trash enclosure. Positions are percentages of the image. Shared by the
-// manager portal (view only) and the attendant app, where tapping a building
-// opens its route.
-export default function SiteMap({
-  s,
-  selected,
-  onSelect,
-}: {
+const RATIO = 1293 / 684; // site map image, width / height
+
+type Props = {
   s: DemoState;
   selected?: string;
   onSelect?: (building: string) => void;
-}) {
+};
+
+// The property's own site map, with live status laid over each building and
+// trash enclosure. Shared by the manager portal (view only) and the attendant
+// app, where tapping a building opens its route. Either can expand it to full
+// screen.
+export default function SiteMap(props: Props) {
+  const [full, setFull] = useState(false);
+  return (
+    <>
+      <div className="relative">
+        <MapCanvas {...props} />
+        <button
+          type="button"
+          onClick={() => setFull(true)}
+          aria-label="Show map full screen"
+          className="absolute top-1.5 right-1.5 rounded-lg p-1.5 bg-white/90 shadow"
+          style={{ color: C.navy }}
+        >
+          <IconMaximize size={18} />
+        </button>
+      </div>
+      {full && (
+        <FullScreenMap
+          {...props}
+          onSelect={props.onSelect ? (b) => (props.onSelect!(b), setFull(false)) : undefined}
+          onClose={() => setFull(false)}
+        />
+      )}
+    </>
+  );
+}
+
+// Full-screen view. The map is landscape, so on a portrait screen it's turned
+// 90° to use the full height; the viewer rotates the phone to read it.
+function FullScreenMap({ onClose, ...props }: Props & { onClose: () => void }) {
+  const [portrait, setPortrait] = useState(false);
+  useEffect(() => {
+    const check = () => setPortrait(window.innerHeight > window.innerWidth);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    check();
+    window.addEventListener("resize", check);
+    window.addEventListener("keydown", onKey);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("resize", check);
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [onClose]);
+
+  // Largest map that fits the screen with a 16px margin, in either orientation.
+  const width = portrait
+    ? `min(calc(100dvh - 32px), calc((100vw - 32px) * ${RATIO}))`
+    : `min(calc(100vw - 32px), calc((100dvh - 32px) * ${RATIO}))`;
+
+  return (
+    <div className="fixed inset-0 z-50" style={{ backgroundColor: "rgba(10, 25, 40, 0.94)" }} role="dialog" aria-label="Site map, full screen">
+      <div
+        className="absolute left-1/2 top-1/2"
+        style={{ width, transform: `translate(-50%, -50%)${portrait ? " rotate(90deg)" : ""}` }}
+      >
+        <MapCanvas {...props} large />
+      </div>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close full-screen map"
+        className="absolute rounded-full p-2 bg-white shadow-lg"
+        style={{ top: "calc(12px + env(safe-area-inset-top, 0px))", right: 12, color: C.navy }}
+      >
+        <IconX size={22} />
+      </button>
+    </div>
+  );
+}
+
+function MapCanvas({ s, selected, onSelect, large }: Props & { large?: boolean }) {
   const a = s.attendant;
   const at = a.status === "onsite" ? BUILDING_POS[a.building ?? "1"] : null;
+  const label = large ? "text-xs sm:text-sm" : "text-[10px] sm:text-xs";
+  const count = large ? "text-[11px] sm:text-xs" : "text-[9px] sm:text-[11px]";
   return (
-    <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: "1293 / 684" }}>
+    <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: `${RATIO}` }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/app/site-map.webp" alt={`${PROPERTY.name} site map`} className="absolute inset-0 w-full h-full" />
       {PROPERTY.buildings.map((b) => {
@@ -43,8 +118,8 @@ export default function SiteMap({
               outlineOffset: 2,
             }}
           >
-            <div className="text-[10px] sm:text-xs font-bold whitespace-nowrap">Bldg {b}</div>
-            <div className="text-[9px] sm:text-[11px] whitespace-nowrap opacity-90">
+            <div className={`${label} font-bold whitespace-nowrap`}>Bldg {b}</div>
+            <div className={`${count} whitespace-nowrap opacity-90`}>
               {done}/{units.length}
               {viol ? ` · ${viol}⚠` : ""}
             </div>
