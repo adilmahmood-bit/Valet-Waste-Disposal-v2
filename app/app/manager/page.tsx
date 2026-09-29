@@ -35,12 +35,12 @@ import {
   now,
   ALL_UNITS,
   ENCLOSURES,
-  BUILDING_POS,
   serviceNights,
   serviceNightsThisMonth,
 } from "@/lib/demo/store";
 import { AttendantBanner, Btn, C, Card, LogoMark, PhotoThumb, Pill, ResetButton, StatusDot, Wordmark } from "@/components/demo/ui";
 import PhotoReport from "@/components/demo/PhotoReport";
+import SiteMap from "@/components/demo/SiteMap";
 
 const TABS = [
   { id: "dashboard", label: "Dashboard", icon: IconLayoutDashboard },
@@ -802,78 +802,6 @@ function Overview({ s }: { s: DemoState }) {
         </Card>
       </div>
     </>
-  );
-}
-
-// The property's own site map, with live status laid over each building and
-// trash enclosure. Positions are percentages of the image.
-function SiteMap({ s }: { s: DemoState }) {
-  const a = s.attendant;
-  const at = a.status === "onsite" ? BUILDING_POS[a.building ?? "1"] : null;
-  return (
-    <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: "1293 / 684" }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/app/site-map.webp" alt={`${PROPERTY.name} site map`} className="absolute inset-0 w-full h-full" />
-      {PROPERTY.buildings.map((b) => {
-        const units = PROPERTY.floors.flatMap((f) => unitsFor(b, f));
-        const done = units.filter((u) => s.doors[u] && s.doors[u].status !== "pending").length;
-        const viol = units.filter((u) => s.doors[u]?.status === "violation").length;
-        const complete = done === units.length;
-        const { x, y } = BUILDING_POS[b];
-        return (
-          <div
-            key={b}
-            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-lg px-1.5 py-0.5 text-center shadow-md leading-tight"
-            style={{
-              left: `${x}%`,
-              top: `${y}%`,
-              backgroundColor: complete ? C.green : done ? C.teal : C.navy,
-              color: "#fff",
-            }}
-          >
-            <div className="text-[10px] sm:text-xs font-bold whitespace-nowrap">Bldg {b}</div>
-            <div className="text-[9px] sm:text-[11px] whitespace-nowrap opacity-90">
-              {done}/{units.length}
-              {viol ? ` · ${viol}⚠` : ""}
-            </div>
-          </div>
-        );
-      })}
-      {ENCLOSURES.map((e) => {
-        const pad = s.pads[e.id];
-        return (
-          <div
-            key={e.id}
-            title={pad ? `Enclosure ${e.id} clear at ${fmtTime(pad.at)}` : `Enclosure ${e.id} not checked yet`}
-            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center text-[10px] font-bold text-white border-2 border-white shadow"
-            style={{ left: `${e.x}%`, top: `${e.y}%`, backgroundColor: pad ? C.green : "#9ca3af" }}
-          >
-            {pad ? <IconCheck size={14} /> : e.id}
-          </div>
-        );
-      })}
-      {at && (
-        <span
-          className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-1000"
-          style={{ left: `${at.x}%`, top: `calc(${at.y}% - 26px)` }}
-          aria-label={`${a.name} at Building ${a.building}`}
-        >
-          <span className="absolute inset-0 rounded-full animate-ping" style={{ backgroundColor: C.accent, opacity: 0.5 }} />
-          <span className="relative block w-4 h-4 rounded-full border-2 border-white shadow" style={{ backgroundColor: C.accent }} />
-        </span>
-      )}
-      <div className="absolute bottom-2 left-2 flex flex-wrap gap-2 text-[10px] sm:text-[11px] bg-white/90 rounded-lg px-2 py-1">
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: C.accent }} /> Attendant
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded" style={{ backgroundColor: C.green }} /> Building done
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: C.green }} /> Enclosure clear
-        </span>
-      </div>
-    </div>
   );
 }
 
