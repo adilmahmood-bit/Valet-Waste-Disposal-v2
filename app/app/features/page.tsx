@@ -18,6 +18,7 @@ const SECTIONS: { title: string; path: string; intro: string; features: [string,
     features: [
       ["Clock in / clock out", "Starts the shift and records the time for timesheets."],
       ["Geofenced property check-in", "Attendant checks in when within range of the property; check-out marks the night complete."],
+      ["Property map", "The same site map managers see, showing each building’s progress and each trash enclosure’s status. Tap a building to open its route."],
       ["Route by building and floor", "Every door on the property, grouped by building and floor, with live progress (doors done / total)."],
       ["QR code door verification", "Scan the QR tag at each door to mark it serviced with a timestamp."],
       ["Violation reporting", "Types: not in bin, bag leaking, overflowing bin, boxes not broken down, oversized item, out after cutoff, recycling mixed. Includes a note and photo."],

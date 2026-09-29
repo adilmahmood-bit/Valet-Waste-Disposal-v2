@@ -30,6 +30,7 @@ import {
   advance,
 } from "@/lib/demo/store";
 import { AppHeader, AttendantBanner, Btn, C, Card, PhoneApp, PhotoThumb, Pill, ResetButton } from "@/components/demo/ui";
+import SiteMap from "@/components/demo/SiteMap";
 
 const T = {
   en: {
@@ -51,6 +52,7 @@ const T = {
     violation: "Report violation",
     checkout: "Check out of property",
     finishBldg: "Finish building",
+    mapHint: "Tap a building on the map to open its route",
     building: "Building",
     floor: "Floor",
     photo: "Add photo",
@@ -77,6 +79,7 @@ const T = {
     violation: "Reportar infracción",
     checkout: "Registrar salida",
     finishBldg: "Terminar edificio",
+    mapHint: "Toque un edificio en el mapa para abrir su ruta",
     building: "Edificio",
     floor: "Piso",
     photo: "Agregar foto",
@@ -229,6 +232,13 @@ export default function PorterApp() {
               </div>
               <div className="h-2.5 rounded-full bg-gray-100 overflow-hidden">
                 <div className="h-full rounded-full transition-all" style={{ width: `${p.pct}%`, backgroundColor: C.teal }} />
+              </div>
+            </Card>
+
+            <Card className="!p-2 space-y-1">
+              <SiteMap s={s} selected={bldg} onSelect={selectBldg} />
+              <div className="text-[11px] text-center" style={{ color: C.muted }}>
+                {t.mapHint}
               </div>
             </Card>
 
