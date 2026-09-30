@@ -11,7 +11,6 @@ import {
   IconCheck,
   IconPhoneCall,
   IconMail,
-  IconRecycle,
   IconMapPin,
   IconCreditCard,
   IconSearch,
@@ -37,6 +36,11 @@ import {
   ENCLOSURES,
   serviceNights,
   serviceNightsThisMonth,
+  porterSavings,
+  fmtDuration,
+  fmtUsd,
+  PAD_CLEAN_MIN,
+  PORTER_RATE,
 } from "@/lib/demo/store";
 import { AttendantBanner, Btn, C, Card, LogoMark, PhotoThumb, Pill, ResetButton, StatusDot, Wordmark } from "@/components/demo/ui";
 import PhotoReport from "@/components/demo/PhotoReport";
@@ -290,6 +294,31 @@ function Dashboard({ s }: { s: DemoState }) {
         </Card>
       </div>
 
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="font-heading" style={{ color: C.navy }}>
+              Porter labor saved on dumpster pads
+            </div>
+            <div className="text-xs" style={{ color: C.muted }}>
+              {PROPERTY.name} · last {range} service nights
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="font-heading text-3xl" style={{ color: C.green }}>
+              {fmtUsd(porterSavings(range).dollars)}
+            </div>
+            <div className="text-xs" style={{ color: C.muted }}>
+              {fmtDuration(porterSavings(range).minutes)} of porter time
+            </div>
+          </div>
+        </div>
+        <SavingsChart nights={range} />
+        <p className="text-xs mt-1" style={{ color: C.muted }}>
+          {SAVINGS_NOTE}
+        </p>
+      </Card>
+
       <div className="grid sm:grid-cols-3 gap-4">
           {[
             { label: "Buildings pending", v: bldgTotal - bldgDone, done: bldgDone, total: bldgTotal, color: C.teal },
@@ -509,6 +538,86 @@ function TrendChart({ data }: { data: ReturnType<typeof trend> }) {
     </div>
   );
 }
+
+// Porter labor saved on dumpster pads, running total. The per-night estimate is constant, so the line is
+// straight; the axis starts at zero and the tooltip gives the total through each night.
+function SavingsChart({ nights }: { nights: number }) {
+  const [hover, setHover] = useState<number | null>(null);
+  const data = serviceNights(nights)
+    .reverse()
+    .map((d, i) => ({
+      label: d.toLocaleDateString([], nights <= 7 ? { weekday: "short" } : { month: "numeric", day: "numeric" }),
+      full: d.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }),
+      ...porterSavings(i + 1),
+    }));
+  const W = 560;
+  const H = 180;
+  const pad = { l: 52, r: 16, t: 14, b: 26 };
+  const max = data[data.length - 1].dollars;
+  const raw = max * 1.1;
+  const step = 10 ** Math.floor(Math.log10(raw)) / 2;
+  const hi = Math.ceil(raw / step) * step;
+  const x = (i: number) => pad.l + (i / Math.max(1, data.length - 1)) * (W - pad.l - pad.r);
+  const y = (v: number) => pad.t + (1 - v / hi) * (H - pad.t - pad.b);
+  const path = data.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(d.dollars).toFixed(1)}`).join(" ");
+  const labelEvery = Math.ceil(data.length / 7);
+  const onMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const px = ((e.clientX - r.left) / r.width) * W;
+    const i = Math.round(((px - pad.l) / (W - pad.l - pad.r)) * (data.length - 1));
+    setHover(Math.max(0, Math.min(data.length - 1, i)));
+  };
+  const h = hover !== null ? data[hover] : null;
+  return (
+    <div className="relative">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full h-auto touch-none"
+        onPointerMove={onMove}
+        onPointerLeave={() => setHover(null)}
+        role="img"
+        aria-label={`Porter labor saved on dumpster pads grows to ${fmtUsd(max)} over ${data.length} service nights`}
+      >
+        {[0, hi / 2, hi].map((t) => (
+          <g key={t}>
+            <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} stroke="#e5e7eb" />
+            <text x={pad.l - 6} y={y(t) + 4} textAnchor="end" fontSize="11" fill={C.muted}>
+              {fmtUsd(t)}
+            </text>
+          </g>
+        ))}
+        {data.map((d, i) =>
+          i === data.length - 1 || (i % labelEvery === 0 && data.length - 1 - i >= labelEvery) ? (
+            <text key={i} x={x(i)} y={H - 8} textAnchor="middle" fontSize="11" fill={C.muted}>
+              {d.label}
+            </text>
+          ) : null,
+        )}
+        <path d={`${path} L${x(data.length - 1)} ${H - pad.b} L${x(0)} ${H - pad.b} Z`} fill={C.green} opacity="0.1" />
+        <path d={path} fill="none" stroke={C.green} strokeWidth="2" strokeLinejoin="round" />
+        <circle cx={x(data.length - 1)} cy={y(max)} r="4" fill={C.green} stroke="#fff" strokeWidth="2" />
+        {hover !== null && (
+          <>
+            <line x1={x(hover)} x2={x(hover)} y1={pad.t} y2={H - pad.b} stroke={C.ink} strokeOpacity="0.25" />
+            <circle cx={x(hover)} cy={y(data[hover].dollars)} r="5" fill={C.green} stroke="#fff" strokeWidth="2" />
+          </>
+        )}
+      </svg>
+      {h && hover !== null && (
+        <div
+          className="absolute pointer-events-none bg-white rounded-lg shadow-lg border px-3 py-2 text-xs"
+          style={{ borderColor: C.border, top: 4, left: `${(x(hover) / W) * 100}%`, transform: hover > data.length / 2 ? "translateX(-105%)" : "translateX(8px)" }}
+        >
+          <div style={{ color: C.muted }}>Through {h.full}</div>
+          <b className="text-sm">{fmtUsd(h.dollars)}</b> saved
+          <div style={{ color: C.muted }}>{fmtDuration(h.minutes)} of porter time</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const SAVINGS_NOTE = `Estimate: ${ENCLOSURES.length} trash pads × ${PAD_CLEAN_MIN} min per pad × ${fmtUsd(PORTER_RATE)}/hr average porter wage, counted on scheduled service nights only.`;
 
 // ---------- Plan & billing ----------
 
@@ -1100,14 +1209,13 @@ function history() {
       setOut: Math.round(ALL_UNITS.length * (0.82 + rnd() * 0.12)),
       violations: Math.floor(rnd() * 4),
       callbacks: Math.floor(rnd() * 3),
-      recycling: 280 + Math.floor(rnd() * 60),
       finishMin,
       pads: ENCLOSURES.length,
     };
     // The sample nightly report (public/app/nightly-report.html) is for this
     // night; keep the numbers identical so the two can be compared side by side.
     if (d.getFullYear() === 2026 && d.getMonth() === 8 && d.getDate() === 24)
-      Object.assign(row, { setOut: 106, finishMin: 20 * 60 + 10, violations: 4, callbacks: 2, recycling: 310 });
+      Object.assign(row, { setOut: 106, finishMin: 20 * 60 + 10, violations: 4, callbacks: 2 });
     return row;
   });
 }
@@ -1117,7 +1225,6 @@ const SET_OUT_START = 18 * 60; // residents set trash out from 6:00 PM
 
 function Reports() {
   const rows = history();
-  const recyclingTotal = rows.reduce((n, r) => n + r.recycling, 0);
   const avgFinish = Math.round(rows.reduce((n, r) => n + r.finishMin, 0) / rows.length);
   const outFor = avgFinish - SET_OUT_START;
   const nights = serviceNightsThisMonth();
@@ -1130,15 +1237,44 @@ function Reports() {
           value={clockStr(avgFinish).replace(" PM", "")}
           sub={`PM avg · trash out ${Math.floor(outFor / 60)}h ${outFor % 60}m from 6:00 PM set-out`}
         />
-        <Stat label="Recycling" value={`${(recyclingTotal / 1000).toFixed(1)}k`} sub="lb diverted, last 14 nights" color={C.teal} />
+        <Stat
+          label="Porter labor saved on dumpster pads"
+          value={fmtUsd(porterSavings(nights).dollars)}
+          sub={`${fmtDuration(porterSavings(nights).minutes)} this month · ${nights} service nights`}
+          color={C.green}
+        />
         <Stat label="Pads & compactors" value={`${rows.length * ENCLOSURES.length}`} sub="photo-verified checks, 14 nights" color={C.navy} />
       </div>
+      <Card>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="font-heading" style={{ color: C.navy }}>
+              Porter labor saved on dumpster pads over time
+            </div>
+            <div className="text-xs" style={{ color: C.muted }}>
+              {PROPERTY.name} · last {rows.length} service nights
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="font-heading text-3xl" style={{ color: C.green }}>
+              {fmtUsd(porterSavings(rows.length).dollars)}
+            </div>
+            <div className="text-xs" style={{ color: C.muted }}>
+              {fmtDuration(porterSavings(rows.length).minutes)} of porter time
+            </div>
+          </div>
+        </div>
+        <SavingsChart nights={rows.length} />
+        <p className="text-xs mt-1" style={{ color: C.muted }}>
+          {SAVINGS_NOTE}
+        </p>
+      </Card>
       <Card className="flex flex-wrap items-center gap-3">
         <IconMail size={22} style={{ color: C.teal }} />
         <div className="flex-1 min-w-[12rem]">
           <div className="font-semibold">Monthly service report</div>
           <div className="text-sm" style={{ color: C.muted }}>
-            Emailed automatically on the 1st to Dana K. and the site manager. Includes door checks, pad photos, violations, and recycling.
+            Emailed automatically on the 1st to Dana K. and the site manager. Includes door checks, pad photos, violations, and porter labor saved on dumpster pads.
           </div>
         </div>
         <Pill color={C.green} bg="#dcfce7">
@@ -1156,11 +1292,7 @@ function Reports() {
               <th className="p-3">Pads</th>
               <th className="p-3">Violations</th>
               <th className="p-3">Callbacks</th>
-              <th className="p-3">
-                <span className="inline-flex items-center gap-1">
-                  <IconRecycle size={14} /> Recycling
-                </span>
-              </th>
+              <th className="p-3">Porter labor saved on dumpster pads</th>
             </tr>
           </thead>
           <tbody>
@@ -1179,7 +1311,9 @@ function Reports() {
                 </td>
                 <td className="p-3">{r.violations}</td>
                 <td className="p-3">{r.callbacks}</td>
-                <td className="p-3">{r.recycling} lb</td>
+                <td className="p-3 whitespace-nowrap">
+                  {fmtDuration(porterSavings(1, r.pads).minutes)} · {fmtUsd(porterSavings(1, r.pads).dollars, true)}
+                </td>
               </tr>
             ))}
           </tbody>

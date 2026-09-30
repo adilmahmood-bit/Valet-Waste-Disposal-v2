@@ -226,6 +226,20 @@ export function serviceNightsThisMonth() {
   return n;
 }
 
+// Porter labor the property no longer spends cleaning its trash pads on our service nights.
+// Estimate: minutes a porter spends per pad per night, and the average porter hourly wage.
+export const PAD_CLEAN_MIN = 25;
+export const PORTER_RATE = 22;
+
+/** Porter time and wages saved for `nights` service nights across `pads` trash pads. */
+export function porterSavings(nights: number, pads: number = ENCLOSURES.length) {
+  const minutes = nights * pads * PAD_CLEAN_MIN;
+  return { minutes, dollars: (minutes / 60) * PORTER_RATE };
+}
+
+export const fmtDuration = (min: number) => `${Math.floor(min / 60)}h ${String(Math.round(min % 60)).padStart(2, "0")}m`;
+export const fmtUsd = (n: number, cents = false) => `$${n.toLocaleString("en-US", cents ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : { maximumFractionDigits: 0 })}`;
+
 /** Current demo time (an evening timestamp), capped at 11:30 PM. */
 export function now(s: DemoState = state) {
   return Math.min(s.clock.demo + (Date.now() - s.clock.real) * SPEED, atToday(23, 30));
