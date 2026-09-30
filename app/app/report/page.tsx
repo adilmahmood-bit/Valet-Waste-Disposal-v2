@@ -27,7 +27,8 @@ export default function NightlyReport() {
         </div>
       </header>
       <iframe
-        src="/app/nightly-report.html"
+        // ?v= makes browsers that cached an older copy fetch this version; bump it when the report changes.
+        src="/app/nightly-report.html?v=2026-09-30"
         title="Sample nightly completion report"
         className="flex-1 w-full border-0"
         style={{ minHeight: "calc(100dvh - 52px)" }}
