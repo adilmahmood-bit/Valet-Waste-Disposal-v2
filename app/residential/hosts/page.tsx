@@ -20,22 +20,22 @@ export default function HostsPage() {
   return (
     <>
       <section className="bg-res-navy text-white">
-        <div className="max-w-4xl mx-auto px-4 py-12 md:py-20">
-          <p className="text-res-teal font-semibold text-sm uppercase tracking-[0.15em]">For Airbnb and vacation rental hosts</p>
-          <h1 className="mt-3 text-4xl md:text-5xl font-bold leading-tight">Trash day, handled between guests.</h1>
-          <p className="mt-4 text-lg text-white/85 max-w-2xl">
+        <div className="max-w-4xl mx-auto px-4 pt-8 pb-10 md:py-20">
+          <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">For Airbnb and vacation rental hosts</p>
+          <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Trash day, handled between guests.</h1>
+          <p className="mt-3 md:mt-4 md:text-lg text-white/85 max-w-2xl">
             Weekly bin valet for your rental. Same price as a homeowner: ${weekly.basePrice} a month per property for up to {weekly.includedBins} bins.
           </p>
-          <div className="mt-8 max-w-md">
+          <div className="mt-6 md:mt-8 max-w-md">
             <ZipCheck dark />
           </div>
         </div>
       </section>
 
-      <section className="py-14 md:py-20">
-        <div className="max-w-5xl mx-auto px-4 grid md:grid-cols-3 gap-6">
+      <section className="py-10 md:py-20">
+        <div className="max-w-5xl mx-auto px-4 grid md:grid-cols-3 gap-4 md:gap-6">
           {points.map((p) => (
-            <div key={p.title} className="rounded-2xl bg-res-mist p-6">
+            <div key={p.title} className="rounded-2xl bg-res-mist p-5 md:p-6">
               <p.icon size={30} className="text-res-teal-dark" aria-hidden="true" />
               <h2 className="mt-3 font-semibold text-lg">{p.title}</h2>
               <p className="mt-1 text-slate-700">{p.text}</p>
@@ -44,7 +44,7 @@ export default function HostsPage() {
         </div>
       </section>
 
-      <section className="pb-16">
+      <section className="pb-12 md:pb-16">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold">Managing several properties?</h2>
           <p className="mt-3 text-slate-700">

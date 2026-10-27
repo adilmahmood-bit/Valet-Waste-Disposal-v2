@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { IconHome } from "@tabler/icons-react";
 
 export default function Nav() {
   const pathname = usePathname();
@@ -16,9 +17,7 @@ export default function Nav() {
   // The app demo, residential pages and admin have their own chrome.
   if (pathname?.startsWith("/app") || pathname?.startsWith("/residential") || pathname?.startsWith("/admin")) return null;
 
-  // "For Homes" is the residential bin valet section; the homepage stays multifamily.
   const links = [
-    { label: "For Homes", href: "/residential" },
     { label: "Services", href: "#services" },
     { label: "How It Works", href: "#how-it-works" },
     { label: "Why Us", href: "#why-us" },
@@ -46,6 +45,15 @@ export default function Nav() {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-6">
+          {/* "For Homes" is the residential bin valet section; the homepage stays multifamily.
+              Filled in the homepage's step blue so it reads as its own button next to the teal "Get a Quote". */}
+          <a
+            href="/residential"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-white rounded-full px-5 py-2 bg-[#2C7FB8] transition-colors duration-200 hover:bg-[#3A92CF]"
+          >
+            <IconHome size={16} stroke={2} aria-hidden="true" />
+            For Homes
+          </a>
           {links.map((l) => (
             <a
               key={l.href}
@@ -88,6 +96,14 @@ export default function Nav() {
           className="md:hidden px-4 pb-4 flex flex-col gap-4 border-t"
           style={{ backgroundColor: "#1B4F72", borderColor: "rgba(255,255,255,0.1)" }}
         >
+          <a
+            href="/residential"
+            className="mt-3 inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-white rounded-full px-4 py-2 bg-[#2C7FB8]"
+            onClick={() => setOpen(false)}
+          >
+            <IconHome size={16} stroke={2} aria-hidden="true" />
+            For Homes
+          </a>
           {links.map((l) => (
             <a
               key={l.href}
