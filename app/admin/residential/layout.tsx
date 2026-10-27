@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Poppins } from "next/font/google";
+import { poppins } from "@/app/fonts/fonts";
 import { isAdmin } from "@/lib/residential/admin-auth";
 import { logout } from "./actions";
-
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = { title: "Residential ops | Valet Waste Disposal", robots: { index: false, follow: false } };
 
