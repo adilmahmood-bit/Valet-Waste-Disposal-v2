@@ -13,10 +13,12 @@ export default function Nav() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  // The app demo has its own chrome.
-  if (pathname?.startsWith("/app")) return null;
+  // The app demo, residential pages and admin have their own chrome.
+  if (pathname?.startsWith("/app") || pathname?.startsWith("/residential") || pathname?.startsWith("/admin")) return null;
 
+  // "For Homes" is the residential bin valet section; the homepage stays multifamily.
   const links = [
+    { label: "For Homes", href: "/residential" },
     { label: "Services", href: "#services" },
     { label: "How It Works", href: "#how-it-works" },
     { label: "Why Us", href: "#why-us" },

@@ -11,6 +11,11 @@
   --color-teal: #0E9AA7;
   --color-teal-soft: #7FDDE6;
   --color-accent: #C9622B;
+  /* Residential (For Homes) brand */
+  --color-res-navy: #16324C;
+  --color-res-teal: #1FA0B0;
+  --color-res-teal-dark: #137F8C; /* teal dark enough for white button text (AA) */
+  --color-res-mist: #EEF7F8;
   --font-playfair: var(--font-playfair-display);
   --font-dm: var(--font-dm-sans);
 }
