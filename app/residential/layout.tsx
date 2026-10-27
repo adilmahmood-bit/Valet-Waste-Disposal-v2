@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { poppins } from "@/app/fonts/fonts";
 import ResHeader from "@/components/residential/ResHeader";
 import ResFooter from "@/components/residential/ResFooter";
 import PlaceholderBanner from "@/components/residential/PlaceholderBanner";
-
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], display: "swap" });
 
 export const metadata: Metadata = {
   title: { default: "Bin Valet for Homes | Valet Waste Disposal San Diego", template: "%s | Valet Waste Disposal For Homes" },
