@@ -7,7 +7,9 @@ export const metadata: Metadata = { title: "Residential service terms", robots: 
 // whenever this text changes; each acceptance is logged against the version shown here.
 export default function TermsPage() {
   const { terms, contact, policies } = residential;
-  const fillIn = (v: string | number | null, what: string) => (v == null ? <mark className="bg-amber-100 px-1">[FILL IN: {what}]</mark> : v);
+  // Undecided policies show a FILL IN marker in demo mode, and a neutral line on the live site.
+  const fillIn = (v: string | number | null, what: string) =>
+    v != null ? v : residential.showPlaceholderBanner ? <mark className="bg-amber-100 px-1">[FILL IN: {what}]</mark> : `Call or text us at ${contact.phone} for details.`;
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-12 md:py-16 leading-relaxed">

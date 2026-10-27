@@ -27,7 +27,7 @@ export type Plan = {
 export const residential = {
   // Shows a strip on residential pages listing the FILL IN placeholders, so Adil can
   // react to them in the demo. Turn off before go-live.
-  showPlaceholderBanner: true,
+  showPlaceholderBanner: false,
 
   // Shown to customers. No personal name on residential pages.
   contact: {
