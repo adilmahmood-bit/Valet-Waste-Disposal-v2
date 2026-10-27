@@ -167,6 +167,7 @@ async function handle(req: NextRequest) {
       residential.notifyEmail,
       `${needsQuote.length ? "Quote needed" : "New residential sign-up"}: ${full}`,
       `${needsQuote.length ? `Quote needed (${reason}).` : `First service ${startDate}.`}\n\n${summary}`,
+      email,
     );
   });
 
