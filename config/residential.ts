@@ -49,7 +49,7 @@ export const residential = {
         "Bins back to their spot after pickup",
         "Month-to-month billing",
       ],
-      basePrice: 59, // Set by Adil 2026-10-26 (was $49)
+      basePrice: 49, // Set by Adil 2026-10-27 (back from $59)
       includedBins: 3, // FILL IN
       extraBinPrice: 5, // FILL IN: per extra bin, per month
       billing: "monthly",
