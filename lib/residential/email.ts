@@ -1,8 +1,10 @@
+import { residential } from "@/config/residential";
 import { db } from "./db";
 
 // Sends through Resend when RESEND_API_KEY and EMAIL_FROM are set. Otherwise the email is
 // only logged (server console + res_email_log), which is how the local demo runs.
-export async function sendEmail(to: string, subject: string, body: string) {
+// Replies go to the business inbox unless replyTo says otherwise (alerts reply to the lead).
+export async function sendEmail(to: string, subject: string, body: string, replyTo: string = residential.contact.email) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
   let provider = "log";
@@ -15,7 +17,7 @@ export async function sendEmail(to: string, subject: string, body: string) {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ from, to, subject, text: body }),
+        body: JSON.stringify({ from, to, subject, text: body, reply_to: replyTo }),
       });
       status = res.ok ? "sent" : "failed";
       if (!res.ok) error = await res.text();

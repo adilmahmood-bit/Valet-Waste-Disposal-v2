@@ -39,6 +39,7 @@ async function handle(req: NextRequest) {
       residential.notifyEmail,
       `Residential waitlist: ${zip}`,
       `${name} joined the waitlist.\nZIP: ${zip}\nEmail: ${email}\nMobile: ${str(body.mobile, 40) || "-"}\nAddress: ${str(body.address, 200) || "-"}`,
+      email,
     );
   });
 
