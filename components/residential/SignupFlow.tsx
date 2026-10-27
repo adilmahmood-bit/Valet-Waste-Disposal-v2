@@ -260,8 +260,8 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
             <input id="email" required type="email" autoComplete="email" value={f.email} onChange={(e) => set("email", e.target.value)} className={input} />
           </div>
           <div>
-            <label htmlFor="source" className={label}>How did you hear about us?</label>
-            <select id="source" required value={residential.sources.some((s) => s.id === f.source) ? f.source : ""} onChange={(e) => set("source", e.target.value)} className={input}>
+            <label htmlFor="source" className={label}>How did you hear about us? <span className="font-normal text-slate-500">(optional)</span></label>
+            <select id="source" value={residential.sources.some((s) => s.id === f.source) ? f.source : ""} onChange={(e) => set("source", e.target.value)} className={input}>
               <option value="">Choose one</option>
               {residential.sources.map((s) => (
                 <option key={s.id} value={s.id}>{s.label}</option>
