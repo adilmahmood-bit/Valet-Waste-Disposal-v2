@@ -91,6 +91,13 @@ export const residential = {
     "92145", "92161",
   ],
 
+  // Cities and neighborhoods those ZIPs cover, for page copy and search engines. Keep in step with serviceZips.
+  serviceCities: [
+    "Carlsbad", "Encinitas", "Cardiff-by-the-Sea", "Solana Beach", "Del Mar", "Rancho Santa Fe", "La Jolla",
+    "Pacific Beach", "Carmel Valley", "Clairemont", "Linda Vista", "University City", "Sorrento Valley", "Mira Mesa", "Rancho Peñasquitos",
+    "Rancho Bernardo", "Scripps Ranch", "Poway", "Escondido", "San Marcos", "Vista", "Oceanside",
+  ],
+
   serviceDays: ["Mon", "Tue", "Wed", "Thu", "Fri"] as Weekday[],
 
   // First service is the next trash day at least this many days after sign-up.
@@ -107,7 +114,7 @@ export const residential = {
   propertyTypes: [
     { id: "homeowner", label: "Homeowner" },
     { id: "senior", label: "Senior household" },
-    { id: "str_host", label: "STR / Airbnb host" },
+    { id: "str_host", label: "Short-term rental host (Airbnb, Vrbo)" },
     { id: "property_manager", label: "Property manager" },
   ],
 

@@ -3,10 +3,12 @@ import Link from "next/link";
 import { IconCalendarOff, IconUsers, IconHomePlus } from "@tabler/icons-react";
 import { residential, planById } from "@/config/residential";
 import ZipCheck from "@/components/residential/ZipCheck";
+import { cityPages } from "@/components/residential/cities";
 
 export const metadata: Metadata = {
-  title: "Airbnb and vacation rental hosts",
-  description: "Bin valet for San Diego short-term rental hosts. Bins out on trash day and back after, even between guests.",
+  title: "Short-Term Rental Trash Service for Airbnb & Vrbo Hosts",
+  description: "Bin-to-curb trash can service for San Diego short-term rentals on Airbnb, Vrbo and other platforms. Bins out the evening before trash day and back after, even between guests.",
+  alternates: { canonical: "/residential/hosts" },
 };
 
 const points = [
@@ -21,10 +23,10 @@ export default function HostsPage() {
     <>
       <section className="bg-res-navy text-white">
         <div className="max-w-4xl mx-auto px-4 pt-8 pb-10 md:py-20">
-          <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">For Airbnb and vacation rental hosts</p>
+          <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">For Airbnb, Vrbo and short-term rental hosts</p>
           <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Trash day, handled between guests.</h1>
           <p className="mt-3 md:mt-4 md:text-lg text-white/85 max-w-2xl">
-            Weekly bin valet for your rental. Same price as a homeowner: ${weekly.basePrice} a month per property for up to {weekly.includedBins} bins.
+            Weekly bin valet for your short-term rental, whether it&apos;s listed on Airbnb, Vrbo or booked direct. Same price as a homeowner: ${weekly.basePrice} a month per property for up to {weekly.includedBins} bins.
           </p>
           <div className="mt-6 md:mt-8 max-w-md">
             <ZipCheck dark />
@@ -46,6 +48,16 @@ export default function HostsPage() {
 
       <section className="pb-12 md:pb-16">
         <div className="max-w-3xl mx-auto px-4 text-center">
+          <h2 className="text-2xl font-bold">Popular rental areas</h2>
+          <ul className="mt-4 mb-12 flex flex-wrap justify-center gap-2">
+            {cityPages.filter((c) => c.strHeavy).map((c) => (
+              <li key={c.slug}>
+                <Link href={`/residential/${c.slug}`} className="inline-block rounded-full bg-res-mist px-4 py-2 text-sm font-medium hover:bg-res-teal-dark hover:text-white">
+                  {c.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
           <h2 className="text-2xl font-bold">Managing several properties?</h2>
           <p className="mt-3 text-slate-700">
             Call or text us at{" "}
