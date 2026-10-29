@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { IconCalendarEvent, IconArrowBigUpLines, IconArrowBigDownLines, IconHome, IconPlaneDeparture, IconHeartHandshake, IconBuildingCottage, IconPhone, IconMessage, IconCheck } from "@tabler/icons-react";
-import { residential, planById } from "@/config/residential";
+import { residential, planById, enabledPlans } from "@/config/residential";
+import JsonLd from "@/components/JsonLd";
+import StickyCta from "@/components/residential/StickyCta";
+import { cityPages } from "@/components/residential/cities";
 import ZipCheck from "@/components/residential/ZipCheck";
 import PlanCards from "@/components/residential/PlanCards";
 import { faqs } from "@/components/residential/faq";
@@ -13,9 +17,9 @@ const steps = [
 
 const audiences = [
   { icon: IconHome, title: "Busy families", text: "One less chore on a busy weeknight." },
-  { icon: IconHeartHandshake, title: "Seniors", text: "Or anyone who finds heavy bins hard to move." },
+  { icon: IconHeartHandshake, title: "Seniors", text: "Or anyone who finds heavy bins hard to move.", href: "/residential/seniors" },
   { icon: IconPlaneDeparture, title: "Travelers", text: "Your bins still go out while you're away." },
-  { icon: IconBuildingCottage, title: "Airbnb hosts", text: "Guests don't need to know your trash day.", href: "/residential/hosts" },
+  { icon: IconBuildingCottage, title: "Airbnb & Vrbo hosts", text: "Short-term rental guests don't need to know your trash day.", href: "/residential/hosts" },
 ];
 
 const trust = ["Background-checked staff", "Locally owned in San Diego", "Follows your city's holiday schedule"];
@@ -24,15 +28,52 @@ const trust = ["Background-checked staff", "Locally owned in San Diego", "Follow
 const section = "py-10 md:py-20";
 const heading = "text-2xl md:text-3xl font-bold text-center";
 
+export const metadata: Metadata = { alternates: { canonical: "/residential" } };
+
+const SITE = "https://yourdoorstepdisposal.com";
+
+// What Google reads about this page: a curbside bin service, who provides it, where, and for how much.
+function serviceJsonLd() {
+  const { contact } = residential;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: "Residential bin valet (bin-to-curb service)",
+    serviceType: "Curbside trash can service",
+    url: `${SITE}/residential`,
+    description: "We take trash, recycling and green waste bins to the curb the evening before pickup and bring them back after.",
+    provider: {
+      "@type": "LocalBusiness",
+      name: "Valet Waste Disposal",
+      url: SITE,
+      telephone: `+1-${contact.phone}`,
+      email: contact.email,
+      image: `${SITE}/logo/vwd-logo-navy.png`,
+      address: { "@type": "PostalAddress", addressLocality: "San Diego", addressRegion: "CA", addressCountry: "US" },
+    },
+    areaServed: residential.serviceCities.map((name) => ({ "@type": "City", name: `${name}, CA` })),
+    offers: enabledPlans().map((p) => ({
+      "@type": "Offer",
+      name: p.name,
+      priceCurrency: "USD",
+      price: p.basePrice,
+      ...(p.billing === "monthly" && {
+        priceSpecification: { "@type": "UnitPriceSpecification", price: p.basePrice, priceCurrency: "USD", unitText: "MONTH" },
+      }),
+    })),
+  };
+}
+
 export default function ResidentialHome() {
   const { contact } = residential;
   const weekly = planById("weekly")!;
   return (
     <>
+      <JsonLd data={serviceJsonLd()} />
       <section className="bg-res-navy text-white">
         <div className="max-w-6xl mx-auto px-4 pt-8 pb-10 md:py-20 grid md:grid-cols-2 gap-10 items-center">
           <div>
-            <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">San Diego bin valet</p>
+            <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">Bin-to-curb valet · San Diego</p>
             <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Your bins to the curb and back. Every week.</h1>
             <p className="mt-3 md:mt-4 md:text-lg text-white/85">
               We roll your trash, recycling and green waste bins out the evening before pickup, then bring them back after.
@@ -109,7 +150,7 @@ export default function ResidentialHome() {
                   <a.icon size={26} className="text-res-teal-dark" aria-hidden="true" />
                   <p className="mt-2 font-semibold leading-snug">{a.title}</p>
                   <p className="mt-1 text-sm text-slate-600 leading-snug">{a.text}</p>
-                  {a.href && <p className="mt-2 text-sm font-semibold text-res-teal-dark">How it works →</p>}
+                  {a.href && <p className="mt-2 text-sm font-semibold text-res-teal-dark">Learn more →</p>}
                 </>
               );
               const box = "rounded-2xl bg-white border border-slate-200 p-4 md:p-6";
@@ -133,6 +174,30 @@ export default function ResidentialHome() {
             Steep driveway, stairs, or a long walk to the curb? We&apos;ll text you a custom price.{" "}
             <Link href="/residential/pricing" className="font-semibold text-res-teal-dark underline underline-offset-4 whitespace-nowrap">Full pricing</Link>
           </p>
+        </div>
+      </section>
+
+      <section className={`${section} bg-slate-50`}>
+        <div className="max-w-3xl mx-auto px-4">
+          <h2 className={heading}>Curbside bin service in San Diego and North County</h2>
+          <p className="mt-4 text-slate-700 leading-relaxed">
+            Valet Waste Disposal is a bin-to-curb service for homes. The evening before your trash day, we take your trash,
+            recycling and green waste cans curbside. After the truck comes, we bring them back to your side yard or garage.
+            No more hauling heavy bins down the driveway or leaving them at the street all day.
+          </p>
+          <p className="mt-4 text-sm text-slate-600 leading-relaxed">
+            <span className="font-semibold text-res-navy">Where we work:</span> {residential.serviceCities.join(", ")}.{" "}
+            <Link href="/residential/service-area" className="font-semibold text-res-teal-dark underline underline-offset-4 whitespace-nowrap">Check your ZIP</Link>
+          </p>
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {cityPages.map((c) => (
+              <li key={c.slug}>
+                <Link href={`/residential/${c.slug}`} className="inline-block rounded-full bg-white border border-slate-200 px-3 py-1.5 text-sm font-medium hover:border-res-teal">
+                  Bin valet in {c.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -166,16 +231,7 @@ export default function ResidentialHome() {
         </div>
       </section>
 
-      {/* Sticky call to action for phones */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-2.5 flex gap-2">
-        <a href="#check" className="flex-1 text-center rounded-full bg-res-teal-dark text-white font-semibold py-3">Check my address</a>
-        <a href={`sms:${contact.phoneHref}`} aria-label={`Text ${contact.phone}`} className="grid place-items-center w-12 rounded-full border-2 border-res-navy text-res-navy">
-          <IconMessage size={20} aria-hidden="true" />
-        </a>
-        <a href={`tel:${contact.phoneHref}`} aria-label={`Call ${contact.phone}`} className="grid place-items-center w-12 rounded-full border-2 border-res-navy text-res-navy">
-          <IconPhone size={20} aria-hidden="true" />
-        </a>
-      </div>
+      <StickyCta />
     </>
   );
 }

@@ -1,16 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { residential } from "@/config/residential";
+import { residential, planById } from "@/config/residential";
 import PlanCards from "@/components/residential/PlanCards";
 
-export const metadata: Metadata = { title: "Pricing" };
+export const metadata: Metadata = {
+  title: "Bin Valet Pricing: Curbside Trash Can Service",
+  description: `Bin-to-curb service from $${planById("weekly")!.basePrice}/month for up to ${planById("weekly")!.includedBins} bins, or a one-time round trip for $${planById("one_time")!.basePrice}. Month-to-month, San Diego and North County.`,
+  alternates: { canonical: "/residential/pricing" },
+};
 
 export default function PricingPage() {
   const { contact } = residential;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 md:py-16">
-      <h1 className="text-4xl font-bold text-center">Simple pricing</h1>
+      <h1 className="text-4xl font-bold text-center">Simple bin valet pricing</h1>
       <p className="mt-3 text-center text-slate-600 max-w-xl mx-auto">Month-to-month weekly service, or a single visit.</p>
 
       <div className="mt-12">

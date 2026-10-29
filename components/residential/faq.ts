@@ -1,10 +1,32 @@
-import { residential } from "@/config/residential";
+import { residential, planById } from "@/config/residential";
 
 const { contact, policies } = residential;
+const weekly = planById("weekly")!;
+const oneTime = planById("one_time")!;
 const askUs = `We're finalizing this. Call or text us at ${contact.phone} for details.`;
 
 // Answers follow the claims rules: no guarantee, credit or notice period until it's set in config.
 export const faqs: { q: string; a: string }[] = [
+  {
+    q: "How much does a trash can valet service cost?",
+    a: `$${weekly.basePrice} a month for weekly service, up to ${weekly.includedBins} bins. Extra bins are $${weekly.extraBinPrice} each per month. A one-time round trip is $${oneTime.basePrice}.`,
+  },
+  {
+    q: "Do I need to be home?",
+    a: "No. Tell us where your bins are kept and add a gate code if you have one. We do the rest whether you're home or not.",
+  },
+  {
+    q: "Can someone take my trash cans to the curb while I'm on vacation?",
+    a: "Yes. That's what weekly service does. Your bins go out and come back on schedule while you're away.",
+  },
+  {
+    q: "Can I sign up for my parent?",
+    a: "Yes. Enter their address and your own phone and email, and choose Senior household as the property type. We'll text you about billing.",
+  },
+  {
+    q: "Do you service Airbnb, Vrbo and other short-term rentals?",
+    a: "Yes. Guests don't need to know your trash day. Hosts with more than one property can add each one.",
+  },
   {
     q: "What if I have a gate code?",
     a: "Add it when you sign up. Only our office and the person servicing your home can see it.",

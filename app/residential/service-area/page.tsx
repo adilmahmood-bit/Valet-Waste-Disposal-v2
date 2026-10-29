@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import { residential } from "@/config/residential";
+import Link from "next/link";
 import ZipCheck from "@/components/residential/ZipCheck";
+import { cityPages } from "@/components/residential/cities";
 
-export const metadata: Metadata = { title: "Service area" };
+export const metadata: Metadata = {
+  title: "Bin to Curb Service Area: San Diego & North County",
+  description: `Curbside bin service in ${residential.serviceCities.slice(0, 8).join(", ")} and more. Check your ZIP code or join the waitlist.`,
+  alternates: { canonical: "/residential/service-area" },
+};
 
 export default async function ServiceAreaPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
   const { plan } = await searchParams;
@@ -21,6 +27,18 @@ export default async function ServiceAreaPage({ searchParams }: { searchParams: 
           ))}
         </ul>
         <p className="mt-3 text-sm text-slate-600">Across San Diego and North County.</p>
+      </section>
+      <section className="mt-10">
+        <h2 className="text-lg font-semibold">Popular areas</h2>
+        <ul className="mt-3 grid grid-cols-2 gap-2">
+          {cityPages.map((c) => (
+            <li key={c.slug}>
+              <Link href={`/residential/${c.slug}`} className="block rounded-xl border border-slate-200 px-4 py-3 font-medium hover:border-res-teal">
+                {c.name} <span className="text-res-teal-dark">→</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );
