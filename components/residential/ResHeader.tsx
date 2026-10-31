@@ -17,7 +17,7 @@ export default function ResHeader() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo/vwd-icon-white.png" alt="" aria-hidden="true" width={36} height={36} className="h-9 w-auto" />
           <span className="leading-tight min-w-0">
-            <span className="block font-semibold text-[15px] truncate">Valet Waste Disposal</span>
+            <span className="block font-semibold text-[15px] truncate">Doorstep Disposal</span>
             <span className="block text-[11px] font-medium uppercase tracking-[0.18em] text-res-teal">For Homes</span>
           </span>
         </Link>

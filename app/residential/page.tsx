@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { IconCalendarEvent, IconArrowBigUpLines, IconArrowBigDownLines, IconHome, IconPlaneDeparture, IconHeartHandshake, IconBuildingCottage, IconPhone, IconMessage, IconCheck } from "@tabler/icons-react";
 import { residential, planById, enabledPlans } from "@/config/residential";
 import JsonLd from "@/components/JsonLd";
@@ -70,9 +71,12 @@ export default function ResidentialHome() {
   return (
     <>
       <JsonLd data={serviceJsonLd()} />
-      <section className="bg-res-navy text-white">
-        <div className="max-w-6xl mx-auto px-4 pt-8 pb-10 md:py-20 grid md:grid-cols-2 gap-10 items-center">
-          <div>
+      <section className="relative overflow-hidden bg-res-navy text-white">
+        <Image src="/residential-hero-bins.jpg" alt="" fill priority sizes="100vw" className="object-cover object-[70%_20%]" />
+        <div className="absolute inset-0 bg-res-navy/60" aria-hidden="true" />
+        <div className="relative max-w-6xl mx-auto px-4 pt-8 pb-10 md:py-20 grid md:grid-cols-2 gap-10 items-center">
+          {/* Dark text shadow keeps the copy readable over the photo. */}
+          <div className="text-shadow-md text-shadow-black/80">
             <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">Bin-to-curb valet · San Diego</p>
             <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Your bins to the curb and back. Every week.</h1>
             <p className="mt-3 md:mt-4 md:text-lg text-white/85">
@@ -80,7 +84,9 @@ export default function ResidentialHome() {
             </p>
             <div className="mt-6 max-w-md">
               <p className="font-semibold text-sm md:text-base mb-2">Check if we serve your street</p>
-              <ZipCheck dark />
+              <div className="text-shadow-none">
+                <ZipCheck dark />
+              </div>
               <p className="mt-3 text-sm text-white/75">
                 From <span className="font-semibold text-white">${weekly.basePrice}/month</span> for up to {weekly.includedBins} bins.
               </p>
@@ -96,7 +102,7 @@ export default function ResidentialHome() {
           </div>
 
           {/* Price card: desktop only. On phones the price sits under the ZIP check and in Plans below. */}
-          <div className="hidden md:block rounded-3xl bg-white/5 border border-white/10 p-8">
+          <div className="hidden md:block rounded-3xl bg-res-navy/80 border border-white/10 p-8">
             <p className="text-sm text-white/70">Weekly out &amp; back</p>
             <p className="mt-1 text-5xl font-bold">${weekly.basePrice}<span className="text-xl font-medium text-white/70"> / month</span></p>
             <p className="mt-2 text-white/80">Up to {weekly.includedBins} bins. Month-to-month.</p>
