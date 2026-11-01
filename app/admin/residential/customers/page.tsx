@@ -51,7 +51,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
           <option value="">All sources</option>
           {residential.sources.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
         </select>
-        <input name="ref" defaultValue={f.ref} placeholder="Referral code" className={`${field} w-36`} aria-label="Referral code" />
+        <input name="ref" defaultValue={f.ref} placeholder="Promo code" className={`${field} w-36`} aria-label="Promo code" />
         <button className={btn}>Filter</button>
         <a href="?" className={btnGhost}>Clear</a>
       </form>
@@ -85,7 +85,7 @@ function Row({ r }: { r: CustomerLine }) {
         </div>
         <div className="text-sm">
           <p>Source: {sourceLabel(c.source) || "-"}</p>
-          {c.referral_code && <p>Ref: {c.referral_code}</p>}
+          {c.referral_code && <p>Promo: {c.referral_code}</p>}
           <p className="text-slate-500 text-xs">Since {c.created_at.slice(0, 10)}</p>
           <p className="mt-1 flex gap-3 text-xs">
             {c.hubspot_contact_id ? <a className="underline text-res-teal-dark" target="_blank" rel="noreferrer" href={hubspotRecordUrl("contact", c.hubspot_contact_id)}>HubSpot contact</a> : <span className="text-amber-700">Not in HubSpot yet</span>}
