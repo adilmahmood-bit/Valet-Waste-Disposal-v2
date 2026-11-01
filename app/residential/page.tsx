@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { IconCalendarEvent, IconArrowBigUpLines, IconArrowBigDownLines, IconHome, IconPlaneDeparture, IconHeartHandshake, IconBuildingCottage, IconPhone, IconMessage, IconCheck } from "@tabler/icons-react";
+import { IconCamera, IconHome, IconPlaneDeparture, IconHeartHandshake, IconBuildingCottage, IconPhone, IconMessage, IconCheck } from "@tabler/icons-react";
 import { residential, planById, enabledPlans } from "@/config/residential";
 import JsonLd from "@/components/JsonLd";
 import StickyCta from "@/components/residential/StickyCta";
@@ -10,10 +10,11 @@ import ZipCheck from "@/components/residential/ZipCheck";
 import PlanCards from "@/components/residential/PlanCards";
 import { faqs } from "@/components/residential/faq";
 
+// Step colors match the "Nightly Routine" steps on the multifamily home page.
 const steps = [
-  { icon: IconCalendarEvent, title: "Sign up and tell us your trash day.", text: "Pick your plan and tell us where your bins live." },
-  { icon: IconArrowBigUpLines, title: "The evening before pickup, we roll your bins to the curb.", text: "Trash, recycling and green waste." },
-  { icon: IconArrowBigDownLines, title: "After pickup, we bring them back to their spot.", text: "Your curb stays clear." },
+  { color: "#1B4F72", when: "Once", title: "Sign up", text: "Pick your plan and tell us your trash day and where your bins live." },
+  { color: "#2C7FB8", when: "Evening before pickup", title: "Bins out", text: "We roll your trash, recycling and green waste bins to the curb." },
+  { color: "#C9622B", when: "After pickup", title: "Bins back", text: "We bring them back to their spot. Your curb stays clear." },
 ];
 
 const audiences = [
@@ -74,7 +75,7 @@ export default function ResidentialHome() {
       <section className="relative overflow-hidden bg-res-navy text-white">
         <Image src="/residential-hero-bins.jpg" alt="" fill priority sizes="100vw" className="object-cover object-[70%_20%]" />
         <div className="absolute inset-0 bg-res-navy/60" aria-hidden="true" />
-        <div className="relative max-w-6xl mx-auto px-4 pt-8 pb-10 md:py-20 grid md:grid-cols-2 gap-10 items-center">
+        <div className="relative max-w-6xl mx-auto px-4 pt-8 pb-10 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           {/* Dark text shadow keeps the copy readable over the photo. */}
           <div className="text-shadow-md text-shadow-black/80">
             <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">Bin-to-curb valet · San Diego</p>
@@ -129,37 +130,49 @@ export default function ResidentialHome() {
       <section id="how-it-works" className={`scroll-mt-20 ${section}`}>
         <div className="max-w-6xl mx-auto px-4">
           <h2 className={heading}>How it works</h2>
-          <ol className="mt-6 md:mt-10 grid md:grid-cols-3 gap-5 md:gap-6">
+          <ol className="relative mt-6 md:mt-12 grid md:grid-cols-3 gap-6 md:gap-8">
+            {/* Line joining the numbers: across on desktop, down on phones. */}
+            <div className="hidden md:block absolute top-6 left-[16.67%] right-[16.67%] h-0.5 bg-res-teal/30" aria-hidden="true" />
             {steps.map((s, i) => (
-              <li key={s.title} className="flex gap-4 md:block md:rounded-2xl md:bg-res-mist md:p-6">
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className="grid place-items-center h-9 w-9 md:h-10 md:w-10 rounded-full bg-res-navy text-white font-bold">{i + 1}</span>
-                  <s.icon size={28} className="hidden md:block text-res-teal-dark" aria-hidden="true" />
-                </div>
-                <div>
-                  <p className="font-semibold md:mt-4 md:text-lg leading-snug">{s.title}</p>
-                  <p className="mt-0.5 md:mt-1 text-sm md:text-base text-slate-600">{s.text}</p>
+              <li key={s.title} className="relative flex gap-4 md:flex-col md:items-center md:text-center">
+                {i < steps.length - 1 && (
+                  <div className="md:hidden absolute left-5 top-10 -bottom-6 w-0.5 bg-res-teal/30" aria-hidden="true" />
+                )}
+                <span
+                  className="relative grid place-items-center h-10 w-10 md:h-12 md:w-12 shrink-0 rounded-full text-white font-bold shadow-md ring-4 ring-white"
+                  style={{ backgroundColor: s.color }}
+                >
+                  {i + 1}
+                </span>
+                <div className="pt-0.5 md:pt-0">
+                  <p className="md:mt-4 text-xs font-medium uppercase tracking-wider text-slate-500">{s.when}</p>
+                  <p className="mt-0.5 md:mt-1 text-lg font-bold text-res-navy leading-snug">{s.title}</p>
+                  <p className="mt-1 text-sm md:text-base text-slate-600 md:max-w-xs">{s.text}</p>
                 </div>
               </li>
             ))}
           </ol>
+          <p className="mt-8 md:mt-12 mx-auto w-fit flex items-center gap-3 rounded-2xl md:rounded-full bg-res-mist px-5 md:px-6 py-3 text-[16.8px] md:text-[19.2px] text-res-navy">
+            <IconCamera size={24} className="shrink-0 text-res-teal-dark" aria-hidden="true" />
+            <span><span className="font-semibold">Photo proof on every visit.</span> We snap a photo when your bins go out and when they&apos;re back.</span>
+          </p>
         </div>
       </section>
 
       <section className={`${section} bg-slate-50`}>
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className={heading}>Who it&apos;s for</h2>
-          <div className="mt-6 md:mt-10 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl md:text-[2.4rem] font-bold text-center">Who it&apos;s for</h2>
+          <div className="mt-6 md:mt-12 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
             {audiences.map((a) => {
               const body = (
                 <>
-                  <a.icon size={26} className="text-res-teal-dark" aria-hidden="true" />
-                  <p className="mt-2 font-semibold leading-snug">{a.title}</p>
-                  <p className="mt-1 text-sm text-slate-600 leading-snug">{a.text}</p>
-                  {a.href && <p className="mt-2 text-sm font-semibold text-res-teal-dark">Learn more →</p>}
+                  <a.icon className="size-[26px] md:size-[34px] text-res-teal-dark" aria-hidden="true" />
+                  <p className="mt-2 md:mt-3 font-semibold md:text-[1.3rem] leading-snug">{a.title}</p>
+                  <p className="mt-1 md:mt-1.5 text-sm md:text-lg text-slate-600 leading-snug">{a.text}</p>
+                  {a.href && <p className="mt-2 md:mt-3 text-sm md:text-lg font-semibold text-res-teal-dark">Learn more →</p>}
                 </>
               );
-              const box = "rounded-2xl bg-white border border-slate-200 p-4 md:p-6";
+              const box = "rounded-2xl md:rounded-3xl bg-white border border-slate-200 p-4 md:p-8";
               return a.href ? (
                 <Link key={a.title} href={a.href} className={`${box} hover:border-res-teal`}>{body}</Link>
               ) : (

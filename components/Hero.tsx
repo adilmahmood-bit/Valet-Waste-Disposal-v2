@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Link from "next/link";
+import { IconHome } from "@tabler/icons-react";
 import RevealSection from "./RevealSection";
 
 const featureCards = [
@@ -117,6 +119,14 @@ export default function Hero() {
             >
               See How It Works
             </a>
+            {/* Same step blue as the "For Homes" pill in the nav. */}
+            <Link
+              href="/residential"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-white bg-[#2C7FB8] transition-colors duration-200 hover:bg-[#3A92CF]"
+            >
+              <IconHome size={18} stroke={2} aria-hidden="true" />
+              For Homes
+            </Link>
           </div>
 
           {/* Feature cards grid */}

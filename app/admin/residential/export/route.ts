@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     ]);
     return csv(
       `residential-customers-${todaySD()}.csv`,
-      toCsv(["Name", "Mobile", "Email", "Property type", "Street", "City", "ZIP", "Trash day", "Bins", "Plan", "Price", "Start", "Status", "Source", "Referral code", "Created"], rows),
+      toCsv(["Name", "Mobile", "Email", "Property type", "Street", "City", "ZIP", "Trash day", "Bins", "Plan", "Price", "Start", "Status", "Source", "Promo code", "Created"], rows),
     );
   }
 

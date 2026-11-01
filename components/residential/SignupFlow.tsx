@@ -269,7 +269,7 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
             </select>
           </div>
           <div>
-            <label htmlFor="ref" className={label}>Referral code <span className="font-normal text-slate-500">(optional)</span></label>
+            <label htmlFor="ref" className={label}>Promo code <span className="font-normal text-slate-500">(optional)</span></label>
             <input id="ref" autoComplete="off" value={f.referralCode} onChange={(e) => set("referralCode", e.target.value)} className={input} />
           </div>
           <StepButtons onBack={back} />

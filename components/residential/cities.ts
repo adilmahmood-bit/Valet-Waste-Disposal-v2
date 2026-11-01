@@ -52,6 +52,36 @@ export const cityPages: CityPage[] = [
     strHeavy: false,
   },
   {
+    slug: "del-mar",
+    name: "Del Mar",
+    zips: ["92014"],
+    intro:
+      "Bin valet for Del Mar homes. We roll your trash, recycling and green waste bins to the curb the evening before pickup and bring them back after the truck comes.",
+    localHeading: "Trash day in Del Mar",
+    local: [
+      "Del Mar packs a lot of homes onto hillsides and narrow beach lots. Many bins live behind a gate, down a side path or at the top of a steep driveway, and some streets have very little curb space on trash day.",
+      "Plenty of Del Mar homes are second homes or are empty while owners travel. With weekly service, your bins go out and come back on schedule whether you're in town or not.",
+    ],
+    neighborhoods: ["Olde Del Mar", "Beach Colony", "Del Mar Heights", "Del Mar Terrace", "Crest Canyon area"],
+    whoUsesIt: [
+      "Hillside homeowners with steep driveways or stairs",
+      "Owners of second homes who are away for stretches",
+      "Beach-area homes with tight side yards",
+      "Older residents and their families",
+    ],
+    faqs: [
+      {
+        q: "Do you serve all of Del Mar?",
+        a: "Yes. We serve the 92014 ZIP code, which covers Del Mar and Del Mar Heights.",
+      },
+      {
+        q: "There are stairs between my bins and the street. Can you still do it?",
+        a: "Usually, yes. Check the stairs box when you sign up and we'll text you a price before service starts.",
+      },
+    ],
+    strHeavy: false,
+  },
+  {
     slug: "carlsbad",
     name: "Carlsbad",
     zips: ["92008", "92009", "92010", "92011"],
@@ -107,6 +137,36 @@ export const cityPages: CityPage[] = [
       {
         q: "My Olivenhain driveway is long and steep. What does that cost?",
         a: "Check the steep driveway or long walk box when you sign up. We'll look at it and text you a custom price before you start.",
+      },
+    ],
+    strHeavy: true,
+  },
+  {
+    slug: "cardiff-by-the-sea",
+    name: "Cardiff-by-the-Sea",
+    zips: ["92007"],
+    intro:
+      "Bin valet for Cardiff-by-the-Sea homes. The evening before trash day, we take your bins to the curb. After pickup, we bring them back to their spot.",
+    localHeading: "Trash day in Cardiff",
+    local: [
+      "Cardiff's streets climb from the coast up the hills above San Elijo Lagoon. Many homes have sloped driveways, tight side yards and bins tucked behind a fence, which makes the weekly haul to the curb a chore.",
+      "Near the beach, a lot of Cardiff homes are vacation rentals or part-time homes. Weekly service keeps trash day on track between guests or while you're away.",
+    ],
+    neighborhoods: ["Cardiff Village", "Glen Park area", "Birmingham Drive area", "San Elijo Lagoon area"],
+    whoUsesIt: [
+      "Homeowners with sloped driveways or long side yards",
+      "Vacation rental hosts near the beach",
+      "Owners of part-time homes",
+      "Older residents who'd rather not move heavy bins",
+    ],
+    faqs: [
+      {
+        q: "Is Cardiff part of your Encinitas service?",
+        a: "Yes. Cardiff is part of Encinitas, and we serve its ZIP code, 92007, along with the rest of Encinitas (92024).",
+      },
+      {
+        q: "Can you handle bins for my Cardiff vacation rental?",
+        a: "Yes. Bins go out and come back every week, and your guests don't need to do anything.",
       },
     ],
     strHeavy: true,

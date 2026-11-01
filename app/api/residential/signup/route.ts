@@ -133,7 +133,7 @@ async function handle(req: NextRequest) {
     `Property type: ${propertyTypeLabel(propertyType)}`,
     `Access: ${accessFlags.map(accessFlagLabel).join(", ") || "none"}`,
     `Notes: ${accessNotes || "-"}`,
-    `Source: ${sourceLabel(source) || "-"}${referralCode ? `, referral code ${referralCode}` : ""}`,
+    `Source: ${sourceLabel(source) || "-"}${referralCode ? `, promo code ${referralCode}` : ""}`,
   ].join("\n");
 
   after(async () => {

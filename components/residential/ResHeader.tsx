@@ -11,14 +11,15 @@ const links = [
 
 export default function ResHeader() {
   return (
-    <header className="bg-res-navy text-white">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
-        <Link href="/residential" className="flex items-center gap-2.5 min-w-0">
+    // Same blue as the main site's nav bar.
+    <header className="bg-[#1B4F72] text-white">
+      <div className="max-w-6xl mx-auto px-4 h-[72px] md:h-20 flex items-center justify-between gap-3">
+        <Link href="/residential" className="flex items-center gap-2.5 md:gap-3 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo/vwd-icon-white.png" alt="" aria-hidden="true" width={36} height={36} className="h-9 w-auto" />
+          <img src="/logo/vwd-icon-white.png" alt="" aria-hidden="true" width={48} height={48} className="h-10 md:h-12 w-auto shrink-0" />
           <span className="leading-tight min-w-0">
-            <span className="block font-semibold text-[15px] truncate">Doorstep Disposal</span>
-            <span className="block text-[11px] font-medium uppercase tracking-[0.18em] text-res-teal">For Homes</span>
+            <span className="block font-bold text-lg md:text-2xl tracking-tight whitespace-nowrap">Doorstep Disposal</span>
+            <span className="block text-[11px] md:text-xs font-medium uppercase tracking-[0.18em] text-res-teal">For Homes</span>
           </span>
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
