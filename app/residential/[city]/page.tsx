@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IconCheck, IconBuildingCottage } from "@tabler/icons-react";
-import { residential, planById, enabledPlans } from "@/config/residential";
+import { residential, planById, enabledPlans, advertisedPrice, money } from "@/config/residential";
 import { cityPages, cityBySlug } from "@/components/residential/cities";
 import ZipCheck from "@/components/residential/ZipCheck";
 import PlanCards from "@/components/residential/PlanCards";
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   const weekly = planById("weekly")!;
   return {
     title: { absolute: `Bin Valet in ${city.name}, CA | Valet Waste Disposal` },
-    description: `Trash can to curb service in ${city.name}. We take your bins to the curb the evening before pickup and bring them back after. From $${weekly.basePrice}/month for up to ${weekly.includedBins} bins.`,
+    description: `Trash can to curb service in ${city.name}. We take your bins to the curb the evening before pickup and bring them back after. From ${money(advertisedPrice(weekly))}/month for up to ${weekly.includedBins} bins with code ${residential.promo.label}.`,
     alternates: { canonical: `/residential/${city.slug}` },
   };
 }
@@ -80,7 +80,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             <p className="font-semibold text-sm md:text-base mb-2">Check your ZIP</p>
             <ZipCheck dark />
             <p className="mt-3 text-sm text-white/75">
-              From <span className="font-semibold text-white">${weekly.basePrice}/month</span> for up to {weekly.includedBins} bins.
+              From <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} bins with code {residential.promo.label}.
             </p>
           </div>
         </div>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { IconCamera, IconHome, IconPlaneDeparture, IconHeartHandshake, IconBuildingCottage, IconPhone, IconMessage, IconCheck } from "@tabler/icons-react";
-import { residential, planById, enabledPlans } from "@/config/residential";
+import { residential, planById, enabledPlans, advertisedPrice, money, promoLine } from "@/config/residential";
 import JsonLd from "@/components/JsonLd";
 import StickyCta from "@/components/residential/StickyCta";
 import { cityPages } from "@/components/residential/cities";
@@ -89,7 +89,7 @@ export default function ResidentialHome() {
                 <ZipCheck dark />
               </div>
               <p className="mt-3 text-sm text-white/75">
-                From <span className="font-semibold text-white">${weekly.basePrice}/month</span> for up to {weekly.includedBins} bins.
+                From <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} bins with code {residential.promo.label}.
               </p>
             </div>
             <ul className="mt-6 space-y-1.5 text-sm text-white/85 md:hidden">
@@ -104,9 +104,14 @@ export default function ResidentialHome() {
 
           {/* Price card: desktop only. On phones the price sits under the ZIP check and in Plans below. */}
           <div className="hidden md:block rounded-3xl bg-res-navy/80 border border-white/10 p-8">
-            <p className="text-sm text-white/70">Weekly out &amp; back</p>
-            <p className="mt-1 text-5xl font-bold">${weekly.basePrice}<span className="text-xl font-medium text-white/70"> / month</span></p>
+            <p className="text-sm text-white/70">{weekly.name}</p>
+            <p className="mt-1 flex items-baseline gap-2">
+              <s className="text-2xl font-semibold text-white/50">{money(weekly.basePrice)}</s>
+              <span className="text-5xl font-bold">{money(advertisedPrice(weekly))}</span>
+              <span className="text-xl font-medium text-white/70">/ month</span>
+            </p>
             <p className="mt-2 text-white/80">Up to {weekly.includedBins} bins. Month-to-month.</p>
+            <p className="mt-3 rounded-lg bg-[#C9622B]/90 px-3 py-2 text-sm font-semibold">{promoLine(weekly)}</p>
             <ul className="mt-6 space-y-3 text-white/90">
               {trust.map((t) => (
                 <li key={t} className="flex items-center gap-2">

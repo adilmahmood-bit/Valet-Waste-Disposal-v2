@@ -12,7 +12,7 @@ export type AccessFlag = {
 };
 
 export type Plan = {
-  id: "weekly" | "push_out" | "one_time";
+  id: "weekly" | "annual" | "push_out" | "one_time";
   name: string;
   blurb: string;
   includes: string[];
@@ -22,6 +22,10 @@ export type Plan = {
   billing: "monthly" | "one_time";
   enabled: boolean;
   mostPopular?: boolean;
+  // Badge on a plan that isn't "Most popular", e.g. "Best value".
+  badge?: string;
+  // Extra words after the promo line on this plan's card.
+  promoExtra?: string;
 };
 
 export const residential = {
@@ -42,19 +46,36 @@ export const residential = {
   plans: [
     {
       id: "weekly",
-      name: "Weekly Out & Back",
-      blurb: "We roll your bins to the curb and bring them back, every week.",
+      name: "Month-to-Month Term",
+      blurb: "Every week, we roll your bins to the curb and bring them back in.",
       includes: [
         "Bins to the curb the evening before pickup",
         "Bins back to their spot after pickup",
         "Month-to-month billing",
       ],
-      basePrice: 49, // Set by Adil 2026-10-27 (back from $59)
+      basePrice: 59.99, // Set by Adil 2026-11-02; $49.99 with the launch promo
       includedBins: 3, // FILL IN
       extraBinPrice: 5, // FILL IN: per extra bin, per month
       billing: "monthly",
       enabled: true,
       mostPopular: true,
+    },
+    {
+      id: "annual",
+      name: "Annual Agreement",
+      blurb: "The same weekly service at a lower monthly rate, with a 12-month agreement.",
+      includes: [
+        "Bins to the curb the evening before pickup",
+        "Bins back to their spot after pickup",
+        "12-month agreement, billed monthly",
+      ],
+      basePrice: 49.99, // Set by Adil 2026-11-02; $39.99 with the launch promo
+      includedBins: 3,
+      extraBinPrice: 5,
+      billing: "monthly",
+      enabled: true,
+      badge: "Best value",
+      promoExtra: "($120 savings a year)", // $10 x 12 months; set by Adil 2026-11-02
     },
     {
       id: "push_out",
@@ -79,6 +100,16 @@ export const residential = {
       enabled: true,
     },
   ] as Plan[],
+
+  // Launch promo, set by Adil 2026-11-02: $10 a month off monthly plans for the first 50
+  // customers who enter the code. The 50-customer limit is tracked by hand, not enforced here.
+  promo: {
+    enabled: true,
+    code: "first50", // compared lowercase; shown to customers as `label`
+    label: "First50",
+    monthlyOff: 10,
+    limit: 50,
+  },
 
   bins: { min: 1, max: 8 },
 
@@ -154,9 +185,27 @@ export const enabledPlans = () => residential.plans.filter((p) => p.enabled);
 
 export const planById = (id: string) => residential.plans.find((p) => p.id === id);
 
-export function planPrice(plan: Plan, bins: number) {
-  return plan.basePrice + Math.max(0, bins - plan.includedBins) * plan.extraBinPrice;
+const cents = (n: number) => Math.round(n * 100) / 100;
+
+// "$49" or "$49.99".
+export const money = (n: number) => `$${Number.isInteger(n) ? n : n.toFixed(2)}`;
+
+export const promoOn = (plan: Plan) => residential.promo.enabled && plan.billing === "monthly";
+
+export const isPromoCode = (code: string | null | undefined) =>
+  residential.promo.enabled && (code ?? "").trim().toLowerCase() === residential.promo.code;
+
+// The customer's price. The promo discount applies only when they entered the code.
+export function planPrice(plan: Plan, bins: number, code?: string | null) {
+  const off = promoOn(plan) && isPromoCode(code) ? residential.promo.monthlyOff : 0;
+  return cents(plan.basePrice + Math.max(0, bins - plan.includedBins) * plan.extraBinPrice - off);
 }
+
+// The price we advertise: the promo price while the promo runs.
+export const advertisedPrice = (plan: Plan) => cents(plan.basePrice - (promoOn(plan) ? residential.promo.monthlyOff : 0));
+
+export const promoLine = (plan: Plan) =>
+  `First ${residential.promo.limit} customers get ${money(residential.promo.monthlyOff)} per month off with code ${residential.promo.label}${plan.promoExtra ? ` ${plan.promoExtra}` : ""}`;
 
 export const isServiceZip = (zip: string) =>
   residential.serviceZips.includes(zip.trim().slice(0, 5));
@@ -178,8 +227,8 @@ export function openDecisions() {
   const weekly = planById("weekly")!;
   const pushOut = planById("push_out")!;
   return [
-    `Bins included in the $${weekly.basePrice}/mo plan: ${weekly.includedBins}`,
-    `Extra bin $${weekly.extraBinPrice}/mo`,
+    `Bins included in the ${money(weekly.basePrice)}/mo plan: ${weekly.includedBins}`,
+    `Extra bin ${money(weekly.extraBinPrice)}/mo`,
     `Push-out plan ${pushOut.enabled ? "on" : "off"}`,
     "Missed-visit policy",
     "Payments off (billing set up by text)",

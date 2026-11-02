@@ -30,9 +30,19 @@ export default function Footer() {
           })}
         </div>
 
-        {/* Copyright */}
-        <div className="text-sm md:text-right" style={{ color: "rgba(255,255,255,0.55)" }}>
-          © {new Date().getFullYear()} Valet Waste Disposal. All rights reserved.
+        {/* Membership badge and copyright */}
+        <div className="flex flex-col items-start md:items-end gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo/scrha-2026-member-white.png"
+            alt="Southern California Rental Housing Association 2026 Member"
+            width={304}
+            height={134}
+            className="h-16 w-auto"
+          />
+          <p className="text-sm md:text-right" style={{ color: "rgba(255,255,255,0.55)" }}>
+            © {new Date().getFullYear()} Valet Waste Disposal. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

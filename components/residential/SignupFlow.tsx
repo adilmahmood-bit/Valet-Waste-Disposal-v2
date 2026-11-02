@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { residential, enabledPlans, planPrice, isServiceZip, quoteRequiredFlags } from "@/config/residential";
+import { residential, enabledPlans, planPrice, isServiceZip, quoteRequiredFlags, money, promoOn, isPromoCode } from "@/config/residential";
 import WaitlistForm from "./WaitlistForm";
 
 type Form = {
@@ -74,6 +74,7 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
   const quoteFlags = quoteRequiredFlags(f.accessFlags);
   const needsQuote = quoteFlags.length > 0;
   const selectedPlan = plans.find((p) => p.id === f.plan)!;
+  const promoApplied = promoOn(selectedPlan) && isPromoCode(f.referralCode);
 
   const next = (e: React.FormEvent) => {
     e.preventDefault();
@@ -233,10 +234,21 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
               <input type="radio" name="plan" className="mt-1 h-5 w-5 accent-[#137F8C]" checked={f.plan === p.id} onChange={() => set("plan", p.id)} />
               <span className="flex-1">
                 <span className="flex justify-between gap-3 font-semibold">
-                  <span>{p.name}{p.mostPopular && <span className="ml-2 rounded-full bg-res-teal-dark text-white text-[11px] px-2 py-0.5 align-middle">Most popular</span>}</span>
-                  <span className="whitespace-nowrap">${planPrice(p, f.bins)}{p.billing === "monthly" ? "/mo" : ""}</span>
+                  <span>
+                    {p.name}
+                    {(p.mostPopular || p.badge) && (
+                      <span className={`ml-2 rounded-full text-white text-[11px] px-2 py-0.5 align-middle ${p.mostPopular ? "bg-res-teal-dark" : "bg-[#C9622B]"}`}>{p.mostPopular ? "Most popular" : p.badge}</span>
+                    )}
+                  </span>
+                  <span className="whitespace-nowrap text-right">
+                    {promoOn(p) && <s className="block text-sm font-medium text-slate-400">{money(planPrice(p, f.bins))}</s>}
+                    {money(planPrice(p, f.bins, promoOn(p) ? residential.promo.code : null))}{p.billing === "monthly" ? "/mo" : ""}
+                  </span>
                 </span>
                 <span className="block text-sm text-slate-600 mt-1">{p.blurb}</span>
+                {promoOn(p) && (
+                  <span className="block text-sm font-medium text-[#9A4519] mt-1">With code {residential.promo.label} for our first {residential.promo.limit} customers. Enter it on the next step.</span>
+                )}
               </span>
             </label>
           ))}
@@ -271,6 +283,7 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
           <div>
             <label htmlFor="ref" className={label}>Promo code <span className="font-normal text-slate-500">(optional)</span></label>
             <input id="ref" autoComplete="off" value={f.referralCode} onChange={(e) => set("referralCode", e.target.value)} className={input} />
+            {promoApplied && <p className="mt-1 text-sm font-medium text-res-teal-dark">Code applied: {money(residential.promo.monthlyOff)} off per month.</p>}
           </div>
           <StepButtons onBack={back} />
         </form>
@@ -281,14 +294,18 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
           <div className="rounded-2xl bg-res-mist p-5 text-sm space-y-1.5">
             <p className="font-semibold text-base">Your service</p>
             <p>{f.street}, {f.city} {f.zip}</p>
-            <p>{selectedPlan.name}, {f.bins} {f.bins === 1 ? "bin" : "bins"}: ${planPrice(selectedPlan, f.bins)}{selectedPlan.billing === "monthly" ? " per month" : ""}{needsQuote ? " (custom quote to follow)" : ""}</p>
+            <p>
+              {selectedPlan.name}, {f.bins} {f.bins === 1 ? "bin" : "bins"}: {money(planPrice(selectedPlan, f.bins, f.referralCode))}{selectedPlan.billing === "monthly" ? " per month" : ""}
+              {promoApplied && ` (code ${residential.promo.label}, ${money(residential.promo.monthlyOff)} off)`}
+              {needsQuote ? " (custom quote to follow)" : ""}
+            </p>
             <p>Trash day: {f.trashDay}</p>
           </div>
           <div className="text-sm text-slate-700 space-y-1.5">
             <p className="font-semibold text-base text-res-navy">The short version of the terms</p>
             <ul className="list-disc list-inside space-y-1">
               <li>We move your bins on your trash pickup day and follow holiday shifts.</li>
-              <li>Monthly plans renew each month until you cancel.</li>
+              <li>{selectedPlan.id === "annual" ? "The annual agreement is 12 months of weekly service, billed monthly." : "Monthly plans renew each month until you cancel."}</li>
               <li>You give us safe access to your bins.</li>
               <li>Bulky items, bin cleaning and junk removal aren&apos;t included.</li>
             </ul>
