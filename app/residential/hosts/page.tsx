@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { IconCalendarOff, IconUsers, IconHomePlus } from "@tabler/icons-react";
 import { residential, planById } from "@/config/residential";
 import ZipCheck from "@/components/residential/ZipCheck";
@@ -21,14 +22,17 @@ export default function HostsPage() {
   const weekly = planById("weekly")!;
   return (
     <>
-      <section className="bg-res-navy text-white">
-        <div className="max-w-4xl mx-auto px-4 pt-8 pb-10 md:py-20">
+      <section className="relative overflow-hidden bg-res-navy text-white">
+        <Image src="/residential-hosts-home.jpg" alt="" fill priority sizes="100vw" className="object-cover object-[50%_45%]" />
+        <div className="absolute inset-0 bg-res-navy/60" aria-hidden="true" />
+        {/* Dark text shadow keeps the copy readable over the photo. */}
+        <div className="relative max-w-4xl mx-auto px-4 pt-8 pb-10 md:py-24 text-shadow-md text-shadow-black/80">
           <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">For Airbnb, Vrbo and short-term rental hosts</p>
           <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Trash day, handled between guests.</h1>
           <p className="mt-3 md:mt-4 md:text-lg text-white/85 max-w-2xl">
             Weekly bin valet for your short-term rental, whether it&apos;s listed on Airbnb, Vrbo or booked direct. Same price as a homeowner: ${weekly.basePrice} a month per property for up to {weekly.includedBins} bins.
           </p>
-          <div className="mt-6 md:mt-8 max-w-md">
+          <div className="mt-6 md:mt-8 max-w-md text-shadow-none">
             <ZipCheck dark />
           </div>
         </div>
