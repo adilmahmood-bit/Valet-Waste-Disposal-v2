@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { IconUserCheck, IconUsers, IconKey, IconCalendarRepeat } from "@tabler/icons-react";
-import { residential, planById } from "@/config/residential";
+import { residential, planById, advertisedPrice, money } from "@/config/residential";
 import ZipCheck from "@/components/residential/ZipCheck";
 import StickyCta from "@/components/residential/StickyCta";
 
@@ -52,7 +52,7 @@ export default function SeniorsPage() {
             <p className="font-semibold text-sm md:text-base mb-2">Check the ZIP code</p>
             <ZipCheck dark />
             <p className="mt-3 text-sm text-white/75">
-              <span className="font-semibold text-white">${weekly.basePrice}/month</span> for up to {weekly.includedBins} bins. Month-to-month.
+              <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} bins with code {residential.promo.label}. Month-to-month.
             </p>
           </div>
         </div>

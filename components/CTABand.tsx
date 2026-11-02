@@ -34,6 +34,23 @@ export default function CTABand() {
               </div>
             ))}
           </div>
+
+          {/* Memberships and vendor approvals */}
+          <div className="mt-10 flex flex-wrap items-center gap-x-10 gap-y-6">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo/scrha-2026-member-white.png"
+              alt="Southern California Rental Housing Association 2026 Member"
+              width={304}
+              height={134}
+              className="h-24 w-auto"
+            />
+            <div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo/greystar-white.svg" alt="Greystar" width={895} height={200} className="h-10 w-auto" />
+              <p className="mt-2 text-sm font-semibold text-white/85">Greystar NetVendor compliant</p>
+            </div>
+          </div>
         </div>
 
         {/* Right — HubSpot quote form */}

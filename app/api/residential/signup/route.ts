@@ -3,6 +3,9 @@ import {
   residential,
   planById,
   planPrice,
+  promoOn,
+  isPromoCode,
+  money,
   isServiceZip,
   quoteRequiredFlags,
   accessFlagLabel,
@@ -52,7 +55,8 @@ async function handle(req: NextRequest) {
 
   const needsQuote = quoteRequiredFlags(accessFlags);
   const status = needsQuote.length ? "quote_needed" : "signed_up";
-  const price = planPrice(plan, bins);
+  const price = planPrice(plan, bins, referralCode);
+  const promoApplied = promoOn(plan) && isPromoCode(referralCode);
   const startDate = status === "signed_up" ? firstServiceDate(trashDay, residential.startLeadDays) : null;
 
   // One customer per email; a host adding a second property reuses it. First-touch source wins.
@@ -121,7 +125,7 @@ async function handle(req: NextRequest) {
   const ip = clientIp(req);
   const ctx = formContext(req, b.pageUri, needsQuote.length ? "Residential quote request" : "Residential sign-up");
   const full = `${street}, ${city} ${zip}`;
-  const priceText = `$${price}${plan.billing === "monthly" ? "/month" : " one time"}`;
+  const priceText = `${money(price)}${plan.billing === "monthly" ? "/month" : " one time"}${promoApplied ? ` with code ${residential.promo.label}` : ""}`;
   const summary = [
     `Name: ${name}`,
     `Mobile: ${mobile}`,

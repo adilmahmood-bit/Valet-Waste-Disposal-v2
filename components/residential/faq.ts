@@ -1,7 +1,8 @@
-import { residential, planById } from "@/config/residential";
+import { residential, planById, advertisedPrice, money } from "@/config/residential";
 
 const { contact, policies } = residential;
 const weekly = planById("weekly")!;
+const annual = planById("annual")!;
 const oneTime = planById("one_time")!;
 const askUs = `We're finalizing this. Call or text us at ${contact.phone} for details.`;
 
@@ -9,7 +10,7 @@ const askUs = `We're finalizing this. Call or text us at ${contact.phone} for de
 export const faqs: { q: string; a: string }[] = [
   {
     q: "How much does a trash can valet service cost?",
-    a: `$${weekly.basePrice} a month for weekly service, up to ${weekly.includedBins} bins. Extra bins are $${weekly.extraBinPrice} each per month. A one-time round trip is $${oneTime.basePrice}.`,
+    a: `Weekly service is ${money(weekly.basePrice)} a month month-to-month, or ${money(annual.basePrice)} a month with a 12-month agreement, for up to ${weekly.includedBins} bins. Our first ${residential.promo.limit} customers get ${money(residential.promo.monthlyOff)} a month off with code ${residential.promo.label}: ${money(advertisedPrice(weekly))} and ${money(advertisedPrice(annual))}. Extra bins are ${money(weekly.extraBinPrice)} each per month. A one-time round trip is ${money(oneTime.basePrice)}.`,
   },
   {
     q: "Do I need to be home?",
@@ -54,8 +55,8 @@ export const faqs: { q: string; a: string }[] = [
   {
     q: "How do I cancel?",
     a: policies.cancellation
-      ? `Billing is month-to-month. Cancel anytime by call, text or email. ${policies.cancellation}`
-      : `Billing is month-to-month. Call or text us at ${contact.phone}. Notice period: see the service terms.`,
+      ? `Month-to-month plans can be cancelled anytime by call, text or email. ${policies.cancellation}`
+      : `Month-to-month plans: call or text us at ${contact.phone}. Notice period: see the service terms.`,
   },
   {
     q: "Do you take bulky items?",

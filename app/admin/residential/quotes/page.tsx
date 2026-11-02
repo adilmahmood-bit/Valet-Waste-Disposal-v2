@@ -63,7 +63,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
                   <form action={setQuotePrice} className="flex items-center gap-2">
                     <input type="hidden" name="id" value={q.id} />
                     <span className="text-sm">$</span>
-                    <input name="price" type="number" min="1" step="1" required defaultValue={q.quoted_price ?? listPrice ?? ""} className={`${field} w-24`} aria-label="Monthly price" />
+                    <input name="price" type="number" min="1" step="0.01" required defaultValue={q.quoted_price ?? listPrice ?? ""} className={`${field} w-24`} aria-label="Monthly price" />
                     <button className={btn}>{q.quoted_price ? "Update price" : "Set price"}</button>
                   </form>
                   {q.quoted_price && (
