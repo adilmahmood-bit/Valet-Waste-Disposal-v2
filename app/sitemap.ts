@@ -10,7 +10,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: SITE, changeFrequency: "monthly", priority: 1 },
     { url: `${SITE}/app/features`, changeFrequency: "monthly", priority: 0.5 },
-    ...["", "/pricing", "/service-area", "/hosts", "/seniors", "/faq", ...cityPages.map((c) => `/${c.slug}`)].map((path) => ({
+    { url: `${SITE}/hosts`, changeFrequency: "monthly", priority: 0.6 },
+    ...["", "/pricing", "/service-area", "/seniors", "/faq", ...cityPages.map((c) => `/${c.slug}`)].map((path) => ({
       url: `${SITE}/residential${path}`,
       changeFrequency: "monthly" as const,
       priority: path ? 0.6 : 0.9,

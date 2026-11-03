@@ -5,7 +5,7 @@ import { residential } from "@/config/residential";
 const links = [
   { label: "How it works", href: "/residential#how-it-works" },
   { label: "Pricing", href: "/residential/pricing" },
-  { label: "Airbnb hosts", href: "/residential/hosts" },
+  { label: "Airbnb hosts", href: "/hosts" },
   { label: "FAQ", href: "/residential/faq" },
 ];
 

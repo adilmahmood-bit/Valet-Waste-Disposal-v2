@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { IconCalendarOff, IconUsers, IconHomePlus } from "@tabler/icons-react";
+import { IconCalendarOff, IconUsers, IconHomePlus, IconMapPinCheck } from "@tabler/icons-react";
 import { residential, planById, advertisedPrice, money } from "@/config/residential";
 import ZipCheck from "@/components/residential/ZipCheck";
 import { cityPages } from "@/components/residential/cities";
 
 export const metadata: Metadata = {
-  title: "Short-Term Rental Trash Service for Airbnb & Vrbo Hosts",
+  // Written out in full: the layout's "| Valet Waste Disposal" template only applies to pages below it.
+  title: { absolute: "Residential Trash Valet & Can-to-Curb Service for Airbnb & Vrbo Hosts | Valet Waste Disposal" },
   description: "Trash-to-curb trash can service for San Diego short-term rentals on Airbnb, Vrbo and other platforms. Cans out the evening before trash day and back after, even between guests.",
-  alternates: { canonical: "/residential/hosts" },
+  alternates: { canonical: "/hosts" },
 };
 
 const points = [
   { icon: IconCalendarOff, title: "Trash day covered", text: "Guests don't know your trash day. We do. Your trash cans go out the evening before pickup and come back after." },
   { icon: IconUsers, title: "Guest-ready curb", text: "No cans left at the street for days. Your property looks cared for when the next guest pulls up." },
+  { icon: IconMapPinCheck, title: "GPS and photo verified", text: "Every visit is logged by GPS, with a photo when your trash cans go out and when they're back. You know it got done." },
   { icon: IconHomePlus, title: "More than one property", text: "Sign up your first property, then add the rest from the confirmation page. Each property keeps its own trash day and notes." },
 ];
 
@@ -39,7 +41,7 @@ export default function HostsPage() {
       </section>
 
       <section className="py-10 md:py-20">
-        <div className="max-w-5xl mx-auto px-4 grid md:grid-cols-3 gap-4 md:gap-6">
+        <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {points.map((p) => (
             <div key={p.title} className="rounded-2xl bg-res-mist p-5 md:p-6">
               <p.icon size={30} className="text-res-teal-dark" aria-hidden="true" />

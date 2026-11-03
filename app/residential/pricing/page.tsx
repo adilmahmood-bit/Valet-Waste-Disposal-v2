@@ -4,7 +4,7 @@ import { residential, planById, advertisedPrice, money } from "@/config/resident
 import PlanCards from "@/components/residential/PlanCards";
 
 export const metadata: Metadata = {
-  title: "Trash Can Valet Pricing: Curbside Trash Can Service",
+  title: "Pricing: Residential Trash Valet & Can-to-Curb Service",
   description: `Trash-to-curb service from ${money(advertisedPrice(planById("annual")!))}/month with code ${residential.promo.label}. Month-to-month or annual, or a one-time round trip for ${money(planById("one_time")!.basePrice)}. San Diego and North County.`,
   alternates: { canonical: "/residential/pricing" },
 };
@@ -26,7 +26,7 @@ export default function PricingPage() {
         <p className="mt-2 text-slate-700">
           Call or text us at{" "}
           <a href={`tel:${contact.phoneHref}`} className="font-semibold text-res-teal-dark whitespace-nowrap">{contact.phone}</a>, or see{" "}
-          <Link href="/residential/hosts" className="font-semibold text-res-teal-dark underline underline-offset-4">Airbnb hosts</Link>.
+          <Link href="/hosts" className="font-semibold text-res-teal-dark underline underline-offset-4">Airbnb hosts</Link>.
         </p>
       </section>
 

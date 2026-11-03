@@ -18,9 +18,42 @@ export type CityPage = {
   faqs: { q: string; a: string }[];
   // True for areas where vacation rentals are a big share of homes; adds the hosts callout.
   strHeavy: boolean;
+  // Banner photo at public/residential/cities/<slug>.jpg; `position` is the CSS object-position.
+  photo?: { position?: string };
 };
 
 export const cityPages: CityPage[] = [
+  {
+    slug: "oceanside",
+    name: "Oceanside",
+    zips: ["92054", "92056", "92057", "92058"],
+    intro:
+      "Trash can valet for Oceanside homes, from the beach neighborhoods to the inland ZIPs. We roll your trash, recycling and green waste cans to the curb the evening before pickup and bring them back after.",
+    localHeading: "Trash day in Oceanside",
+    local: [
+      "Near the coast, Oceanside has a lot of vacation rentals and second homes close to the pier and the Strand. Guests rarely know trash day, and cans left out for days are the first thing the next guest sees.",
+      "Inland, many Oceanside neighborhoods have larger lots, long driveways and HOA rules about when cans can be out. We bring yours back after pickup so they're out of sight again.",
+    ],
+    neighborhoods: ["Downtown Oceanside", "South Oceanside", "Fire Mountain", "Loma Alta", "Rancho del Oro", "Ocean Hills"],
+    whoUsesIt: [
+      "Vacation rental hosts near the beach",
+      "Owners of second homes",
+      "HOA homeowners who want cans back out of view",
+      "Older residents and their families",
+    ],
+    faqs: [
+      {
+        q: "Do you serve all of Oceanside?",
+        a: "Yes. We serve all four Oceanside ZIP codes: 92054, 92056, 92057 and 92058.",
+      },
+      {
+        q: "Can you handle cans for my Oceanside vacation rental?",
+        a: "Yes. Cans go out and come back every week, and your guests don't need to do anything.",
+      },
+    ],
+    strHeavy: true,
+    photo: { position: "50% 55%" },
+  },
   {
     slug: "solana-beach",
     name: "Solana Beach",
@@ -50,6 +83,7 @@ export const cityPages: CityPage[] = [
       },
     ],
     strHeavy: false,
+    photo: { position: "50% 50%" },
   },
   {
     slug: "del-mar",
@@ -80,6 +114,7 @@ export const cityPages: CityPage[] = [
       },
     ],
     strHeavy: false,
+    photo: { position: "50% 50%" },
   },
   {
     slug: "carlsbad",
@@ -110,6 +145,7 @@ export const cityPages: CityPage[] = [
       },
     ],
     strHeavy: false,
+    photo: { position: "50% 45%" },
   },
   {
     slug: "encinitas",
@@ -140,6 +176,7 @@ export const cityPages: CityPage[] = [
       },
     ],
     strHeavy: true,
+    photo: { position: "50% 50%" },
   },
   {
     slug: "cardiff-by-the-sea",
@@ -170,6 +207,7 @@ export const cityPages: CityPage[] = [
       },
     ],
     strHeavy: true,
+    photo: { position: "50% 50%" },
   },
   {
     slug: "mission-beach",
@@ -199,6 +237,7 @@ export const cityPages: CityPage[] = [
       },
     ],
     strHeavy: true,
+    photo: { position: "50% 60%" },
   },
   {
     slug: "pacific-beach",
@@ -228,6 +267,7 @@ export const cityPages: CityPage[] = [
       },
     ],
     strHeavy: true,
+    photo: { position: "50% 50%" },
   },
   {
     slug: "la-jolla",
@@ -258,6 +298,162 @@ export const cityPages: CityPage[] = [
       },
     ],
     strHeavy: true,
+    photo: { position: "50% 50%" },
+  },
+  {
+    slug: "ocean-beach",
+    name: "Ocean Beach",
+    zips: ["92107"],
+    intro:
+      "Trash can valet for Ocean Beach homes and rentals. The evening before trash day, we take your cans to the curb. After pickup, we bring them back to their spot.",
+    localHeading: "Trash day in Ocean Beach",
+    local: [
+      "Ocean Beach is packed with older cottages, small lots and narrow streets, and many cans live down a side yard or out by the alley. Getting three cans out and back every week takes more effort than it should.",
+      "OB also has a lot of rentals and vacation rentals. When tenants or guests change, trash day is easy to miss. Weekly service keeps it on schedule no matter who is staying.",
+    ],
+    neighborhoods: ["Ocean Beach", "Sunset Cliffs", "OB Pier area", "Point Loma Heights"],
+    whoUsesIt: [
+      "Vacation rental hosts between guests",
+      "Landlords who want trash day handled for their tenants",
+      "Homeowners on tight lots and alleys",
+      "Older residents who'd rather not move heavy trash cans",
+    ],
+    faqs: [
+      {
+        q: "My cans go out to the alley, not the street. Is that OK?",
+        a: "Yes. Add a note about where your cans live and where they go for pickup when you sign up.",
+      },
+      {
+        q: "Do you serve Sunset Cliffs?",
+        a: "Yes. We serve the whole 92107 ZIP code, which includes Ocean Beach and Sunset Cliffs.",
+      },
+    ],
+    strHeavy: true,
+    photo: { position: "50% 55%" },
+  },
+  {
+    slug: "point-loma",
+    name: "Point Loma",
+    zips: ["92106"],
+    intro:
+      "Trash can valet for Point Loma homes. We roll your trash, recycling and green waste cans to the curb the evening before pickup and bring them back after.",
+    localHeading: "Trash day in Point Loma",
+    local: [
+      "Point Loma's streets climb up the peninsula, and a lot of homes sit on slopes with steep driveways or stairs between the cans and the street. That's a hard trip with full cans, every week.",
+      "Many Point Loma households travel or are away for stretches. With weekly service, your cans go out and come back on schedule whether you're home or not.",
+    ],
+    neighborhoods: ["La Playa", "Loma Portal", "Roseville", "Fleetridge", "Wooded Area"],
+    whoUsesIt: [
+      "Hillside homeowners with steep driveways or stairs",
+      "Frequent travelers",
+      "Owners of second homes",
+      "Older residents and their families",
+    ],
+    faqs: [
+      {
+        q: "Do you serve all of Point Loma?",
+        a: "Yes. We serve the 92106 ZIP code. Ocean Beach and Sunset Cliffs (92107) are covered too.",
+      },
+      {
+        q: "There are stairs between my cans and the street. Can you still do it?",
+        a: "Usually, yes. Check the stairs box when you sign up and we'll text you a price before service starts.",
+      },
+    ],
+    strHeavy: false,
+    photo: { position: "50% 50%" },
+  },
+  {
+    slug: "hillcrest-uptown",
+    name: "Hillcrest & Uptown",
+    zips: ["92103"],
+    intro:
+      "Trash can valet for Hillcrest, Mission Hills, Bankers Hill and the rest of Uptown. We take your cans to the curb the evening before trash day and bring them back after pickup.",
+    localHeading: "Trash day in Uptown",
+    local: [
+      "Uptown has older homes on hillside streets and canyon edges, and on many blocks the cans go out to an alley instead of the street. Curb space is tight, and cans left out for days get in everyone's way.",
+      "Many Uptown homes are rentals, duplexes or vacation rentals. When nobody owns trash day, cans get missed. We handle it the same way every week.",
+    ],
+    neighborhoods: ["Hillcrest", "Mission Hills", "Bankers Hill", "Middletown"],
+    whoUsesIt: [
+      "Vacation rental hosts",
+      "Landlords with duplexes and small rentals",
+      "Hillside homeowners with stairs or steep paths",
+      "Busy professionals who travel",
+    ],
+    faqs: [
+      {
+        q: "Do you serve Mission Hills and Bankers Hill?",
+        a: "Yes. We serve the whole 92103 ZIP code, which covers Hillcrest, Mission Hills, Bankers Hill and Middletown.",
+      },
+      {
+        q: "My cans go out to the alley. Is that OK?",
+        a: "Yes. Add a note about where your cans live and where they go for pickup when you sign up.",
+      },
+    ],
+    strHeavy: true,
+    photo: { position: "50% 50%" },
+  },
+  {
+    slug: "north-park",
+    name: "North Park",
+    zips: ["92104"],
+    intro:
+      "Trash can valet for North Park homes. The evening before your trash day, we roll your trash, recycling and green waste cans out. After the truck comes, we bring them back.",
+    localHeading: "Trash day in North Park",
+    local: [
+      "North Park is full of older bungalows, duplexes and homes with a unit out back, and on many blocks the cans go out to the alley. With several households sharing cans, it's easy for nobody to take them out.",
+      "We learn where your cans live and where they go once, then do it the same way every week, so the alley stays clear and pickup doesn't get missed.",
+    ],
+    neighborhoods: ["North Park", "Burlingame", "Morley Field area", "30th Street area"],
+    whoUsesIt: [
+      "Landlords with duplexes or a back unit",
+      "Homeowners on alley pickup",
+      "Busy families",
+      "Older residents who'd rather not move heavy trash cans",
+    ],
+    faqs: [
+      {
+        q: "Our property has two units that share cans. Can you handle that?",
+        a: "Yes. Sign up the address, set the number of cans, and add a note about the setup.",
+      },
+      {
+        q: "My cans go out to the alley. Is that OK?",
+        a: "Yes. Add a note about where your cans live and where they go for pickup when you sign up.",
+      },
+    ],
+    strHeavy: false,
+    photo: { position: "50% 45%" },
+  },
+  {
+    slug: "coronado",
+    name: "Coronado",
+    zips: ["92118"],
+    intro:
+      "Trash can valet for Coronado homes. We take your trash, recycling and green waste cans to the curb the evening before pickup and bring them back after collection.",
+    localHeading: "Trash day in Coronado",
+    local: [
+      "Many Coronado homes are second homes or belong to owners who travel, so nobody is around on trash day. Weekly service keeps cans going out and coming back on schedule.",
+      "In the Village, lots are close together and many cans go out to the alley. Tell us where yours live and where they go, and we'll do it the same way every week.",
+    ],
+    neighborhoods: ["Coronado Village", "Coronado Shores", "Coronado Cays", "Country Club area"],
+    whoUsesIt: [
+      "Owners of second homes",
+      "Frequent travelers",
+      "Older residents and their families",
+      "Busy families",
+    ],
+    faqs: [
+      {
+        q: "Do you serve all of Coronado?",
+        a: "Yes. We serve the 92118 ZIP code, from the Village to the Cays.",
+      },
+      {
+        q: "I'm only in Coronado part of the year. Does that work?",
+        a: "Yes. Service runs whether you're home or not. Text us if you want to pause for a stretch.",
+      },
+    ],
+    strHeavy: false,
+    photo: { position: "50% 50%" },
   },
 ];
 

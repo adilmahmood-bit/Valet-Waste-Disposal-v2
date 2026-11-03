@@ -4,7 +4,7 @@ import { faqs } from "@/components/residential/faq";
 import JsonLd from "@/components/JsonLd";
 
 export const metadata: Metadata = {
-  title: "Trash Can Valet FAQ: Curbside Trash Can Service",
+  title: "FAQ: Residential Trash Valet & Can-to-Curb Service",
   description: "Answers about our trash-to-curb service: gate codes, holiday weeks, rain, pausing for travel, steep driveways and cancelling.",
   alternates: { canonical: "/residential/faq" },
 };
