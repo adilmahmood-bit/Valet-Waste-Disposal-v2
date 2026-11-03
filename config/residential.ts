@@ -114,19 +114,31 @@ export const residential = {
   bins: { min: 1, max: 8 },
 
   // Launch ZIPs, set by Adil 2026-10-26 (San Diego and North County). Others go to the waitlist.
+  // 2026-11-03: Adil opened all of coastal North County and coastal South County except
+  // Imperial Beach (91932 stays out).
   serviceZips: [
     "92007", "92008", "92009", "92010", "92011", "92014", "92024", "92029",
     "92037", "92056", "92064", "92067", "92069", "92075", "92078", "92081",
     "92083", "92091", "92092", "92093", "92096", "92109", "92111", "92117",
     "92121", "92122", "92126", "92127", "92128", "92129", "92130", "92131",
     "92145", "92161",
+    // Coastal North County: the rest of Oceanside
+    "92054", "92057", "92058",
+    // Coastal San Diego: Point Loma, Ocean Beach; Bay Park / West Clairemont / east Mission Bay
+    "92106", "92107", "92110",
+    // Central San Diego, added by Adil 2026-11-03: Downtown, Uptown (Hillcrest, Mission Hills, Bankers Hill), North Park
+    "92101", "92103", "92104",
+    // Coastal South County: Coronado (National City and Chula Vista left out by Adil 2026-11-03)
+    "92118",
   ],
 
   // Cities and neighborhoods those ZIPs cover, for page copy and search engines. Keep in step with serviceZips.
   serviceCities: [
-    "Carlsbad", "Encinitas", "Cardiff-by-the-Sea", "Solana Beach", "Del Mar", "Rancho Santa Fe", "La Jolla",
-    "Pacific Beach", "Carmel Valley", "Clairemont", "Linda Vista", "University City", "Sorrento Valley", "Mira Mesa", "Rancho Peñasquitos",
-    "Rancho Bernardo", "Scripps Ranch", "Poway", "Escondido", "San Marcos", "Vista", "Oceanside",
+    "Oceanside", "Carlsbad", "Encinitas", "Cardiff-by-the-Sea", "Solana Beach", "Del Mar", "Rancho Santa Fe", "La Jolla",
+    "Pacific Beach", "Mission Beach", "Mission Bay", "Bay Park", "Ocean Beach", "Point Loma", "Coronado",
+    "Downtown San Diego", "Uptown", "Hillcrest", "Mission Hills", "North Park",
+    "Carmel Valley", "Clairemont", "Linda Vista", "University City", "Sorrento Valley", "Mira Mesa", "Rancho Peñasquitos",
+    "Rancho Bernardo", "Scripps Ranch", "Poway", "Escondido", "San Marcos", "Vista",
   ],
 
   serviceDays: ["Mon", "Tue", "Wed", "Thu", "Fri"] as Weekday[],
