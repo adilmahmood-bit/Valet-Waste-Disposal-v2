@@ -8,7 +8,7 @@ import StickyCta from "@/components/residential/StickyCta";
 export const metadata: Metadata = {
   title: "Trash Can Help for Seniors in San Diego",
   description:
-    "Weekly bin valet for older adults in San Diego and North County. We take trash cans to the curb and bring them back, so no one has to move heavy bins. Family members can sign up for a parent.",
+    "Weekly trash can valet for older adults in San Diego and North County. We take trash cans to the curb and bring them back, so no one has to move heavy trash cans. Family members can sign up for a parent.",
   alternates: { canonical: "/residential/seniors" },
 };
 
@@ -16,7 +16,7 @@ const points = [
   {
     icon: IconCalendarRepeat,
     title: "Every week, on trash day",
-    text: "The evening before pickup, we roll the trash, recycling and green waste bins to the curb. After the truck comes, we put them back.",
+    text: "The evening before pickup, we roll the trash, recycling and green waste cans to the curb. After the truck comes, we put them back.",
   },
   {
     icon: IconUserCheck,
@@ -26,7 +26,7 @@ const points = [
   {
     icon: IconKey,
     title: "No one needs to be home",
-    text: "Tell us where the bins are kept and add a gate code if there is one. Gate codes are stored encrypted.",
+    text: "Tell us where the cans are kept and add a gate code if there is one. Gate codes are stored encrypted.",
   },
   {
     icon: IconUsers,
@@ -45,14 +45,14 @@ export default function SeniorsPage() {
           <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">For seniors and their families</p>
           <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Help with trash cans, every week.</h1>
           <p className="mt-3 md:mt-4 md:text-lg text-white/85 max-w-2xl">
-            Full trash cans are heavy, and driveways can be steep. We take the bins to the curb the evening before trash day and bring
+            Full trash cans are heavy, and driveways can be steep. We take the cans to the curb the evening before trash day and bring
             them back after, so nobody has to.
           </p>
           <div className="mt-6 max-w-md">
             <p className="font-semibold text-sm md:text-base mb-2">Check the ZIP code</p>
             <ZipCheck dark />
             <p className="mt-3 text-sm text-white/75">
-              <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} bins with code {residential.promo.label}. Month-to-month.
+              <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} cans with code {residential.promo.label}. Month-to-month.
             </p>
           </div>
         </div>
@@ -75,7 +75,7 @@ export default function SeniorsPage() {
           <h2 className="text-2xl md:text-3xl font-bold">Setting this up for a parent?</h2>
           <ol className="mt-4 space-y-3 text-slate-700 list-decimal list-inside leading-relaxed">
             <li>Check their ZIP code above.</li>
-            <li>On the sign-up form, enter their address, trash day and where the bins are kept.</li>
+            <li>On the sign-up form, enter their address, trash day and where the cans are kept.</li>
             <li>Choose &quot;Senior household&quot; as the property type, and use your own name, mobile and email.</li>
             <li>We&apos;ll text you to set up billing before the first visit.</li>
           </ol>

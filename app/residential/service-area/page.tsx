@@ -5,8 +5,8 @@ import ZipCheck from "@/components/residential/ZipCheck";
 import { cityPages } from "@/components/residential/cities";
 
 export const metadata: Metadata = {
-  title: "Bin to Curb Service Area: San Diego & North County",
-  description: `Curbside bin service in ${residential.serviceCities.slice(0, 8).join(", ")} and more. Check your ZIP code or join the waitlist.`,
+  title: "Trash to Curb Service Area: San Diego & North County",
+  description: `Curbside trash can service in ${residential.serviceCities.slice(0, 8).join(", ")} and more. Check your ZIP code or join the waitlist.`,
   alternates: { canonical: "/residential/service-area" },
 };
 

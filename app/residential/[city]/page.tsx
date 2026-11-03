@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   if (!city) return {};
   const weekly = planById("weekly")!;
   return {
-    title: { absolute: `Bin Valet in ${city.name}, CA | Valet Waste Disposal` },
-    description: `Trash can to curb service in ${city.name}. We take your bins to the curb the evening before pickup and bring them back after. From ${money(advertisedPrice(weekly))}/month for up to ${weekly.includedBins} bins with code ${residential.promo.label}.`,
+    title: { absolute: `Trash Can Valet in ${city.name}, CA | Valet Waste Disposal` },
+    description: `Trash can to curb service in ${city.name}. We take your trash cans to the curb the evening before pickup and bring them back after. From ${money(advertisedPrice(weekly))}/month for up to ${weekly.includedBins} cans with code ${residential.promo.label}.`,
     alternates: { canonical: `/residential/${city.slug}` },
   };
 }
@@ -41,7 +41,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
     "@graph": [
       {
         "@type": "Service",
-        name: `Bin valet in ${city.name}, CA`,
+        name: `Trash can valet in ${city.name}, CA`,
         serviceType: "Curbside trash can service",
         url: `${SITE}/residential/${city.slug}`,
         areaServed: { "@type": "City", name: `${city.name}, CA` },
@@ -73,14 +73,14 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             <Link href="/residential" className="hover:text-white">For Homes</Link> ›{" "}
             <Link href="/residential/service-area" className="hover:text-white">Service area</Link> › <span className="text-white/80">{city.name}</span>
           </nav>
-          <h1 className="mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Bin valet in {city.name}</h1>
+          <h1 className="mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Trash can valet in {city.name}</h1>
           <p className="mt-2 text-res-teal font-semibold">Trash cans to the curb and back, every week</p>
           <p className="mt-3 md:mt-4 md:text-lg text-white/85 max-w-2xl">{city.intro}</p>
           <div className="mt-6 max-w-md">
             <p className="font-semibold text-sm md:text-base mb-2">Check your ZIP</p>
             <ZipCheck dark />
             <p className="mt-3 text-sm text-white/75">
-              From <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} bins with code {residential.promo.label}.
+              From <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} cans with code {residential.promo.label}.
             </p>
           </div>
         </div>

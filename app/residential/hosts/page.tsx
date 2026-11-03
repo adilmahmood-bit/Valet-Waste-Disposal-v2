@@ -8,13 +8,13 @@ import { cityPages } from "@/components/residential/cities";
 
 export const metadata: Metadata = {
   title: "Short-Term Rental Trash Service for Airbnb & Vrbo Hosts",
-  description: "Bin-to-curb trash can service for San Diego short-term rentals on Airbnb, Vrbo and other platforms. Bins out the evening before trash day and back after, even between guests.",
+  description: "Trash-to-curb trash can service for San Diego short-term rentals on Airbnb, Vrbo and other platforms. Cans out the evening before trash day and back after, even between guests.",
   alternates: { canonical: "/residential/hosts" },
 };
 
 const points = [
-  { icon: IconCalendarOff, title: "Trash day covered", text: "Guests don't know your trash day. We do. Your bins go out the evening before pickup and come back after." },
-  { icon: IconUsers, title: "Guest-ready curb", text: "No bins left at the street for days. Your property looks cared for when the next guest pulls up." },
+  { icon: IconCalendarOff, title: "Trash day covered", text: "Guests don't know your trash day. We do. Your trash cans go out the evening before pickup and come back after." },
+  { icon: IconUsers, title: "Guest-ready curb", text: "No cans left at the street for days. Your property looks cared for when the next guest pulls up." },
   { icon: IconHomePlus, title: "More than one property", text: "Sign up your first property, then add the rest from the confirmation page. Each property keeps its own trash day and notes." },
 ];
 
@@ -30,7 +30,7 @@ export default function HostsPage() {
           <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">For Airbnb, Vrbo and short-term rental hosts</p>
           <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Trash day, handled between guests.</h1>
           <p className="mt-3 md:mt-4 md:text-lg text-white/85 max-w-2xl">
-            Weekly bin valet for your short-term rental, whether it&apos;s listed on Airbnb, Vrbo or booked direct. Same price as a homeowner: from {money(advertisedPrice(weekly))} a month per property for up to {weekly.includedBins} bins with code {residential.promo.label}.
+            Weekly trash can valet for your short-term rental, whether it&apos;s listed on Airbnb, Vrbo or booked direct. Same price as a homeowner: from {money(advertisedPrice(weekly))} a month per property for up to {weekly.includedBins} cans with code {residential.promo.label}.
           </p>
           <div className="mt-6 md:mt-8 max-w-md text-shadow-none">
             <ZipCheck dark />

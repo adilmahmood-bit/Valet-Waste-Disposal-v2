@@ -31,7 +31,7 @@ export default function PlanCards() {
               </p>
             )}
             <p className="mt-2 text-sm text-slate-600">
-              Up to {p.includedBins} bins. Extra bins {money(p.extraBinPrice)} each{p.billing === "monthly" ? " per month" : ""}.
+              Up to {p.includedBins} cans. Extra cans {money(p.extraBinPrice)} each{p.billing === "monthly" ? " per month" : ""}.
             </p>
             <ul className="mt-4 space-y-2 text-sm flex-1">
               {p.includes.map((i) => (
