@@ -16,8 +16,8 @@ export default function Nav() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  // The app demo, residential pages and admin have their own chrome.
-  if (pathname?.startsWith("/app") || pathname?.startsWith("/residential") || pathname?.startsWith("/admin")) return null;
+  // The app demo, residential pages (including /hosts) and admin have their own chrome.
+  if (["/app", "/residential", "/hosts", "/admin"].some((p) => pathname?.startsWith(p))) return null;
 
   const links = [
     { label: "Services", href: "#services" },

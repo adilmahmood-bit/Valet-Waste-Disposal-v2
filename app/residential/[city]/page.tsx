@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { IconCheck, IconBuildingCottage } from "@tabler/icons-react";
 import { residential, planById, enabledPlans, advertisedPrice, money } from "@/config/residential";
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   if (!city) return {};
   const weekly = planById("weekly")!;
   return {
-    title: { absolute: `Trash Can Valet in ${city.name}, CA | Valet Waste Disposal` },
+    title: { absolute: `Residential Trash Valet & Can-to-Curb Service in ${city.name}, CA` },
     description: `Trash can to curb service in ${city.name}. We take your trash cans to the curb the evening before pickup and bring them back after. From ${money(advertisedPrice(weekly))}/month for up to ${weekly.includedBins} cans with code ${residential.promo.label}.`,
     alternates: { canonical: `/residential/${city.slug}` },
   };
@@ -67,18 +68,35 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
     <>
       <JsonLd data={jsonLd} />
 
-      <section className="bg-res-navy text-white">
-        <div className="max-w-4xl mx-auto px-4 pt-8 pb-10 md:py-16">
+      <section className="relative overflow-hidden bg-res-navy text-white">
+        {city.photo && (
+          <>
+            <Image
+              src={`/residential/cities/${city.slug}.jpg`}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+              style={{ objectPosition: city.photo.position ?? "50% 50%" }}
+            />
+            <div className="absolute inset-0 bg-res-navy/60" aria-hidden="true" />
+          </>
+        )}
+        {/* Dark text shadow keeps the copy readable over the photo. */}
+        <div className={`relative max-w-4xl mx-auto px-4 pt-8 pb-10 md:py-20 ${city.photo ? "text-shadow-md text-shadow-black/80" : ""}`}>
           <nav aria-label="Breadcrumb" className="text-xs text-white/60">
             <Link href="/residential" className="hover:text-white">For Homes</Link> ›{" "}
             <Link href="/residential/service-area" className="hover:text-white">Service area</Link> › <span className="text-white/80">{city.name}</span>
           </nav>
           <h1 className="mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Trash can valet in {city.name}</h1>
-          <p className="mt-2 text-res-teal font-semibold">Trash cans to the curb and back, every week</p>
+          <p className="mt-2 text-[#7FDDE6] font-semibold">Trash cans to the curb and back, every week</p>
           <p className="mt-3 md:mt-4 md:text-lg text-white/85 max-w-2xl">{city.intro}</p>
           <div className="mt-6 max-w-md">
             <p className="font-semibold text-sm md:text-base mb-2">Check your ZIP</p>
-            <ZipCheck dark />
+            <div className="text-shadow-none">
+              <ZipCheck dark />
+            </div>
             <p className="mt-3 text-sm text-white/75">
               From <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} cans with code {residential.promo.label}.
             </p>
@@ -114,7 +132,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
           </div>
 
           {city.strHeavy && (
-            <Link href="/residential/hosts" className="mt-8 flex items-start gap-3 rounded-2xl bg-res-mist p-5 hover:ring-2 hover:ring-res-teal">
+            <Link href="/hosts" className="mt-8 flex items-start gap-3 rounded-2xl bg-res-mist p-5 hover:ring-2 hover:ring-res-teal">
               <IconBuildingCottage size={28} className="text-res-teal-dark shrink-0" aria-hidden="true" />
               <span>
                 <span className="block font-semibold">Run a short-term rental in {city.name}?</span>

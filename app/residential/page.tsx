@@ -18,7 +18,7 @@ const steps = [
 ];
 
 const audiences = [
-  { icon: IconBuildingCottage, title: "Airbnb & Vrbo hosts", text: "Short-term rental guests don't need to know your trash day.", href: "/residential/hosts" },
+  { icon: IconBuildingCottage, title: "Airbnb & Vrbo hosts", text: "Short-term rental guests don't need to know your trash day.", href: "/hosts" },
   { icon: IconHome, title: "Busy families", text: "One less chore on a busy weeknight." },
   { icon: IconHeartHandshake, title: "Seniors", text: "Or anyone who finds heavy trash cans hard to move.", href: "/residential/seniors" },
   { icon: IconPlaneDeparture, title: "Travelers", text: "Your trash cans still go out while you're away." },
@@ -40,7 +40,7 @@ function serviceJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: "Residential trash can valet (trash-to-curb service)",
+    name: "Residential Trash Valet & Can-to-Curb Service",
     serviceType: "Curbside trash can service",
     url: `${SITE}/residential`,
     description: "We take trash, recycling and green waste cans to the curb the evening before pickup and bring them back after.",
@@ -78,7 +78,7 @@ export default function ResidentialHome() {
         <div className="relative max-w-6xl mx-auto px-4 pt-8 pb-10 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           {/* Dark text shadow keeps the copy readable over the photo. */}
           <div className="text-shadow-md text-shadow-black/80">
-            <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">Can-to-curb valet · San Diego</p>
+            <p className="text-[#7FDDE6] font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">Can-to-curb valet · San Diego</p>
             <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Your trash cans to the curb and back. Every week.</h1>
             <p className="mt-3 md:mt-4 md:text-lg text-white/85">
               We roll your trash, recycling and green waste cans out the evening before pickup, then bring them back after.

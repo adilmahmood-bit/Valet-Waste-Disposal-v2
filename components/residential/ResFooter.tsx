@@ -24,7 +24,7 @@ export default function ResFooter() {
           <Link href="/residential/pricing" className="hover:text-white">Pricing</Link>
           <Link href="/residential/service-area" className="hover:text-white">Service area</Link>
           <Link href="/residential/seniors" className="hover:text-white">For seniors</Link>
-          <Link href="/residential/hosts" className="hover:text-white">Airbnb &amp; Vrbo hosts</Link>
+          <Link href="/hosts" className="hover:text-white">Airbnb &amp; Vrbo hosts</Link>
           <Link href="/residential/faq" className="hover:text-white">FAQ</Link>
           <Link href="/residential/terms" className="hover:text-white">Service terms</Link>
           <Link href="/" className="hover:text-white">Apartment communities</Link>
