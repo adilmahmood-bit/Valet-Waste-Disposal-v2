@@ -25,9 +25,9 @@ export default function TermsPage() {
         <section>
           <h2>1. The service</h2>
           <p className="mt-2">
-            Valet Waste Disposal (&quot;we&quot;) moves your trash, recycling and green waste bins from their usual spot to the curb the
-            evening before your scheduled trash pickup and, on round-trip plans, returns them after pickup. We service the bins and
-            number of bins listed on your account.
+            Valet Waste Disposal (&quot;we&quot;) moves your trash, recycling and green waste cans from their usual spot to the curb the
+            evening before your scheduled trash pickup and, on round-trip plans, returns them after pickup. We service the cans and
+            number of cans listed on your account.
           </p>
         </section>
         <section>
@@ -40,23 +40,23 @@ export default function TermsPage() {
         <section>
           <h2>3. Access</h2>
           <p className="mt-2">
-            You agree to give us safe access to your bins, including any gate code. We keep gate codes restricted to our office and the
+            You agree to give us safe access to your trash cans, including any gate code. We keep gate codes restricted to our office and the
             person servicing your home. If access is blocked or unsafe, we may skip that visit and let you know. Homes with steep
             driveways, stairs or long walks to the curb may be quoted a different price before service starts.
           </p>
         </section>
         <section>
-          <h2>4. Your bins</h2>
+          <h2>4. Your trash cans</h2>
           <p className="mt-2">
-            Bins must be the ones issued by your trash hauler, closed, and not overloaded. We don&apos;t move loose items, bulky items or anything outside the bins.
-            Bin cleaning, bulky pickup and junk removal are not part of this service.
+            Cans must be the ones issued by your trash hauler, closed, and not overloaded. We don&apos;t move loose items, bulky items or anything outside the cans.
+            Trash can cleaning, bulky pickup and junk removal are not part of this service.
           </p>
         </section>
         <section>
           <h2>5. Billing</h2>
           <p className="mt-2">
             Monthly plans are billed month-to-month and renew automatically each month until cancelled. One-time visits are billed once.
-            Prices are as shown at sign-up for your number of bins.
+            Prices are as shown at sign-up for your number of cans.
           </p>
         </section>
         <section>

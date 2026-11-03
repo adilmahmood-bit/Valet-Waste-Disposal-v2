@@ -174,7 +174,7 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
             </select>
           </div>
           <div>
-            <label htmlFor="bins" className={label}>Number of bins</label>
+            <label htmlFor="bins" className={label}>Number of trash cans</label>
             <select id="bins" value={f.bins} onChange={(e) => set("bins", Number(e.target.value))} className={input}>
               {Array.from({ length: residential.bins.max - residential.bins.min + 1 }, (_, i) => residential.bins.min + i).map((n) => (
                 <option key={n} value={n}>{n}</option>
@@ -205,7 +205,7 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
             </div>
           )}
           <div>
-            <label htmlFor="notes" className={label}>Where are your bins? Any notes?</label>
+            <label htmlFor="notes" className={label}>Where are your trash cans? Any notes?</label>
             <textarea id="notes" rows={3} placeholder="Side yard, left of the garage" value={f.accessNotes} onChange={(e) => set("accessNotes", e.target.value)} className={input} />
           </div>
           <div>
@@ -228,7 +228,7 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
 
       {step === 2 && (
         <form onSubmit={next} className="mt-8 space-y-3">
-          <p className="text-slate-600">Prices for {f.bins} {f.bins === 1 ? "bin" : "bins"}{needsQuote ? ". Your final price may differ after we look at access." : "."}</p>
+          <p className="text-slate-600">Prices for {f.bins} {f.bins === 1 ? "can" : "cans"}{needsQuote ? ". Your final price may differ after we look at access." : "."}</p>
           {plans.map((p) => (
             <label key={p.id} className="flex items-start gap-3 rounded-2xl border-2 border-slate-200 p-4 cursor-pointer has-[:checked]:border-res-teal has-[:checked]:bg-res-mist">
               <input type="radio" name="plan" className="mt-1 h-5 w-5 accent-[#137F8C]" checked={f.plan === p.id} onChange={() => set("plan", p.id)} />
@@ -295,7 +295,7 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
             <p className="font-semibold text-base">Your service</p>
             <p>{f.street}, {f.city} {f.zip}</p>
             <p>
-              {selectedPlan.name}, {f.bins} {f.bins === 1 ? "bin" : "bins"}: {money(planPrice(selectedPlan, f.bins, f.referralCode))}{selectedPlan.billing === "monthly" ? " per month" : ""}
+              {selectedPlan.name}, {f.bins} {f.bins === 1 ? "can" : "cans"}: {money(planPrice(selectedPlan, f.bins, f.referralCode))}{selectedPlan.billing === "monthly" ? " per month" : ""}
               {promoApplied && ` (code ${residential.promo.label}, ${money(residential.promo.monthlyOff)} off)`}
               {needsQuote ? " (custom quote to follow)" : ""}
             </p>
@@ -304,10 +304,10 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
           <div className="text-sm text-slate-700 space-y-1.5">
             <p className="font-semibold text-base text-res-navy">The short version of the terms</p>
             <ul className="list-disc list-inside space-y-1">
-              <li>We move your bins on your trash pickup day and follow holiday shifts.</li>
+              <li>We move your trash cans on your trash pickup day and follow holiday shifts.</li>
               <li>{selectedPlan.id === "annual" ? "The annual agreement is 12 months of weekly service, billed monthly." : "Monthly plans renew each month until you cancel."}</li>
-              <li>You give us safe access to your bins.</li>
-              <li>Bulky items, bin cleaning and junk removal aren&apos;t included.</li>
+              <li>You give us safe access to your trash cans.</li>
+              <li>Bulky items, trash can cleaning and junk removal aren&apos;t included.</li>
             </ul>
             <p>
               <Link href="/residential/terms" target="_blank" className="font-semibold text-res-teal-dark underline underline-offset-4">Read the full Residential Service Terms</Link>

@@ -46,7 +46,7 @@ async function handle(req: NextRequest) {
   if (!street || zip.length !== 5) return bad("Please enter your street address and ZIP.");
   if (!isServiceZip(zip)) return bad(`We don't serve ${zip} yet. Please join the waitlist.`);
   if (!(residential.serviceDays as string[]).includes(trashDay)) return bad("Please choose your trash day.");
-  if (!Number.isInteger(bins) || bins < residential.bins.min || bins > residential.bins.max) return bad("Please choose your number of bins.");
+  if (!Number.isInteger(bins) || bins < residential.bins.min || bins > residential.bins.max) return bad("Please choose your number of cans.");
   if (!residential.propertyTypes.some((p) => p.id === propertyType)) return bad("Please choose a property type.");
   if (!plan || !plan.enabled) return bad("Please choose a plan.");
   if (!name || !mobile || !isEmail(email)) return bad("Please enter your name, mobile number and a valid email.");
@@ -132,7 +132,7 @@ async function handle(req: NextRequest) {
     `Email: ${email}`,
     `Address: ${full}`,
     `Trash day: ${fullDayName(trashDay)}`,
-    `Bins: ${bins}`,
+    `Cans: ${bins}`,
     `Plan: ${plan.name} (${priceText})`,
     `Property type: ${propertyTypeLabel(propertyType)}`,
     `Access: ${accessFlags.map(accessFlagLabel).join(", ") || "none"}`,
@@ -165,7 +165,7 @@ async function handle(req: NextRequest) {
       needsQuote.length ? "We got your request - Valet Waste Disposal" : "You're signed up - Valet Waste Disposal",
       needsQuote.length
         ? `Hi ${first},\n\nThanks for your request for ${full}. We'll look at your access notes and text you a custom price. Your service starts once you approve it.\n\nQuestions? Call or text ${residential.contact.phone}.\n\nValet Waste Disposal`
-        : `Hi ${first},\n\nYou're signed up for ${plan.name} at ${full}.\n\nFirst service: bins out the evening of ${formatLong(addDays(startDate!, -1))}, back after pickup on ${formatLong(startDate!)}.\nPrice: ${priceText} for ${bins} bins.\n${residential.payments.enabled ? "" : `We'll text you to set up billing before your first visit.\n`}\nQuestions? Call or text ${residential.contact.phone}.\n\nValet Waste Disposal`,
+        : `Hi ${first},\n\nYou're signed up for ${plan.name} at ${full}.\n\nFirst service: cans out the evening of ${formatLong(addDays(startDate!, -1))}, back after pickup on ${formatLong(startDate!)}.\nPrice: ${priceText} for ${bins} cans.\n${residential.payments.enabled ? "" : `We'll text you to set up billing before your first visit.\n`}\nQuestions? Call or text ${residential.contact.phone}.\n\nValet Waste Disposal`,
     );
     await sendEmail(
       residential.notifyEmail,

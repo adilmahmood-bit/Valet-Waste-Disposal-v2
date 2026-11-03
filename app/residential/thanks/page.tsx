@@ -29,10 +29,10 @@ export default async function ThanksPage({ searchParams }: { searchParams: Promi
             <div className="rounded-2xl bg-res-mist p-5">
               <p className="text-sm font-semibold uppercase tracking-wide text-res-teal-dark">Your first service</p>
               <p className="mt-2 text-lg">
-                Bins out: <strong>evening of {formatLong(addDays(validStart, -1))}</strong>
+                Cans out: <strong>evening of {formatLong(addDays(validStart, -1))}</strong>
               </p>
               <p className="text-lg">
-                Pickup and bins back: <strong>{formatLong(validStart)}</strong>
+                Pickup and cans back: <strong>{formatLong(validStart)}</strong>
               </p>
             </div>
           )}

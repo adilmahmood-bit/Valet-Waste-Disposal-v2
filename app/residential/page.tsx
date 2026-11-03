@@ -12,16 +12,16 @@ import { faqs } from "@/components/residential/faq";
 
 // Step colors match the "Nightly Routine" steps on the multifamily home page.
 const steps = [
-  { color: "#1B4F72", when: "Once", title: "Sign up", text: "Pick your plan and tell us your trash day and where your bins live." },
-  { color: "#2C7FB8", when: "Evening before pickup", title: "Bins out", text: "We roll your trash, recycling and green waste bins to the curb." },
-  { color: "#C9622B", when: "After pickup", title: "Bins back", text: "We bring them back to their spot. Your curb stays clear." },
+  { color: "#1B4F72", when: "Once", title: "Sign up", text: "Pick your plan and tell us your trash day and where your trash cans live." },
+  { color: "#2C7FB8", when: "Evening before pickup", title: "Cans out", text: "We roll your trash, recycling and green waste cans to the curb." },
+  { color: "#C9622B", when: "After pickup", title: "Cans back", text: "We bring them back to their spot. Your curb stays clear." },
 ];
 
 const audiences = [
-  { icon: IconHome, title: "Busy families", text: "One less chore on a busy weeknight." },
-  { icon: IconHeartHandshake, title: "Seniors", text: "Or anyone who finds heavy bins hard to move.", href: "/residential/seniors" },
-  { icon: IconPlaneDeparture, title: "Travelers", text: "Your bins still go out while you're away." },
   { icon: IconBuildingCottage, title: "Airbnb & Vrbo hosts", text: "Short-term rental guests don't need to know your trash day.", href: "/residential/hosts" },
+  { icon: IconHome, title: "Busy families", text: "One less chore on a busy weeknight." },
+  { icon: IconHeartHandshake, title: "Seniors", text: "Or anyone who finds heavy trash cans hard to move.", href: "/residential/seniors" },
+  { icon: IconPlaneDeparture, title: "Travelers", text: "Your trash cans still go out while you're away." },
 ];
 
 const trust = ["Background-checked staff", "Locally owned in San Diego", "Follows your city's holiday schedule"];
@@ -40,10 +40,10 @@ function serviceJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "Service",
-    name: "Residential bin valet (bin-to-curb service)",
+    name: "Residential trash can valet (trash-to-curb service)",
     serviceType: "Curbside trash can service",
     url: `${SITE}/residential`,
-    description: "We take trash, recycling and green waste bins to the curb the evening before pickup and bring them back after.",
+    description: "We take trash, recycling and green waste cans to the curb the evening before pickup and bring them back after.",
     provider: {
       "@type": "LocalBusiness",
       name: "Valet Waste Disposal",
@@ -78,10 +78,10 @@ export default function ResidentialHome() {
         <div className="relative max-w-6xl mx-auto px-4 pt-8 pb-10 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           {/* Dark text shadow keeps the copy readable over the photo. */}
           <div className="text-shadow-md text-shadow-black/80">
-            <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">Bin-to-curb valet · San Diego</p>
-            <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Your bins to the curb and back. Every week.</h1>
+            <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">Can-to-curb valet · San Diego</p>
+            <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Your trash cans to the curb and back. Every week.</h1>
             <p className="mt-3 md:mt-4 md:text-lg text-white/85">
-              We roll your trash, recycling and green waste bins out the evening before pickup, then bring them back after.
+              We roll your trash, recycling and green waste cans out the evening before pickup, then bring them back after.
             </p>
             <div className="mt-6 max-w-md">
               <p className="font-semibold text-sm md:text-base mb-2">Check if we serve your street</p>
@@ -89,7 +89,7 @@ export default function ResidentialHome() {
                 <ZipCheck dark />
               </div>
               <p className="mt-3 text-sm text-white/75">
-                From <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} bins with code {residential.promo.label}.
+                From <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} cans with code {residential.promo.label}.
               </p>
             </div>
             <ul className="mt-6 space-y-1.5 text-sm text-white/85 md:hidden">
@@ -110,7 +110,7 @@ export default function ResidentialHome() {
               <span className="text-5xl font-bold">{money(advertisedPrice(weekly))}</span>
               <span className="text-xl font-medium text-white/70">/ month</span>
             </p>
-            <p className="mt-2 text-white/80">Up to {weekly.includedBins} bins. Month-to-month.</p>
+            <p className="mt-2 text-white/80">Up to {weekly.includedBins} cans. Month-to-month.</p>
             <p className="mt-3 rounded-lg bg-[#C9622B]/90 px-3 py-2 text-sm font-semibold">{promoLine(weekly)}</p>
             <ul className="mt-6 space-y-3 text-white/90">
               {trust.map((t) => (
@@ -159,7 +159,7 @@ export default function ResidentialHome() {
           </ol>
           <p className="mt-8 md:mt-12 mx-auto w-fit flex items-center gap-3 rounded-2xl md:rounded-full bg-res-mist px-5 md:px-6 py-3 text-[16.8px] md:text-[19.2px] text-res-navy">
             <IconCamera size={24} className="shrink-0 text-res-teal-dark" aria-hidden="true" />
-            <span><span className="font-semibold">Photo proof on every visit.</span> We snap a photo when your bins go out and when they&apos;re back.</span>
+            <span><span className="font-semibold">Photo proof on every visit.</span> We snap a photo when your trash cans go out and when they&apos;re back.</span>
           </p>
         </div>
       </section>
@@ -203,11 +203,11 @@ export default function ResidentialHome() {
 
       <section className={`${section} bg-slate-50`}>
         <div className="max-w-3xl mx-auto px-4">
-          <h2 className={heading}>Curbside bin service in San Diego and North County</h2>
+          <h2 className={heading}>Curbside trash can service in San Diego and North County</h2>
           <p className="mt-4 text-slate-700 leading-relaxed">
-            Valet Waste Disposal is a bin-to-curb service for homes. The evening before your trash day, we take your trash,
+            Valet Waste Disposal is a trash-to-curb service for homes. The evening before your trash day, we take your trash,
             recycling and green waste cans curbside. After the truck comes, we bring them back to your side yard or garage.
-            No more hauling heavy bins down the driveway or leaving them at the street all day.
+            No more hauling heavy trash cans down the driveway or leaving them at the street all day.
           </p>
           <p className="mt-4 text-sm text-slate-600 leading-relaxed">
             <span className="font-semibold text-res-navy">Where we work:</span> {residential.serviceCities.join(", ")}.{" "}
@@ -217,7 +217,7 @@ export default function ResidentialHome() {
             {cityPages.map((c) => (
               <li key={c.slug}>
                 <Link href={`/residential/${c.slug}`} className="inline-block rounded-full bg-white border border-slate-200 px-3 py-1.5 text-sm font-medium hover:border-res-teal">
-                  Bin valet in {c.name}
+                  Trash can valet in {c.name}
                 </Link>
               </li>
             ))}

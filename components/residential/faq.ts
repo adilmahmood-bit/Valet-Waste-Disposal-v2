@@ -10,15 +10,15 @@ const askUs = `We're finalizing this. Call or text us at ${contact.phone} for de
 export const faqs: { q: string; a: string }[] = [
   {
     q: "How much does a trash can valet service cost?",
-    a: `Weekly service is ${money(weekly.basePrice)} a month month-to-month, or ${money(annual.basePrice)} a month with a 12-month agreement, for up to ${weekly.includedBins} bins. Our first ${residential.promo.limit} customers get ${money(residential.promo.monthlyOff)} a month off with code ${residential.promo.label}: ${money(advertisedPrice(weekly))} and ${money(advertisedPrice(annual))}. Extra bins are ${money(weekly.extraBinPrice)} each per month. A one-time round trip is ${money(oneTime.basePrice)}.`,
+    a: `Weekly service is ${money(weekly.basePrice)} a month month-to-month, or ${money(annual.basePrice)} a month with a 12-month agreement, for up to ${weekly.includedBins} cans. Our first ${residential.promo.limit} customers get ${money(residential.promo.monthlyOff)} a month off with code ${residential.promo.label}: ${money(advertisedPrice(weekly))} and ${money(advertisedPrice(annual))}. Extra cans are ${money(weekly.extraBinPrice)} each per month. A one-time round trip is ${money(oneTime.basePrice)}.`,
   },
   {
     q: "Do I need to be home?",
-    a: "No. Tell us where your bins are kept and add a gate code if you have one. We do the rest whether you're home or not.",
+    a: "No. Tell us where your trash cans are kept and add a gate code if you have one. We do the rest whether you're home or not.",
   },
   {
     q: "Can someone take my trash cans to the curb while I'm on vacation?",
-    a: "Yes. That's what weekly service does. Your bins go out and come back on schedule while you're away.",
+    a: "Yes. That's what weekly service does. Your trash cans go out and come back on schedule while you're away.",
   },
   {
     q: "Can I sign up for my parent?",

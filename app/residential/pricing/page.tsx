@@ -4,8 +4,8 @@ import { residential, planById, advertisedPrice, money } from "@/config/resident
 import PlanCards from "@/components/residential/PlanCards";
 
 export const metadata: Metadata = {
-  title: "Bin Valet Pricing: Curbside Trash Can Service",
-  description: `Bin-to-curb service from ${money(advertisedPrice(planById("annual")!))}/month with code ${residential.promo.label}. Month-to-month or annual, or a one-time round trip for ${money(planById("one_time")!.basePrice)}. San Diego and North County.`,
+  title: "Trash Can Valet Pricing: Curbside Trash Can Service",
+  description: `Trash-to-curb service from ${money(advertisedPrice(planById("annual")!))}/month with code ${residential.promo.label}. Month-to-month or annual, or a one-time round trip for ${money(planById("one_time")!.basePrice)}. San Diego and North County.`,
   alternates: { canonical: "/residential/pricing" },
 };
 
@@ -14,7 +14,7 @@ export default function PricingPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 md:py-16">
-      <h1 className="text-4xl font-bold text-center">Simple bin valet pricing</h1>
+      <h1 className="text-4xl font-bold text-center">Simple trash can valet pricing</h1>
       <p className="mt-3 text-center text-slate-600 max-w-xl mx-auto">Weekly service month-to-month or with an annual agreement, or a single visit.</p>
 
       <div className="mt-12">
@@ -32,7 +32,7 @@ export default function PricingPage() {
 
       <div className="mt-6 max-w-2xl mx-auto space-y-2 text-center text-sm text-slate-600">
         <p>Steep driveway, stairs, or a long walk to the curb? We&apos;ll text you a custom price before you start.</p>
-        <p>Bin cleaning, bulky items and junk removal are not part of this service.</p>
+        <p>Trash can cleaning, bulky items and junk removal are not part of this service.</p>
       </div>
     </div>
   );

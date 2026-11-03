@@ -47,13 +47,13 @@ export const residential = {
     {
       id: "weekly",
       name: "Month-to-Month Term",
-      blurb: "Every week, we roll your bins to the curb and bring them back in.",
+      blurb: "Every week, we roll your trash cans to the curb and bring them back in.",
       includes: [
-        "Bins to the curb the evening before pickup",
-        "Bins back to their spot after pickup",
+        "Cans to the curb the evening before pickup",
+        "Cans back to their spot after pickup",
         "Month-to-month billing",
       ],
-      basePrice: 59.99, // Set by Adil 2026-11-02; $49.99 with the launch promo
+      basePrice: 59, // Set by Adil 2026-11-02; $49 with the launch promo
       includedBins: 3, // FILL IN
       extraBinPrice: 5, // FILL IN: per extra bin, per month
       billing: "monthly",
@@ -65,11 +65,11 @@ export const residential = {
       name: "Annual Agreement",
       blurb: "The same weekly service at a lower monthly rate, with a 12-month agreement.",
       includes: [
-        "Bins to the curb the evening before pickup",
-        "Bins back to their spot after pickup",
+        "Cans to the curb the evening before pickup",
+        "Cans back to their spot after pickup",
         "12-month agreement, billed monthly",
       ],
-      basePrice: 49.99, // Set by Adil 2026-11-02; $39.99 with the launch promo
+      basePrice: 49, // Set by Adil 2026-11-02; $39 with the launch promo
       includedBins: 3,
       extraBinPrice: 5,
       billing: "monthly",
@@ -80,8 +80,8 @@ export const residential = {
     {
       id: "push_out",
       name: "Push-Out Only",
-      blurb: "We roll your bins to the curb. You bring them back.",
-      includes: ["Bins to the curb the evening before pickup", "Month-to-month billing"],
+      blurb: "We roll your trash cans to the curb. You bring them back.",
+      includes: ["Cans to the curb the evening before pickup", "Month-to-month billing"],
       basePrice: 35, // FILL IN
       includedBins: 3,
       extraBinPrice: 5,
@@ -92,7 +92,7 @@ export const residential = {
       id: "one_time",
       name: "One-Time Round Trip",
       blurb: "A single out-and-back visit. No monthly plan.",
-      includes: ["Bins out the evening before pickup", "Bins back after pickup"],
+      includes: ["Cans out the evening before pickup", "Cans back after pickup"],
       basePrice: 25, // Set by Adil 2026-10-26
       includedBins: 3,
       extraBinPrice: 5,
@@ -137,7 +137,7 @@ export const residential = {
   accessFlags: [
     { id: "gate_code", label: "Gate code needed", quoteRequired: false },
     { id: "steep_driveway", label: "Steep driveway", quoteRequired: true },
-    { id: "stairs", label: "Stairs between bins and curb", quoteRequired: true },
+    { id: "stairs", label: "Stairs between cans and curb", quoteRequired: true },
     { id: "long_walk", label: "Long walk to curb (over 50 ft)", quoteRequired: true },
     { id: "pets", label: "Pets in yard", quoteRequired: false },
   ] as AccessFlag[],
@@ -227,8 +227,8 @@ export function openDecisions() {
   const weekly = planById("weekly")!;
   const pushOut = planById("push_out")!;
   return [
-    `Bins included in the ${money(weekly.basePrice)}/mo plan: ${weekly.includedBins}`,
-    `Extra bin ${money(weekly.extraBinPrice)}/mo`,
+    `Cans included in the ${money(weekly.basePrice)}/mo plan: ${weekly.includedBins}`,
+    `Extra can ${money(weekly.extraBinPrice)}/mo`,
     `Push-out plan ${pushOut.enabled ? "on" : "off"}`,
     "Missed-visit policy",
     "Payments off (billing set up by text)",
