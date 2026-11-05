@@ -25,7 +25,7 @@ export default function HostsPage() {
   return (
     <>
       <section className="relative overflow-hidden bg-res-navy text-white">
-        <Image src="/residential-hosts-cottage.jpg" alt="" fill priority sizes="100vw" className="object-cover object-[50%_60%]" />
+        <Image src="/residential-hosts-bungalow.jpg" alt="" fill priority sizes="100vw" className="object-cover object-[50%_60%]" />
         <div className="absolute inset-0 bg-res-navy/60" aria-hidden="true" />
         {/* Dark text shadow keeps the copy readable over the photo. */}
         <div className="relative max-w-4xl mx-auto px-4 pt-8 pb-10 md:py-24 text-shadow-md text-shadow-black/80">
