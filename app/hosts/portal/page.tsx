@@ -64,7 +64,10 @@ import {
   fmtDayTime,
   fmtTime,
   invoiceTotal,
+  haulerName,
+  overflowAllowed,
   overflowPrice,
+  propertyMonthly,
   planLabel,
   planPrice,
   referralCredits,
@@ -422,7 +425,7 @@ function Dashboard({
                       className="w-full text-left rounded-lg px-3 py-2 text-sm hover:bg-black/5 flex items-center gap-2"
                     >
                       <IconTrashX size={16} style={{ color: C.teal }} />
-                      Request overflow pickup
+                      {overflowAllowed(p.area) ? "Request overflow pickup" : "Extra trash? Add a cart"}
                     </button>
                   </div>
                 )}
@@ -461,7 +464,7 @@ function Dashboard({
               </div>
               <div className="px-4 pb-4 mt-auto">
                 <Btn variant="ghost" className="w-full !py-2.5" onClick={() => onOverflow(p.id)}>
-                  Request overflow pickup
+                  {overflowAllowed(p.area) ? "Request overflow pickup" : "Extra trash? Add a cart"}
                 </Btn>
               </div>
             </div>
@@ -627,12 +630,15 @@ function PropertyDetail({ s, p, onOverflow }: { s: HostState; p: Property; onOve
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
           <Fact label="Trash day" value={`${p.trashDay} · out ${dayBefore(p.trashDay)} night`} />
           <Fact label="Cans" value={<CanIcons cans={p.cans} size={20} />} />
-          <Fact label="Plan" value={`${planLabel(p.plan)} · ${usd(planPrice(p.plan))}/mo`} />
+          <Fact
+            label="Plan"
+            value={`${planLabel(p.plan)} · ${usd(propertyMonthly(p))}/mo${p.extraCarts ? ` (incl. ${p.extraCarts} extra ${p.extraCarts === 1 ? "cart" : "carts"})` : ""}`}
+          />
           <Fact label="This week" value={timeline(p)} />
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <Btn variant="accent" onClick={onOverflow}>
-            Request overflow pickup
+            {overflowAllowed(p.area) ? "Request overflow pickup" : "Extra trash? Add a cart"}
           </Btn>
           <Btn variant="navy" onClick={() => setProof(true)}>
             📄 Proof of service
@@ -765,7 +771,9 @@ function CityRulesCard({ p }: { p: Property }) {
           ✅ {r.curbIn}
           {r.codeRef ? ` (${r.codeRef})` : ""}
         </li>
+        {r.hauler && <li>🚛 Hauler: {r.hauler}</li>}
         {r.placement && <li>📏 {r.placement}</li>}
+        {r.extraCarts && <li>🗑️ {r.extraCarts}</li>}
         {r.holiday && <li>📅 {r.holiday}</li>}
         {r.strGuideline && (
           <li>
@@ -1111,7 +1119,11 @@ function OverflowFlow({ s, initial, onHome }: { s: HostState; initial: string | 
         </Card>
       )}
 
-      {step === 2 && p && (
+      {step === 2 && p && !overflowAllowed(p.area) && (
+        <ExtraCart p={p} onBack={() => setStep(1)} onHome={onHome} />
+      )}
+
+      {step === 2 && p && overflowAllowed(p.area) && (
         <Card className="space-y-3">
           <StepHeader title="Pick an option" sub={p.nickname} onBack={() => setStep(1)} />
           {[
@@ -1261,6 +1273,54 @@ function OverflowFlow({ s, initial, onHome }: { s: HostState; initial: string | 
   );
 }
 
+// Where another hauler has an exclusive franchise (EDCO in Encinitas and Solana Beach) we
+// can't haul overflow, so we offer to pull an extra hauler cart instead.
+function ExtraCart({ p, onBack, onHome }: { p: Property; onBack: () => void; onHome: () => void }) {
+  const [added, setAdded] = useState(false);
+  const city = cityFor(p.area);
+  const hauler = haulerName(p.area) || "the city's hauler";
+  if (added)
+    return (
+      <Card className="text-center py-8">
+        <IconCircleCheck size={52} className="mx-auto" style={{ color: C.green }} />
+        <h2 className="mt-3 font-heading text-2xl" style={{ color: C.navy }}>
+          Got it.
+        </h2>
+        <p className="mt-2 max-w-md mx-auto">
+          We&apos;ll help you add an extra {hauler} trash cart at {p.nickname} and pull it to the curb with your others. +{usd(PRICING.extraCartPull)}/mo, starting on your next invoice.
+        </p>
+        <Btn className="mt-5" onClick={onHome}>
+          Back to dashboard
+        </Btn>
+      </Card>
+    );
+  return (
+    <Card className="space-y-3">
+      <StepHeader title="Add an extra cart" sub={p.nickname} onBack={onBack} />
+      <div className="rounded-xl border bg-white p-4" style={{ borderColor: C.border }}>
+        <div className="font-semibold">
+          Add an extra {hauler} cart · +{usd(PRICING.extraCartPull)}/mo
+        </div>
+        <p className="mt-1 text-sm" style={{ color: C.muted }}>
+          In {city}, {hauler} is the only licensed trash hauler. We&apos;ll help you add an extra {hauler} trash cart and we&apos;ll pull it to the curb with your others. +{usd(PRICING.extraCartPull)}/mo per property.
+        </p>
+      </div>
+      <p className="text-xs rounded-lg px-3 py-2" style={{ backgroundColor: "#e0eef7", color: C.navy }}>
+        {hauler} also offers bulky-item and overflow pickups. Ask us and we&apos;ll help you schedule them.
+      </p>
+      <Btn
+        className="w-full"
+        onClick={() => {
+          update((st) => ({ ...st, properties: st.properties.map((x) => (x.id === p.id ? { ...x, extraCarts: (x.extraCarts ?? 0) + 1 } : x)) }));
+          setAdded(true);
+        }}
+      >
+        Add an extra cart · +{usd(PRICING.extraCartPull)}/mo
+      </Btn>
+    </Card>
+  );
+}
+
 function StepHeader({ title, sub, onBack }: { title: string; sub: string; onBack: () => void }) {
   return (
     <div className="flex items-center gap-2">
@@ -1283,7 +1343,7 @@ function Billing({ s }: { s: HostState }) {
   const [updating, setUpdating] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<string | null>(null);
-  const total = s.properties.reduce((n, p) => n + planPrice(p.plan), 0);
+  const total = s.properties.reduce((n, p) => n + propertyMonthly(p), 0);
   const inv = s.invoices.find((i) => i.id === receipt);
   const credits = referralCredits(s);
   const credit = credits * REFERRAL.creditPerMonth;
@@ -1341,8 +1401,11 @@ function Billing({ s }: { s: HostState }) {
                     {p.nickname}
                     {p.paused && <span className="text-xs" style={{ color: C.muted }}> (paused)</span>}
                   </td>
-                  <td className="py-2 pr-2 whitespace-nowrap">{planLabel(p.plan)}</td>
-                  <td className="py-2 text-right whitespace-nowrap">{usd(planPrice(p.plan))}</td>
+                  <td className="py-2 pr-2 whitespace-nowrap">
+                    {planLabel(p.plan)}
+                    {p.extraCarts ? ` + ${p.extraCarts} extra ${p.extraCarts === 1 ? "cart" : "carts"}` : ""}
+                  </td>
+                  <td className="py-2 text-right whitespace-nowrap">{usd(propertyMonthly(p))}</td>
                 </tr>
               ))}
               <tr className="border-t font-semibold" style={{ borderColor: C.border }}>

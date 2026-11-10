@@ -12,6 +12,7 @@ export const PRICING = {
   annualPerPropertyPerMonth: advertisedPrice(planById("annual")!), // founding 50
   overflowFirstBag: 49, // on-demand pickup: first bag
   overflowExtraBag: 20, // each bag after the first
+  extraCartPull: 15, // per extra cart, per month, where EDCO is the only hauler
   overflowWeeklyPlan: 90, // per week, up to 2 properties
   foundingBadge: "Founding 50 pricing locked in",
 };
@@ -23,7 +24,9 @@ export const CONTACT_PHONE = residential.contact.phone;
 // Curb rules by city, in one place. San Diego is from the City's published rules, checked
 // Nov 2026: sandiego.gov/environmental-services/collection/general (6 AM / 6 PM, placement,
 // §66.0105, holidays), the STRO Good Neighbor Guidelines and the STRO Host Operating
-// Requirements. Solana Beach and Encinitas are general guidance until Adil confirms them.
+// Requirements. Encinitas and Solana Beach are from Adil's research (Nov 2026): EDCO holds an
+// exclusive franchise in both, so we don't haul overflow there and offer an extra-cart pull.
+// Solana Beach publishes no set-out times; its rules follow EDCO's Del Mar guide.
 export interface CityRules {
   curbOut: string;
   curbIn: string;
@@ -33,6 +36,9 @@ export interface CityRules {
   codeRef?: string;
   consequence?: string;
   source?: string;
+  hauler?: string;
+  extraCarts?: string;
+  overflowAllowed?: boolean; // false where another hauler has an exclusive franchise
   verified: boolean;
   outBy: number; // minutes after midnight on collection day
   inBy: number; // minutes after midnight on collection day
@@ -60,9 +66,35 @@ export const CITY_RULES: Record<string, CityRules> = {
     outBy: 6 * 60,
     inBy: 18 * 60,
   },
-  "Solana Beach": GENERAL_RULES,
-  Encinitas: GENERAL_RULES,
+  Encinitas: {
+    source: "City of Encinitas trash guide; EDCO Encinitas",
+    hauler: "EDCO (exclusive franchise)",
+    curbOut: "Cans out by 6 AM on service day",
+    curbIn: "No set time. Store carts out of public view except on collection days",
+    placement: "Wheels to the curb, lid arrows facing the street, 2 ft from carts, cars, trees, poles and mailboxes",
+    extraCarts: "Extra gray cart for a nominal fee; extra blue free; up to 2 extra green free",
+    overflowAllowed: false,
+    verified: true,
+    outBy: 6 * 60,
+    inBy: 24 * 60 - 1, // same day
+  },
+  "Solana Beach": {
+    source: "City of Solana Beach; rules per EDCO Del Mar guide (same hauler)",
+    hauler: "EDCO (exclusive franchise)",
+    curbOut: "Cans out by 6 AM on service day, or the night before",
+    curbIn: "Cans in the same day (the city publishes no deadline)",
+    placement: "2 ft between carts, 3 ft from obstructions, lid arrows facing the street, not in bike lanes",
+    holiday: "1-day delay for New Year's, Memorial Day, July 4th, Labor Day, Thanksgiving and Christmas",
+    extraCarts: "Extra gray cart for a fee",
+    overflowAllowed: false,
+    verified: false,
+    outBy: 6 * 60,
+    inBy: 24 * 60 - 1,
+  },
 };
+
+export const overflowAllowed = (area: string) => rulesFor(area).overflowAllowed !== false;
+export const haulerName = (area: string) => (rulesFor(area).hauler ?? "").split(" (")[0];
 export const CITY_RULES_CHECKED = "Nov 2026";
 
 const SAN_DIEGO_AREAS = ["Mission Beach", "Pacific Beach", "La Jolla", "Point Loma", "Ocean Beach", "North Park", "Hillcrest & Uptown"];
@@ -115,6 +147,7 @@ export interface Property {
   seed: number; // drives the drawn placeholder's look when there's no photo
   photo?: string; // public/hosts/portal/<photo>-out.jpg and -in.jpg
   isNew?: boolean; // added during the demo: service starts next trash day
+  extraCarts?: number; // extra hauler carts we pull, billed at PRICING.extraCartPull
 }
 
 export interface Overflow {
@@ -179,6 +212,8 @@ const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 
 export const planPrice = (p: PlanId) => (p === "annual" ? PRICING.annualPerPropertyPerMonth : PRICING.monthlyPerProperty);
+// A property's monthly total: its plan plus any extra carts we pull.
+export const propertyMonthly = (p: { plan: PlanId; extraCarts?: number }) => planPrice(p.plan) + (p.extraCarts ?? 0) * PRICING.extraCartPull;
 export const planLabel = (p: PlanId) => (p === "annual" ? "Annual" : "Monthly");
 export const usd = (n: number) => `$${Number.isInteger(n) ? n : n.toFixed(2)}`;
 
@@ -308,7 +343,7 @@ function initial(): HostState {
   const overflows: Overflow[] = [
     { id: "o1", propertyId: "p2", option: "ondemand", bags: 3, window: "24h", note: "Big group checkout", status: "completed", createdAt: ws - 9 * DAY, amount: overflowPrice(3), receipt: "#7KD2M" },
     { id: "o2", propertyId: "p1", option: "ondemand", bags: 2, window: "next", note: "", status: "completed", createdAt: ws - 23 * DAY, amount: overflowPrice(2), receipt: "#Q4XN8" },
-    { id: "o3", propertyId: "p5", option: "ondemand", bags: 3, window: "24h", note: "Boxes from new furniture", status: "completed", createdAt: ws - 38 * DAY, amount: overflowPrice(3), receipt: "#B9TR3" },
+    { id: "o3", propertyId: "p3", option: "ondemand", bags: 3, window: "24h", note: "Boxes from new furniture", status: "completed", createdAt: ws - 38 * DAY, amount: overflowPrice(3), receipt: "#B9TR3" },
   ];
   // Monthly invoices on the 1st for the last three months.
   const invoices: Invoice[] = [1, 2, 3].map((m) => {
@@ -399,7 +434,11 @@ export function weekCompliance(p: Property): Compliance | "scheduled" {
 // Last 30 days of overflow pickups against a typical junk-removal visit for each.
 export function savings(s: HostState) {
   const since = Date.now() - 30 * DAY;
-  const recent = s.overflows.filter((o) => o.createdAt >= since);
+  // Only where we can haul overflow (not where EDCO is the exclusive hauler).
+  const recent = s.overflows.filter((o) => {
+    const p = s.properties.find((x) => x.id === o.propertyId);
+    return o.createdAt >= since && (!p || overflowAllowed(p.area));
+  });
   const pickups = recent.length;
   const bags = recent.reduce((n, o) => n + o.bags, 0);
   const withUs = recent.reduce((n, o) => n + o.amount, 0);
