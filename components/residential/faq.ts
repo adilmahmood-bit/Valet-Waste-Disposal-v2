@@ -13,6 +13,10 @@ export const faqs: { q: string; a: string }[] = [
     a: `Weekly service is ${money(weekly.basePrice)} a month month-to-month, or ${money(annual.basePrice)} a month with a 12-month agreement, for up to ${weekly.includedBins} cans. Our first ${residential.promo.limit} customers get ${money(residential.promo.monthlyOff)} a month off with code ${residential.promo.label}: ${money(advertisedPrice(weekly))} and ${money(advertisedPrice(annual))}. Extra cans are ${money(weekly.extraBinPrice)} each per month. A one-time round trip is ${money(oneTime.basePrice)}.`,
   },
   {
+    q: "Is this the same as a bin valet or trash valet service?",
+    a: "Yes. Bin valet, trash valet, trash can valet and can-to-curb service all mean the same thing: we take your trash cans to the curb the evening before pickup and bring them back after.",
+  },
+  {
     q: "Do I need to be home?",
     a: "No. Tell us where your trash cans are kept and add a gate code if you have one. We do the rest whether you're home or not.",
   },

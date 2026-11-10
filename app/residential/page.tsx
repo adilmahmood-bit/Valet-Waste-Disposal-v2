@@ -209,6 +209,10 @@ export default function ResidentialHome() {
             recycling and green waste cans curbside. After the truck comes, we bring them back to your side yard or garage.
             No more hauling heavy trash cans down the driveway or leaving them at the street all day.
           </p>
+          <p className="mt-4 text-slate-700 leading-relaxed">
+            You may have heard it called bin valet, trash valet, trash can valet or trash can to curb service. It&apos;s all
+            the same thing: your cans to the curb and back, every week.
+          </p>
           <p className="mt-4 text-sm text-slate-600 leading-relaxed">
             <span className="font-semibold text-res-navy">Where we work:</span> {residential.serviceCities.join(", ")}.{" "}
             <Link href="/residential/service-area" className="font-semibold text-res-teal-dark underline underline-offset-4 whitespace-nowrap">Check your ZIP</Link>

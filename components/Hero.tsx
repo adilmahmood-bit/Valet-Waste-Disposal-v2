@@ -92,14 +92,21 @@ export default function Hero() {
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto py-24">
         <RevealSection>
+          {/* The h1 names the service people search for; the tagline below stays the big line. */}
           <h1
+            className="text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] mb-4"
+            style={{ color: "#7FDDE6", textShadow: "0 1px 6px rgba(0,0,0,0.6)" }}
+          >
+            Valet trash service for San Diego apartments
+          </h1>
+          <p
             className="font-heading text-4xl sm:text-5xl lg:text-6xl mb-4 leading-tight"
             style={{ textShadow: "0 1px 8px rgba(0,0,0,0.55), 0 2px 24px rgba(0,0,0,0.4)" }}
           >
             <span className="text-white">You have enough to manage.</span>
             <br />
             <span style={{ color: "#7FDDE6" }}>Trash shouldn&apos;t be one of them.</span>
-          </h1>
+          </p>
 
           <p className="text-white font-semibold max-w-xl mx-auto mb-8 text-lg">
             San Diego&apos;s owner-operated valet waste service. Doorstep pickup, nightly reports, sortation compliance, and a tidy pad every morning — handled so none of it lands on you.
