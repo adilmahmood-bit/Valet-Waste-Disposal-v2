@@ -15,6 +15,7 @@ const nextConfig = {
       { source: "/demo/:path*", destination: "/app/:path*", permanent: true },
       // The hosts page moved to a shorter URL on 2026-11-03.
       { source: "/residential/hosts", destination: "/hosts", permanent: true },
+      { source: "/hosts/demo", destination: "/hosts/portal", permanent: true },
     ];
   },
 };
