@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { IconCalendarOff, IconUsers, IconHomePlus, IconMapPinCheck } from "@tabler/icons-react";
+import { IconCalendarOff, IconUsers, IconHomePlus, IconMapPinCheck, IconDeviceMobile } from "@tabler/icons-react";
 import { residential, planById, advertisedPrice, money } from "@/config/residential";
 import ZipCheck from "@/components/residential/ZipCheck";
 import { cityPages } from "@/components/residential/cities";
@@ -37,6 +37,12 @@ export default function HostsPage() {
           <div className="mt-6 md:mt-8 max-w-md text-shadow-none">
             <ZipCheck dark />
           </div>
+          <Link
+            href="/hosts/portal"
+            className="mt-4 inline-flex items-center gap-2 rounded-full border-2 border-white/60 px-5 py-2.5 text-sm font-semibold text-shadow-none hover:border-res-teal hover:bg-white/10"
+          >
+            <IconDeviceMobile size={18} aria-hidden="true" /> See the host portal
+          </Link>
         </div>
       </section>
 
