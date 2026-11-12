@@ -37,7 +37,7 @@ export const residential = {
   contact: {
     phone: "619-324-8875",
     phoneHref: "+16193248875",
-    email: "contact@valetwastedisposal.com",
+    email: "contact@yourdoorstepdisposal.com",
   },
 
   // Internal: where new sign-up, quote and waitlist alerts go. Never shown on the site.
