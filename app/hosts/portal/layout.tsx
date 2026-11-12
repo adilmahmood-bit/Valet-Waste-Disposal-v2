@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
-  title: "Host Portal | Doorstep Disposal",
+  title: "Doorstep Disposal - Trash-to-Curb | Host Portal",
   description: "Click through the Doorstep Disposal portal for Airbnb and Vrbo hosts and property managers: every property, every can, with photo proof.",
   robots: { index: false, follow: false },
 };

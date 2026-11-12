@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import ProofView from "./ProofView";
 
 export const metadata: Metadata = {
-  title: "Service Verification Report | Doorstep Disposal",
+  title: "Doorstep Disposal - Trash-to-Curb | Service Verification Report",
   robots: { index: false, follow: false },
 };
 

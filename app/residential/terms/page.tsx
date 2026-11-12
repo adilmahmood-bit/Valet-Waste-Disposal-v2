@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { residential } from "@/config/residential";
 
-export const metadata: Metadata = { title: "Residential service terms", robots: { index: false } };
+export const metadata: Metadata = { title: "Service Terms", robots: { index: false } };
 
 // DRAFT. Needs attorney review before go-live. Bump residential.terms.version in the config
 // whenever this text changes; each acceptance is logged against the version shown here.
