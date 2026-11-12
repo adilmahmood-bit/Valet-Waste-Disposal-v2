@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   if (!city) return {};
   const weekly = planById("weekly")!;
   return {
-    title: { absolute: `Residential Trash Valet & Can-to-Curb Service in ${city.name}, CA` },
+    title: { absolute: `Doorstep Disposal - Trash-to-Curb Service in ${city.name}, CA` },
     description: `Trash can to curb service in ${city.name}. We take your trash cans to the curb the evening before pickup and bring them back after. From ${money(advertisedPrice(weekly))}/month for up to ${weekly.includedBins} cans with code ${residential.promo.label}.`,
     alternates: { canonical: `/residential/${city.slug}` },
   };

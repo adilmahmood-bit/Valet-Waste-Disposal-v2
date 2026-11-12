@@ -7,8 +7,8 @@ import ZipCheck from "@/components/residential/ZipCheck";
 import { cityPages } from "@/components/residential/cities";
 
 export const metadata: Metadata = {
-  // Written out in full: the layout's "| Valet Waste Disposal" template only applies to pages below it.
-  title: { absolute: "Residential Trash Valet & Can-to-Curb Service for Airbnb & Vrbo Hosts | Valet Waste Disposal" },
+  // Written out in full: the layout's title template only applies to pages below it.
+  title: { absolute: "Doorstep Disposal - Trash-to-Curb for Airbnb & Vrbo Hosts" },
   description: "Trash-to-curb trash can service for San Diego short-term rentals on Airbnb, Vrbo and other platforms. Cans out the evening before trash day and back after, even between guests.",
   alternates: { canonical: "/hosts" },
 };

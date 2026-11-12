@@ -6,7 +6,7 @@ import ZipCheck from "@/components/residential/ZipCheck";
 import StickyCta from "@/components/residential/StickyCta";
 
 export const metadata: Metadata = {
-  title: "Residential Trash Valet & Can-to-Curb Service for Seniors in San Diego",
+  title: "Service for Seniors in San Diego",
   description:
     "Weekly trash can valet for older adults in San Diego and North County. We take trash cans to the curb and bring them back, so no one has to move heavy trash cans. Family members can sign up for a parent.",
   alternates: { canonical: "/residential/seniors" },
