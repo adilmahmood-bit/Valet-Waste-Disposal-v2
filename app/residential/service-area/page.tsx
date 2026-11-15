@@ -3,6 +3,8 @@ import { residential } from "@/config/residential";
 import Link from "next/link";
 import ZipCheck from "@/components/residential/ZipCheck";
 import { cityPages } from "@/components/residential/cities";
+import JsonLd from "@/components/JsonLd";
+import { residentialBusiness, breadcrumbs } from "@/components/residential/schema";
 
 export const metadata: Metadata = {
   title: "Service Area: San Diego & North County",
@@ -14,6 +16,15 @@ export default async function ServiceAreaPage({ searchParams }: { searchParams: 
   const { plan } = await searchParams;
   return (
     <div className="max-w-xl mx-auto px-4 py-12 md:py-16">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            residentialBusiness(),
+            breadcrumbs([{ name: "For Homes", path: "/residential" }, { name: "Service area", path: "/residential/service-area" }]),
+          ],
+        }}
+      />
       <h1 className="text-4xl font-bold">Do we serve your street?</h1>
       <p className="mt-3 text-slate-600">Enter your ZIP code. If we&apos;re not there yet, join the waitlist and we&apos;ll let you know.</p>
       <div className="mt-8">

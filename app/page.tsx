@@ -16,6 +16,16 @@ export const metadata: Metadata = {
   description:
     "Doorstep valet trash for San Diego County apartment communities. Nightly door-to-door trash pickup, photo-verified reports, recycling compliance and a clean trash pad every morning. Owner-operated, licensed and insured.",
   alternates: { canonical: "/" },
+  openGraph: {
+    title: "Valet Trash Service for San Diego Apartments",
+    description: "Nightly doorstep trash pickup for San Diego County apartment communities, with photo-verified reports.",
+    url: "/",
+    siteName: "Valet Waste Disposal",
+    locale: "en_US",
+    type: "website",
+    images: [{ url: "/hero-building.jpg", width: 1728, height: 972, alt: "Mid-rise apartment building in downtown San Diego" }],
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 const SITE = "https://yourdoorstepdisposal.com";
@@ -34,6 +44,8 @@ const siteJsonLd = {
       telephone: "+1-619-324-8875",
       email: "contact@valetwastedisposal.com",
       areaServed: "San Diego County, CA",
+      // The residential and short-term rental brand, described on /residential.
+      subOrganization: { "@id": `${SITE}/residential#business`, name: "Doorstep Disposal", url: `${SITE}/residential` },
     },
     {
       "@type": "Service",

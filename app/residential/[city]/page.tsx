@@ -3,14 +3,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { IconCheck, IconBuildingCottage } from "@tabler/icons-react";
-import { residential, planById, enabledPlans, advertisedPrice, money } from "@/config/residential";
+import { residential, planById, advertisedPrice, money } from "@/config/residential";
+import { SITE, residentialBusiness, offers, faqPage, breadcrumbs } from "@/components/residential/schema";
 import { cityPages, cityBySlug } from "@/components/residential/cities";
 import ZipCheck from "@/components/residential/ZipCheck";
 import PlanCards from "@/components/residential/PlanCards";
 import StickyCta from "@/components/residential/StickyCta";
 import JsonLd from "@/components/JsonLd";
 
-const SITE = "https://yourdoorstepdisposal.com";
 
 // One static page per city in cities.ts; any other slug is a 404.
 export const dynamicParams = false;
@@ -46,21 +46,15 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
         serviceType: "Curbside trash can service",
         url: `${SITE}/residential/${city.slug}`,
         areaServed: { "@type": "City", name: `${city.name}, CA` },
-        provider: { "@type": "LocalBusiness", name: "Valet Waste Disposal", url: SITE, telephone: `+1-${contact.phone}`, email: contact.email },
-        offers: enabledPlans().map((p) => ({ "@type": "Offer", name: p.name, price: p.basePrice, priceCurrency: "USD" })),
+        provider: residentialBusiness(),
+        offers: offers(),
       },
-      {
-        "@type": "FAQPage",
-        mainEntity: city.faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
-      },
-      {
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "For Homes", item: `${SITE}/residential` },
-          { "@type": "ListItem", position: 2, name: "Service area", item: `${SITE}/residential/service-area` },
-          { "@type": "ListItem", position: 3, name: city.name, item: `${SITE}/residential/${city.slug}` },
-        ],
-      },
+      faqPage(city.faqs),
+      breadcrumbs([
+        { name: "For Homes", path: "/residential" },
+        { name: "Service area", path: "/residential/service-area" },
+        { name: city.name, path: `/residential/${city.slug}` },
+      ]),
     ],
   };
 
@@ -73,7 +67,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
           <>
             <Image
               src={`/residential/cities/${city.slug}.jpg`}
-              alt=""
+              alt={`${city.name}, California`}
               fill
               priority
               sizes="100vw"

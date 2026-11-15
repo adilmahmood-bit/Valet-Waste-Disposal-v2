@@ -6,6 +6,13 @@ export const metadata: Metadata = {
   description:
     "Every feature in the Valet Waste Disposal attendant, resident, and property manager apps, in plain text.",
   robots: { index: true, follow: true },
+  alternates: { canonical: "/app/features" },
+  openGraph: {
+    siteName: "Valet Waste Disposal",
+    locale: "en_US",
+    type: "website",
+    images: [{ url: "/hero-building.jpg", width: 1728, height: 972, alt: "Mid-rise apartment building in downtown San Diego" }],
+  },
 };
 
 // Plain, server-rendered text so crawlers and AI tools can read the whole

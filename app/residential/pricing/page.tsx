@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { residential, planById, advertisedPrice, money } from "@/config/residential";
 import PlanCards from "@/components/residential/PlanCards";
+import JsonLd from "@/components/JsonLd";
+import { SITE, residentialBusiness, offers, breadcrumbs } from "@/components/residential/schema";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -14,6 +16,22 @@ export default function PricingPage() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 md:py-16">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Service",
+              name: "Doorstep Disposal Trash-to-Curb Service",
+              serviceType: "Curbside trash can service",
+              url: `${SITE}/residential/pricing`,
+              provider: residentialBusiness(),
+              offers: offers(),
+            },
+            breadcrumbs([{ name: "For Homes", path: "/residential" }, { name: "Pricing", path: "/residential/pricing" }]),
+          ],
+        }}
+      />
       <h1 className="text-4xl font-bold text-center">Simple trash can valet pricing</h1>
       <p className="mt-3 text-center text-slate-600 max-w-xl mx-auto">Weekly service month-to-month or with an annual agreement, or a single visit.</p>
 

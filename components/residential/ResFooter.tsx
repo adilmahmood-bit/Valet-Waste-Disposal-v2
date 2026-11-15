@@ -8,8 +8,8 @@ export default function ResFooter() {
     <footer className="bg-res-navy text-white/80 text-sm pb-24 md:pb-0">
       <div className="max-w-6xl mx-auto px-4 py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="font-semibold text-white">Valet Waste Disposal</p>
-          <p className="mt-1">Locally owned in San Diego.</p>
+          <p className="font-semibold text-white">Doorstep Disposal</p>
+          <p className="mt-1">Trash-to-curb service by Valet Waste Disposal. Locally owned in San Diego.</p>
         </div>
         <div>
           <p className="font-semibold text-white">Call or text us</p>
