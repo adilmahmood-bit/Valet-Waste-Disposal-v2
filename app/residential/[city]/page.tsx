@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   if (!city) return {};
   return {
     title: { absolute: `Doorstep Disposal - Trash-to-Curb Service in ${city.name}, CA` },
-    description: `Trash can to curb service in ${city.name}. Every week we take your trash, recycling and green waste cans to the curb the evening before pickup and bring them back after.`,
+    description: `Trash can to curb service in ${city.name}. Every week we roll your trash, recycling and green waste cans to the curb and back.`,
     alternates: { canonical: `/residential/${city.slug}` },
   };
 }

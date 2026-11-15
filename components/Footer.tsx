@@ -5,7 +5,7 @@ export default function Footer() {
         {/* Logo lockup */}
         <div className="flex items-center" style={{ color: "#fff", gap: "0px" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo/vwd-icon-white.png" alt="" aria-hidden="true" style={{ height: "40px", width: "auto", display: "block", marginRight: "12px" }} />
+          <img src="/logo/vwd-icon-white.png" alt="Valet Waste Disposal logo" aria-hidden="true" style={{ height: "40px", width: "auto", display: "block", marginRight: "12px" }} />
           <span className="flex flex-col leading-none" style={{ fontFamily: "var(--font-libre-franklin)" }}>
             <span style={{ fontWeight: 800, fontSize: "14px", letterSpacing: "-0.01em" }}>VALET WASTE</span>
             <span style={{ fontWeight: 500, fontSize: "14px", letterSpacing: "0.205em", marginTop: "2px" }}>DISPOSAL</span>

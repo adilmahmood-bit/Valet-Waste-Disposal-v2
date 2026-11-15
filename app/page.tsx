@@ -14,7 +14,7 @@ import JsonLd from "@/components/JsonLd";
 export const metadata: Metadata = {
   title: { absolute: "Valet Trash Service for San Diego Apartments | Valet Waste Disposal" },
   description:
-    "Doorstep valet trash for San Diego County apartment communities. Nightly door-to-door trash pickup, photo-verified reports, recycling compliance and a clean trash pad every morning. Owner-operated, licensed and insured.",
+    "Nightly doorstep valet trash for San Diego County apartment communities, with photo-verified reports, recycling checks and a clean trash pad every morning.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Valet Trash Service for San Diego Apartments",

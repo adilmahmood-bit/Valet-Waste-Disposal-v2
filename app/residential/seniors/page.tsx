@@ -10,7 +10,7 @@ import { SITE, residentialBusiness, businessRef, areaServed, offers, breadcrumbs
 export const metadata: Metadata = {
   title: "Service for Seniors in San Diego",
   description:
-    "Weekly trash can valet for older adults in San Diego and North County. We take trash cans to the curb and bring them back, so no one has to move heavy trash cans. Family members can sign up for a parent.",
+    "Weekly trash can valet for older adults in San Diego and North County. We roll the cans to the curb and back. Family members can sign up for a parent.",
   alternates: { canonical: "/residential/seniors" },
 };
 
