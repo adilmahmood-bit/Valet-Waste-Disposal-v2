@@ -37,7 +37,7 @@ export default function Nav() {
         {/* Logo lockup */}
         <a href="#hero" className="flex items-center text-white" style={{ color: "#fff" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo/vwd-icon-white.png" alt="" aria-hidden="true" className="block h-11 md:h-12 w-auto mr-3" />
+          <img src="/logo/vwd-icon-white.png" alt="Valet Waste Disposal logo" aria-hidden="true" className="block h-11 md:h-12 w-auto mr-3" />
           {/* Poppins, like the "Doorstep Disposal" logo on the residential pages. */}
           <span className={`${poppins.className} flex flex-col leading-none`}>
             <span className="text-base md:text-lg" style={{ fontWeight: 700, letterSpacing: "0" }}>VALET WASTE</span>

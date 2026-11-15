@@ -11,7 +11,7 @@ import { SITE, businessRef, residentialBusiness, offers, faqPage, breadcrumbs } 
 export const metadata: Metadata = {
   // Written out in full: the layout's title template only applies to pages below it.
   title: { absolute: "Doorstep Disposal - Trash-to-Curb for Airbnb & Vrbo Hosts" },
-  description: "Trash-to-curb trash can service for San Diego short-term rentals on Airbnb, Vrbo and other platforms. Cans out the evening before trash day and back after, even between guests.",
+  description: "Trash-to-curb service for San Diego Airbnb and Vrbo rentals. Cans out the evening before trash day and back after, even between guests.",
   alternates: { canonical: "/hosts" },
   openGraph: {
     siteName: "Doorstep Disposal",
