@@ -4,6 +4,8 @@ import { IconUserCheck, IconUsers, IconKey, IconCalendarRepeat } from "@tabler/i
 import { residential, planById, advertisedPrice, money } from "@/config/residential";
 import ZipCheck from "@/components/residential/ZipCheck";
 import StickyCta from "@/components/residential/StickyCta";
+import JsonLd from "@/components/JsonLd";
+import { SITE, residentialBusiness, businessRef, areaServed, offers, breadcrumbs } from "@/components/residential/schema";
 
 export const metadata: Metadata = {
   title: "Service for Seniors in San Diego",
@@ -40,6 +42,26 @@ export default function SeniorsPage() {
   const weekly = planById("weekly")!;
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            residentialBusiness(),
+            {
+              "@type": "Service",
+              name: "Trash-to-curb service for seniors",
+              serviceType: "Curbside trash can service",
+              url: `${SITE}/residential/seniors`,
+              description: "Weekly trash can valet for older adults: we take the trash, recycling and green waste cans to the curb and bring them back. Family members can sign up for a parent.",
+              audience: { "@type": "PeopleAudience", audienceType: "Seniors and their families" },
+              provider: businessRef(),
+              areaServed: areaServed(),
+              offers: offers(),
+            },
+            breadcrumbs([{ name: "For Homes", path: "/residential" }, { name: "For seniors", path: "/residential/seniors" }]),
+          ],
+        }}
+      />
       <section className="bg-res-navy text-white">
         <div className="max-w-4xl mx-auto px-4 pt-8 pb-10 md:py-16">
           <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">For seniors and their families</p>

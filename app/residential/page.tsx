@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { IconCamera, IconHome, IconPlaneDeparture, IconHeartHandshake, IconBuildingCottage, IconPhone, IconMessage, IconCheck } from "@tabler/icons-react";
-import { residential, planById, enabledPlans, advertisedPrice, money, promoLine } from "@/config/residential";
+import { residential, planById, advertisedPrice, money, promoLine } from "@/config/residential";
+import { SITE, residentialBusiness, businessRef, areaServed, offers, faqPage } from "@/components/residential/schema";
 import JsonLd from "@/components/JsonLd";
 import StickyCta from "@/components/residential/StickyCta";
 import { cityPages } from "@/components/residential/cities";
@@ -32,37 +33,24 @@ const heading = "text-2xl md:text-3xl font-bold text-center";
 
 export const metadata: Metadata = { alternates: { canonical: "/residential" } };
 
-const SITE = "https://yourdoorstepdisposal.com";
-
-// What Google reads about this page: a curbside bin service, who provides it, where, and for how much.
+// What Google and AI tools read about this page: the business, the service, where, and for how much.
 function serviceJsonLd() {
-  const { contact } = residential;
   return {
     "@context": "https://schema.org",
-    "@type": "Service",
-    name: "Residential Trash Valet & Can-to-Curb Service",
-    serviceType: "Curbside trash can service",
-    url: `${SITE}/residential`,
-    description: "We take trash, recycling and green waste cans to the curb the evening before pickup and bring them back after.",
-    provider: {
-      "@type": "LocalBusiness",
-      name: "Valet Waste Disposal",
-      url: SITE,
-      telephone: `+1-${contact.phone}`,
-      email: contact.email,
-      image: `${SITE}/logo/vwd-logo-navy.png`,
-      address: { "@type": "PostalAddress", addressLocality: "San Diego", addressRegion: "CA", addressCountry: "US" },
-    },
-    areaServed: residential.serviceCities.map((name) => ({ "@type": "City", name: `${name}, CA` })),
-    offers: enabledPlans().map((p) => ({
-      "@type": "Offer",
-      name: p.name,
-      priceCurrency: "USD",
-      price: p.basePrice,
-      ...(p.billing === "monthly" && {
-        priceSpecification: { "@type": "UnitPriceSpecification", price: p.basePrice, priceCurrency: "USD", unitText: "MONTH" },
-      }),
-    })),
+    "@graph": [
+      residentialBusiness(),
+      {
+        "@type": "Service",
+        name: "Doorstep Disposal Trash-to-Curb Service",
+        serviceType: "Curbside trash can service",
+        url: `${SITE}/residential`,
+        description: "We take trash, recycling and green waste cans to the curb the evening before pickup and bring them back after.",
+        provider: businessRef(),
+        areaServed: areaServed(),
+        offers: offers(),
+      },
+      faqPage(faqs.slice(0, 4)), // only the four questions shown on this page
+    ],
   };
 }
 
@@ -73,7 +61,7 @@ export default function ResidentialHome() {
     <>
       <JsonLd data={serviceJsonLd()} />
       <section className="relative overflow-hidden bg-res-navy text-white">
-        <Image src="/residential-hero-ranch.jpg" alt="" fill priority sizes="100vw" className="object-cover object-[50%_60%]" />
+        <Image src="/residential-hero-ranch.jpg" alt="Gray, blue and green trash cans at the curb in front of a white Spanish-style house" fill priority sizes="100vw" className="object-cover object-[50%_60%]" />
         <div className="absolute inset-0 bg-res-navy/60" aria-hidden="true" />
         <div className="relative max-w-6xl mx-auto px-4 pt-8 pb-10 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           {/* Dark text shadow keeps the copy readable over the photo. */}

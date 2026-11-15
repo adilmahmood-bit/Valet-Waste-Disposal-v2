@@ -5,13 +5,27 @@ import { IconCalendarOff, IconUsers, IconHomePlus, IconMapPinCheck, IconDeviceMo
 import { residential, planById, advertisedPrice, money } from "@/config/residential";
 import ZipCheck from "@/components/residential/ZipCheck";
 import { cityPages } from "@/components/residential/cities";
+import JsonLd from "@/components/JsonLd";
+import { SITE, businessRef, residentialBusiness, offers, faqPage, breadcrumbs } from "@/components/residential/schema";
 
 export const metadata: Metadata = {
   // Written out in full: the layout's title template only applies to pages below it.
   title: { absolute: "Doorstep Disposal - Trash-to-Curb for Airbnb & Vrbo Hosts" },
   description: "Trash-to-curb trash can service for San Diego short-term rentals on Airbnb, Vrbo and other platforms. Cans out the evening before trash day and back after, even between guests.",
   alternates: { canonical: "/hosts" },
+  openGraph: {
+    siteName: "Doorstep Disposal",
+    locale: "en_US",
+    type: "website",
+    images: [{ url: "/residential-hosts-bungalow.jpg", width: 1792, height: 1008, alt: "Trash cans at the curb in front of a beach rental with surfboards by the garage" }],
+  },
 };
+
+const steps = [
+  { title: "Sign up each property", text: "Tell us the address, trash day, where the cans are kept and any gate code. Add more properties after the first." },
+  { title: "Cans out the evening before", text: "We roll the trash, recycling and green waste cans to the curb the evening before pickup, whoever is staying." },
+  { title: "Cans back after pickup", text: "After the truck comes, the cans go back to their spot. You get a GPS-logged photo of each step." },
+];
 
 const points = [
   { icon: IconCalendarOff, title: "Trash day covered", text: "Guests don't know your trash day. We do. Your trash cans go out the evening before pickup and come back after." },
@@ -20,12 +34,63 @@ const points = [
   { icon: IconHomePlus, title: "More than one property", text: "Sign up your first property, then add the rest from the confirmation page. Each property keeps its own trash day and notes." },
 ];
 
+// Shown on the page and in the FAQ structured data. Same facts as the residential FAQ.
+function hostFaqs(weekly: NonNullable<ReturnType<typeof planById>>) {
+  return [
+    {
+      q: "How does trash-to-curb service work for an Airbnb or Vrbo?",
+      a: "Every week we take your trash cans to the curb the evening before pickup and bring them back after the truck comes. Your guests don't need to know your trash day or do anything.",
+    },
+    {
+      q: "How much does it cost for a short-term rental?",
+      a: `The same as a homeowner: from ${money(advertisedPrice(weekly))} a month per property for up to ${weekly.includedBins} cans with code ${residential.promo.label}. See the pricing page for every plan.`,
+    },
+    {
+      q: "How do I know the cans went out and came back?",
+      a: "Every visit is logged by GPS, with a photo when your trash cans go out and when they're back.",
+    },
+    {
+      q: "Can I add more than one rental property?",
+      a: "Yes. Sign up your first property, then add the rest from the confirmation page. Each property keeps its own trash day and notes. Managing a larger portfolio? Call or text us.",
+    },
+    {
+      q: "What if my rental has a gate code?",
+      a: "Add it when you sign up. It's stored encrypted, and only our office and the person servicing your property can see it.",
+    },
+    {
+      q: "What happens on holiday weeks?",
+      a: "We follow your city's holiday collection schedule. If your pickup moves a day, we move with it.",
+    },
+  ];
+}
+
 export default function HostsPage() {
   const weekly = planById("weekly")!;
+  const faqs = hostFaqs(weekly);
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@graph": [
+            residentialBusiness(),
+            {
+              "@type": "Service",
+              name: "Trash-to-curb service for Airbnb and Vrbo hosts",
+              serviceType: "Curbside trash can service for short-term rentals",
+              url: `${SITE}/hosts`,
+              description: "Weekly trash can valet for short-term rentals in San Diego and North County: cans to the curb the evening before pickup and back after, with GPS and photo logs.",
+              audience: { "@type": "BusinessAudience", audienceType: "Short-term rental hosts and property managers" },
+              provider: businessRef(),
+              offers: offers(),
+            },
+            faqPage(faqs),
+            breadcrumbs([{ name: "For Homes", path: "/residential" }, { name: "Airbnb & Vrbo hosts", path: "/hosts" }]),
+          ],
+        }}
+      />
       <section className="relative overflow-hidden bg-res-navy text-white">
-        <Image src="/residential-hosts-bungalow.jpg" alt="" fill priority sizes="100vw" className="object-cover object-[50%_60%]" />
+        <Image src="/residential-hosts-bungalow.jpg" alt="Trash, recycling and green waste cans at the curb in front of a beach rental home" fill priority sizes="100vw" className="object-cover object-[50%_60%]" />
         <div className="absolute inset-0 bg-res-navy/60" aria-hidden="true" />
         {/* Dark text shadow keeps the copy readable over the photo. */}
         <div className="relative max-w-4xl mx-auto px-4 pt-8 pb-10 md:py-24 text-shadow-md text-shadow-black/80">
@@ -55,6 +120,38 @@ export default function HostsPage() {
               <p className="mt-1 text-slate-700">{p.text}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="pb-10 md:pb-16">
+        <div className="max-w-5xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-center">How it works for hosts</h2>
+          <ol className="mt-6 grid gap-4 md:grid-cols-3 md:gap-6">
+            {steps.map((s, i) => (
+              <li key={s.title} className="rounded-2xl border border-slate-200 p-5 md:p-6">
+                <p className="text-sm font-semibold text-res-teal-dark">Step {i + 1}</p>
+                <h3 className="mt-1 font-semibold text-lg">{s.title}</h3>
+                <p className="mt-1 text-slate-700">{s.text}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section className="pb-10 md:pb-16">
+        <div className="max-w-3xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-center">Questions from hosts</h2>
+          <div className="mt-6 divide-y divide-slate-200">
+            {faqs.map((f) => (
+              <div key={f.q} className="py-5">
+                <h3 className="font-semibold text-lg">{f.q}</h3>
+                <p className="mt-2 text-slate-700 leading-relaxed">{f.a}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-center">
+            <Link href="/residential/faq" className="font-semibold text-res-teal-dark underline underline-offset-4">More questions and answers</Link>
+          </p>
         </div>
       </section>
 
