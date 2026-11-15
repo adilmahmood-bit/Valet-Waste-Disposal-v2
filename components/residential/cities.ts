@@ -1,6 +1,7 @@
 // Content for the residential city pages (/residential/[slug]). Each page has its own local
 // copy so the pages are useful on their own, not the same text with a city name swapped.
-// Rules: no company names (that includes trash haulers), no unverifiable claims.
+// Rules: never name competitors (other trash can valet / bin services). Naming the city or its
+// contracted trash hauler is fine. No unverifiable claims.
 // ZIPs must be in residential.serviceZips.
 
 export type CityPage = {

@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { IconCheck, IconBuildingCottage } from "@tabler/icons-react";
-import { residential, planById, advertisedPrice, money } from "@/config/residential";
-import { SITE, residentialBusiness, offers, faqPage, breadcrumbs } from "@/components/residential/schema";
+import { IconCheck, IconBuildingCottage, IconCalendarSearch, IconExternalLink } from "@tabler/icons-react";
+import { residential } from "@/config/residential";
+import { SITE, residentialBusiness, faqPage, breadcrumbs } from "@/components/residential/schema";
 import { cityPages, cityBySlug } from "@/components/residential/cities";
 import ZipCheck from "@/components/residential/ZipCheck";
-import PlanCards from "@/components/residential/PlanCards";
 import StickyCta from "@/components/residential/StickyCta";
 import JsonLd from "@/components/JsonLd";
+import { trashCollectors, ruleLabels } from "@/components/residential/trashDay";
 
 
 // One static page per city in cities.ts; any other slug is a 404.
@@ -22,10 +22,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ city: string }> }): Promise<Metadata> {
   const city = cityBySlug((await params).city);
   if (!city) return {};
-  const weekly = planById("weekly")!;
   return {
     title: { absolute: `Doorstep Disposal - Trash-to-Curb Service in ${city.name}, CA` },
-    description: `Trash can to curb service in ${city.name}. We take your trash cans to the curb the evening before pickup and bring them back after. From ${money(advertisedPrice(weekly))}/month for up to ${weekly.includedBins} cans with code ${residential.promo.label}.`,
+    description: `Trash can to curb service in ${city.name}. Every week we take your trash, recycling and green waste cans to the curb the evening before pickup and bring them back after.`,
     alternates: { canonical: `/residential/${city.slug}` },
   };
 }
@@ -34,8 +33,8 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
   const city = cityBySlug((await params).city);
   if (!city) notFound();
   const { contact } = residential;
-  const weekly = planById("weekly")!;
   const others = cityPages.filter((c) => c.slug !== city.slug);
+  const collector = trashCollectors[city.slug];
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -47,7 +46,6 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
         url: `${SITE}/residential/${city.slug}`,
         areaServed: { "@type": "City", name: `${city.name}, CA` },
         provider: residentialBusiness(),
-        offers: offers(),
       },
       faqPage(city.faqs),
       breadcrumbs([
@@ -92,7 +90,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
               <ZipCheck dark />
             </div>
             <p className="mt-3 text-sm text-white/75">
-              From <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} cans with code {residential.promo.label}.
+              <Link href="/residential/pricing" className="font-semibold text-white underline underline-offset-4 hover:text-res-teal">See plans and pricing</Link>
             </p>
           </div>
         </div>
@@ -125,6 +123,42 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             </div>
           </div>
 
+          {collector && (
+            <div className="mt-8 rounded-2xl border border-slate-200 p-5 md:p-6">
+              <h3 className="flex items-center gap-2 text-lg font-semibold">
+                <IconCalendarSearch size={22} className="text-res-teal-dark shrink-0" aria-hidden="true" />
+                When is trash day in {city.name}?
+              </h3>
+              <p className="mt-2 text-slate-700">It depends on your street. {collector.who}</p>
+              <a
+                href={collector.lookupUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-res-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-res-teal-dark"
+              >
+                Look up your trash day <IconExternalLink size={16} aria-hidden="true" />
+              </a>
+              <p className="mt-1.5 text-xs text-slate-500">Opens the {collector.lookupLabel}.</p>
+              {collector.note && <p className="mt-3 text-sm text-slate-600">{collector.note}</p>}
+              {ruleLabels.some(([k]) => collector.rules[k]) && (
+                <>
+                  <h4 className="mt-5 font-semibold">Collection rules in {city.name}</h4>
+                  <dl className="mt-2 space-y-2 text-sm text-slate-700">
+                    {ruleLabels.map(([k, label]) =>
+                      collector.rules[k] ? (
+                        <div key={k}>
+                          <dt className="inline font-semibold">{label}: </dt>
+                          <dd className="inline">{collector.rules[k]}</dd>
+                        </div>
+                      ) : null,
+                    )}
+                  </dl>
+                </>
+              )}
+              <p className="mt-3 text-sm text-slate-700">Once you sign up, we track your trash day for you, holiday weeks included.</p>
+            </div>
+          )}
+
           {city.strHeavy && (
             <Link href="/hosts" className="mt-8 flex items-start gap-3 rounded-2xl bg-res-mist p-5 hover:ring-2 hover:ring-res-teal">
               <IconBuildingCottage size={28} className="text-res-teal-dark shrink-0" aria-hidden="true" />
@@ -137,13 +171,14 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
         </div>
       </section>
 
-      <section className="py-10 md:py-16 bg-slate-50">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-center">Plans for {city.name} homes</h2>
-          <div className="mt-6 md:mt-10">
-            <PlanCards />
-          </div>
-          <p className="mt-5 text-center text-sm text-slate-600">
+      <section className="py-10 md:py-14 bg-slate-50">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold">Plans for {city.name} homes</h2>
+          <p className="mt-3 text-slate-700">Weekly service month-to-month or with an annual agreement, or a one-time round trip.</p>
+          <Link href="/residential/pricing" className="mt-6 inline-block rounded-full bg-res-navy px-6 py-3 font-semibold text-white hover:bg-res-teal-dark">
+            See plans and pricing
+          </Link>
+          <p className="mt-5 text-sm text-slate-600">
             Steep driveway, stairs, or a long walk to the curb? We&apos;ll text you a custom price.
           </p>
         </div>
