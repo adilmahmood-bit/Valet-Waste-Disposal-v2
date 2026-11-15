@@ -7,10 +7,22 @@ const nextConfig = {
   // The nightly report is a plain HTML file with a fixed name, so browsers would
   // otherwise keep showing an old copy after an update. Make them re-check it.
   async headers() {
-    return [{ source: "/app/nightly-report.html", headers: [{ key: "Cache-Control", value: "no-cache" }] }];
+    return [
+      { source: "/app/nightly-report.html", headers: [{ key: "Cache-Control", value: "no-cache" }] },
+      // AI crawlers read /llms.txt directly; keep it out of search results so it
+      // doesn't compete with the real pages.
+      { source: "/llms.txt", headers: [{ key: "X-Robots-Tag", value: "noindex" }] },
+    ];
   },
   async redirects() {
     return [
+      // One canonical host: www.yourdoorstepdisposal.com/... -> yourdoorstepdisposal.com/...
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.yourdoorstepdisposal.com" }],
+        destination: "https://yourdoorstepdisposal.com/:path*",
+        permanent: true,
+      },
       { source: "/demo", destination: "/app", permanent: true },
       { source: "/demo/:path*", destination: "/app/:path*", permanent: true },
       // The hosts page moved to a shorter URL on 2026-11-03.
