@@ -43,6 +43,9 @@ export default function Footer() {
           <p className="text-sm md:text-right" style={{ color: "rgba(255,255,255,0.55)" }}>
             © {new Date().getFullYear()} Valet Waste Disposal. All rights reserved.
           </p>
+          <a href="/privacy" className="text-sm underline underline-offset-2" style={{ color: "rgba(255,255,255,0.75)" }}>
+            Privacy notice
+          </a>
         </div>
       </div>
     </footer>

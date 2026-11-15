@@ -312,6 +312,10 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
             <p>
               <Link href="/residential/terms" target="_blank" className="font-semibold text-res-teal-dark underline underline-offset-4">Read the full Residential Service Terms</Link>
             </p>
+            <p className="text-slate-600">
+              We use your details only to provide and manage your service. We don&apos;t sell your information. See our{" "}
+              <Link href="/privacy" target="_blank" className="font-semibold text-res-teal-dark underline underline-offset-4">Privacy Notice</Link>.
+            </p>
           </div>
           <label className="flex items-start gap-3 rounded-xl border-2 border-slate-200 p-4 cursor-pointer has-[:checked]:border-res-teal">
             <input type="checkbox" required className="mt-0.5 h-5 w-5 accent-[#137F8C]" checked={f.termsAccepted} onChange={(e) => set("termsAccepted", e.target.checked)} />

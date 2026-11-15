@@ -32,6 +32,10 @@ export default function WaitlistForm({ zip, dark = false }: { zip: string; dark?
       <button type="submit" disabled={state === "sending"} className="rounded-full bg-res-teal-dark px-5 py-3 font-semibold text-white hover:bg-res-navy disabled:opacity-60">
         {state === "sending" ? "Joining…" : "Join the waitlist"}
       </button>
+      <p className={`text-xs ${dark ? "text-white/75" : "text-slate-500"}`}>
+        We&apos;ll only use this to tell you when we reach your area. See our{" "}
+        <a href="/privacy" target="_blank" className="underline underline-offset-2">Privacy Notice</a>.
+      </p>
     </form>
   );
 }
