@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "@/components/Nav";
+import Analytics from "@/components/Analytics";
 import { playfair, libreFranklin, dmSans } from "./fonts/fonts";
 import "./globals.css";
 
@@ -19,6 +20,7 @@ export default function RootLayout({
       <body>
         <Nav />
         <main>{children}</main>
+        <Analytics />
       </body>
     </html>
   );
