@@ -21,13 +21,16 @@ export type TrashCollector = {
   lookupLabel: string;
   // Extra line shown under the link, if any.
   note?: string;
+  // The hauler's collection-day map, saved at public/residential/trash-maps/<file>. Pickup days
+  // can change, so pages show it as a guide and still point people to the lookup.
+  map?: { src: string; width: number; height: number };
   rules: CollectionRules;
 };
 
 // Source: sandiego.gov/environmental-services/collection/general and /collection/schedule (checked 2026-11-15;
 // cart, hours and 2026 holiday text confirmed by Adil 2026-11-15).
 const sanDiego: TrashCollector = {
-  name: "City of San Diego Environmental Services",
+  name: "The City of San Diego",
   who: "Most single-family homes here are served by the City of San Diego's Environmental Services Department.",
   lookupUrl: "https://getitdone.sandiego.gov/CollectionMapLookup",
   lookupLabel: "City of San Diego collection schedule lookup",
@@ -59,25 +62,32 @@ const edcoRules: CollectionRules = {
   holidays: edcoHolidays,
 };
 
-const edco = (city: string, sub: string, rules: CollectionRules = {}): TrashCollector => ({
+const edco = (
+  city: string,
+  sub: string,
+  rules: CollectionRules = {},
+  map?: TrashCollector["map"],
+): TrashCollector => ({
   name: "EDCO",
   who: `Home trash, recycling and organics in ${city} are collected by EDCO, the city's contracted hauler.`,
   lookupUrl: `https://${sub}.edcodisposal.com/service-schedules/`,
   lookupLabel: `EDCO ${city} collection day lookup`,
+  ...(map && { map }),
   rules: { ...edcoRules, ...rules },
 });
 
-const encinitas = edco("Encinitas", "encinitas");
+// Maps from EDCO and the City of Del Mar, sent by Adil 2026-11-15.
+const encinitas = edco("Encinitas", "encinitas", {}, { src: "/residential/trash-maps/encinitas.jpg", width: 1049, height: 774 });
 
 export const trashCollectors: Record<string, TrashCollector> = {
   // Sources: wm.com/us/local/ca/oceanside/residential (checked 2026-11-15) and WM of North
   // County's holiday schedule and set-out rules, confirmed by Adil 2026-11-15.
   oceanside: {
-    name: "WM",
+    name: "Waste Management",
     who: "The City of Oceanside contracts with WM for home trash, recycling and organics collection.",
-    lookupUrl: "https://www.wm.com/us/en/mywm/my-services/view-pickup-eta.html",
-    lookupLabel: "WM pickup day lookup",
-    note: "Enter your address and select Verify. WM customer service: (760) 439-2824.",
+    lookupUrl: "https://www.wm.com/us/en/location/ca/oceanside/trash-pickup-oceanside-ca", // link set by Adil 2026-11-15
+    lookupLabel: "WM Oceanside trash pickup page",
+    note: "WM customer service: (760) 439-2824.",
     rules: {
       carts: "Trash and recycling are picked up every week, and trash, recycling and organics all go out on the same day.", // confirmed by Adil 2026-11-15
       setOut: "Carts must be at the street by 6 a.m. on your service day at the latest.",
@@ -92,9 +102,10 @@ export const trashCollectors: Record<string, TrashCollector> = {
   carlsbad: {
     name: "Republic Services",
     who: "Home trash, recycling and organics in Carlsbad are collected by Republic Services, the city's contracted hauler.",
-    lookupUrl: "https://www.republicservices.com/municipality/carlsbad-ca",
-    lookupLabel: "Republic Services Carlsbad service schedule",
-    note: "Choose \"See My Service Schedule\" and enter your address. Republic Services Carlsbad: (760) 332-6464.",
+    lookupUrl: "https://www.republicservices.com/schedule", // Republic's schedule lookup for all locations, set by Adil 2026-11-15
+    lookupLabel: "Republic Services pickup schedule lookup",
+    note: "Enter your address to see your pickup days. Republic Services Carlsbad: (760) 332-6464.",
+    map: { src: "/residential/trash-maps/carlsbad.jpg", width: 1347, height: 1026 }, // sent by Adil 2026-11-16
     rules: {
       carts: "Trash and recycling are typically collected on the same day.",
       setOut: "Carts must be out by 6 a.m. on your service day at the latest.",
@@ -109,8 +120,11 @@ export const trashCollectors: Record<string, TrashCollector> = {
   "solana-beach": edco("Solana Beach", "solana-beach", {
     carts: "Trash and recycling are typically collected on the same day. Each home also gets a green 95-gallon organics cart, collected every week on your service day.",
   }),
-  "del-mar": edco("Del Mar", "del-mar"),
-  coronado: edco("Coronado", "coronado"),
+  "del-mar": edco("Del Mar", "del-mar", {}, { src: "/residential/trash-maps/del-mar.jpg", width: 1053, height: 736 }),
+  coronado: edco("Coronado", "coronado", {}, { src: "/residential/trash-maps/coronado.jpg", width: 700, height: 357 }),
+  // San Marcos and Vista added 2026-11-15; Adil confirmed EDCO serves both.
+  "san-marcos": edco("San Marcos", "san-marcos", {}, { src: "/residential/trash-maps/san-marcos.jpg", width: 700, height: 506 }),
+  vista: edco("Vista", "city-of-vista", {}, { src: "/residential/trash-maps/vista.jpg", width: 1400, height: 1074 }),
   "mission-beach": sanDiego,
   "pacific-beach": sanDiego,
   "la-jolla": sanDiego,
@@ -120,10 +134,11 @@ export const trashCollectors: Record<string, TrashCollector> = {
   "north-park": sanDiego,
 };
 
+// Order the rules show in on city pages. Holidays first (Adil, 2026-11-16).
 export const ruleLabels: [keyof CollectionRules, string][] = [
+  ["holidays", "Holiday weeks"],
   ["carts", "Carts"],
   ["setOut", "Setting carts out"],
   ["bringIn", "Bringing carts in"],
   ["placement", "Where carts go"],
-  ["holidays", "Holiday weeks"],
 ];

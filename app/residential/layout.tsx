@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function ResidentialLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`${poppins.className} bg-white text-res-navy min-h-screen`}>
+    <div className={`${poppins.className} bg-white text-res-navy min-h-screen text-[17px] md:text-base`}>
       <PlaceholderBanner />
       <ResHeader />
       {children}

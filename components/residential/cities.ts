@@ -456,6 +456,68 @@ export const cityPages: CityPage[] = [
     strHeavy: false,
     photo: { position: "50% 50%" },
   },
+  {
+    slug: "san-marcos",
+    name: "San Marcos",
+    zips: ["92069", "92078", "92096"],
+    intro:
+      "Trash can valet for San Marcos homes, from San Elijo Hills to Twin Oaks Valley. We roll your trash, recycling and green waste cans to the curb the evening before pickup and bring them back after.",
+    localHeading: "Trash day in San Marcos",
+    local: [
+      "A lot of San Marcos is built on hills. In San Elijo Hills, Discovery Hills and the Santa Fe Hills area, the walk from the side yard to the street can be long and steep, and full cans get heavy fast.",
+      "Many neighborhoods here also have HOA rules about how long cans can sit at the curb. We bring yours back after pickup so they're out of sight again.",
+    ],
+    neighborhoods: ["San Elijo Hills", "Discovery Hills", "Twin Oaks Valley", "Lake San Marcos", "Santa Fe Hills", "Richland"],
+    whoUsesIt: [
+      "Homeowners with steep or long driveways",
+      "HOA homeowners who want cans back out of view",
+      "Busy families and commuters",
+      "Older residents and their families",
+    ],
+    faqs: [
+      {
+        q: "Which San Marcos ZIP codes do you serve?",
+        a: "We serve 92069, 92078 and 92096.",
+      },
+      {
+        q: "My driveway in San Elijo Hills is steep. What does that cost?",
+        a: "Check the steep driveway or long walk box when you sign up. We'll look at it and text you a custom price before you start.",
+      },
+    ],
+    strHeavy: false,
+    photo: { position: "50% 50%" },
+  },
+  {
+    slug: "vista",
+    name: "Vista",
+    zips: ["92081", "92083"],
+    intro:
+      "Trash can valet for Vista homes, from Shadowridge to downtown Vista. We take your trash, recycling and green waste cans to the curb the evening before pickup and bring them back after collection.",
+    localHeading: "Trash day in Vista",
+    local: [
+      "Vista mixes older neighborhoods near downtown with hillside homes and newer HOA communities like Shadowridge. Many homes have sloped driveways or cans kept well back from the street.",
+      "Tell us where your cans live and where they go at the curb, and we'll do it the same way every week, then bring them back after pickup.",
+    ],
+    neighborhoods: ["Shadowridge", "Downtown Vista", "Breeze Hill", "Buena Creek", "Vista Valley"],
+    whoUsesIt: [
+      "Homeowners with sloped driveways",
+      "Busy families and commuters",
+      "Frequent travelers",
+      "Older residents and their families",
+    ],
+    faqs: [
+      {
+        q: "Which Vista ZIP codes do you serve?",
+        a: "We serve 92081 and 92083.",
+      },
+      {
+        q: "Can you pick up my cans from the side yard?",
+        a: "Yes. Tell us where your cans are kept when you sign up, plus any gate code, and we'll take them from there and put them back after pickup.",
+      },
+    ],
+    strHeavy: false,
+    photo: { position: "50% 10%" }, // keeps the Vista arch sign in view
+  },
 ];
 
 export const cityBySlug = (slug: string) => cityPages.find((c) => c.slug === slug);

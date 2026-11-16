@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { IconCamera, IconHome, IconPlaneDeparture, IconHeartHandshake, IconBuildingCottage, IconPhone, IconMessage, IconCheck } from "@tabler/icons-react";
+import { IconCamera, IconHome, IconPlaneDeparture, IconHeartHandshake, IconBuildingCottage, IconPhone, IconMessage, IconCheck, IconUser } from "@tabler/icons-react";
 import { residential, planById, advertisedPrice, money, promoLine } from "@/config/residential";
 import { SITE, residentialBusiness, businessRef, areaServed, offers, faqPage } from "@/components/residential/schema";
 import JsonLd from "@/components/JsonLd";
@@ -62,7 +62,8 @@ export default function ResidentialHome() {
       <JsonLd data={serviceJsonLd()} />
       <section className="relative overflow-hidden bg-res-navy text-white">
         <Image src="/residential-hero-ranch.jpg" alt="Gray, blue and green trash cans at the curb in front of a white Spanish-style house" fill priority sizes="100vw" className="object-cover object-[50%_60%]" />
-        <div className="absolute inset-0 bg-res-navy/60" aria-hidden="true" />
+        {/* Darker on phones, where the text covers more of the photo. */}
+        <div className="absolute inset-0 bg-res-navy/75 md:bg-res-navy/60" aria-hidden="true" />
         <div className="relative max-w-6xl mx-auto px-4 pt-8 pb-10 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           {/* Dark text shadow keeps the copy readable over the photo. */}
           <div className="text-shadow-md text-shadow-black/80">
@@ -77,8 +78,15 @@ export default function ResidentialHome() {
                 <ZipCheck dark />
               </div>
               <p className="mt-3 text-sm text-white/75">
-                From <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} cans with code {residential.promo.label}.
+                From <s className="text-white/60">{money(weekly.basePrice)}</s>{" "}
+                <span className="font-semibold text-white">{money(advertisedPrice(weekly))}/month</span> for up to {weekly.includedBins} cans with code {residential.promo.label}.
               </p>
+              <Link
+                href="/residential/pricing"
+                className="text-shadow-none mt-4 block w-full sm:inline-block sm:w-auto rounded-full border-2 border-white/70 px-6 py-3 text-center font-semibold text-white hover:border-res-teal hover:text-res-teal"
+              >
+                See plans and pricing
+              </Link>
             </div>
             <ul className="mt-6 space-y-1.5 text-sm text-white/85 md:hidden">
               {trust.map((t) => (
@@ -154,8 +162,18 @@ export default function ResidentialHome() {
 
       <section className={`${section} bg-slate-50`}>
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-2xl md:text-[2.4rem] font-bold text-center">Who it&apos;s for</h2>
+          <h2 className="text-2xl md:text-[2.4rem] font-bold text-center">Who is it for?</h2>
           <div className="mt-6 md:mt-12 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+            {/* Wide lead tile: the reason the business exists. */}
+            <div className="col-span-2 lg:col-span-4 flex items-start gap-3 md:gap-5 rounded-2xl md:rounded-3xl bg-white border border-slate-200 p-5 md:p-8">
+              <IconUser className="size-[30px] md:size-[40px] text-res-teal-dark shrink-0" aria-hidden="true" />
+              <div>
+                <p className="font-semibold text-lg md:text-[1.5rem] leading-snug">You</p>
+                <p className="mt-1 md:mt-1.5 md:text-lg text-slate-600 leading-snug">
+                  Everyday people, like you, who hate taking out the trash as much as we used to. That&apos;s why we built this business.
+                </p>
+              </div>
+            </div>
             {audiences.map((a) => {
               const body = (
                 <>

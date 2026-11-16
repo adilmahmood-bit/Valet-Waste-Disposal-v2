@@ -52,7 +52,7 @@ export default async function ThanksPage({ searchParams }: { searchParams: Promi
       </div>
 
       <div className="mt-8 flex flex-col sm:flex-row gap-3">
-        <Link href="/residential/signup?add=1" className="text-center rounded-full border-2 border-res-navy px-6 py-3 font-semibold hover:bg-res-navy hover:text-white">
+        <Link href="/residential/signup/full?add=1" className="text-center rounded-full border-2 border-res-navy px-6 py-3 font-semibold hover:bg-res-navy hover:text-white">
           Add another property
         </Link>
         <Link href="/residential" className="text-center rounded-full px-6 py-3 font-semibold text-res-teal-dark">

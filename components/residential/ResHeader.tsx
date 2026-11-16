@@ -1,18 +1,20 @@
 import Link from "next/link";
 import { IconPhone } from "@tabler/icons-react";
 import { residential } from "@/config/residential";
+import MobileMenu from "./MobileMenu";
 
 const links = [
   { label: "How it works", href: "/residential#how-it-works" },
   { label: "Pricing", href: "/residential/pricing" },
   { label: "Airbnb hosts", href: "/hosts" },
   { label: "FAQ", href: "/residential/faq" },
+  { label: "Trash Day SD Guide", href: "/residential/trash-day" },
 ];
 
 export default function ResHeader() {
   return (
     // Same blue as the main site's nav bar.
-    <header className="bg-[#1B4F72] text-white">
+    <header className="relative bg-[#1B4F72] text-white">
       <div className="max-w-6xl mx-auto px-4 h-[72px] md:h-20 flex items-center justify-between gap-3">
         <Link href="/residential" className="flex items-center gap-2.5 md:gap-3 min-w-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -29,6 +31,7 @@ export default function ResHeader() {
             </Link>
           ))}
         </nav>
+        <div className="flex items-center gap-1.5 shrink-0">
         <a
           href={`tel:${residential.contact.phoneHref}`}
           className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-res-teal-dark hover:bg-res-teal px-4 py-2 text-sm font-semibold transition-colors"
@@ -37,16 +40,9 @@ export default function ResHeader() {
           <span className="hidden sm:inline">{residential.contact.phone}</span>
           <span className="sm:hidden">Call</span>
         </a>
-      </div>
-      <nav className="md:hidden border-t border-white/10 overflow-x-auto">
-        <div className="flex gap-5 px-4 h-11 items-center text-sm font-medium whitespace-nowrap">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} className="hover:text-res-teal">
-              {l.label}
-            </Link>
-          ))}
+        <MobileMenu links={links} />
         </div>
-      </nav>
+      </div>
     </header>
   );
 }

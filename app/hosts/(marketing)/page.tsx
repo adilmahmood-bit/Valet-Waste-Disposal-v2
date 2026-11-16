@@ -97,7 +97,7 @@ export default function HostsPage() {
           <p className="text-res-teal font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">For Airbnb, Vrbo and short-term rental hosts</p>
           <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Trash day, handled between guests.</h1>
           <p className="mt-3 md:mt-4 md:text-lg text-white/85 max-w-2xl">
-            Weekly trash can valet for your short-term rental, whether it&apos;s listed on Airbnb, Vrbo or booked direct. Same price as a homeowner: from {money(advertisedPrice(weekly))} a month per property for up to {weekly.includedBins} cans with code {residential.promo.label}.
+            Weekly trash can valet for your short-term rental, whether it&apos;s listed on Airbnb, Vrbo or booked direct. Same price as a homeowner: from <s className="opacity-60">{money(weekly.basePrice)}</s> {money(advertisedPrice(weekly))} a month per property for up to {weekly.includedBins} cans with code {residential.promo.label}.
           </p>
           <div className="mt-6 md:mt-8 max-w-md text-shadow-none">
             <ZipCheck dark />

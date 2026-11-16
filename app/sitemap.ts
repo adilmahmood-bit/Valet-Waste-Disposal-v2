@@ -15,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE}/app/features`, lastModified, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE}/hosts`, lastModified, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE}/privacy`, lastModified, changeFrequency: "yearly", priority: 0.2 },
-    ...["", "/pricing", "/service-area", "/seniors", "/faq", ...cityPages.map((c) => `/${c.slug}`)].map((path) => ({
+    ...["", "/pricing", "/service-area", "/seniors", "/faq", "/trash-day", ...cityPages.map((c) => `/${c.slug}`)].map((path) => ({
       url: `${SITE}/residential${path}`,
       lastModified,
       changeFrequency: "monthly" as const,
