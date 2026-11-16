@@ -127,9 +127,13 @@ async function stages() {
 type ContactInput = {
   email: string;
   name: string;
+  // Set these when the form asks for first and last name separately; otherwise `name` is split.
+  firstname?: string;
+  lastname?: string;
   mobile?: string | null;
   street?: string | null;
   city?: string | null;
+  state?: string | null;
   zip?: string | null;
   source?: string | null;
   referralCode?: string | null;
@@ -137,16 +141,17 @@ type ContactInput = {
 };
 
 function contactProps(c: ContactInput) {
-  const [firstname, ...rest] = c.name.trim().split(/\s+/);
+  const [first, ...rest] = c.name.trim().split(/\s+/);
   const props: Record<string, string> = {
     email: c.email,
-    firstname,
-    lastname: rest.join(" "),
+    firstname: c.firstname ?? first,
+    lastname: c.lastname ?? rest.join(" "),
     customer_type: "Residential",
   };
   if (c.mobile) props.mobilephone = c.mobile;
   if (c.street) props.address = c.street;
   if (c.city) props.city = c.city;
+  if (c.state) props.state = c.state;
   if (c.zip) props.zip = c.zip;
   if (c.source) props.res_lead_source = sourceLabel(c.source);
   if (c.referralCode) props.res_referral_code = c.referralCode;
@@ -275,7 +280,7 @@ export type FormContext = { hutk?: string; pageUri?: string; pageName?: string; 
 // Records the sign-up, waitlist or quote as a HubSpot form submission, so it shows in
 // HubSpot's form reports with page and source tracking. The CRM writes above stay the
 // source of truth; a skipped or failed submission is logged, not fatal.
-export async function submitForm(form: "signup" | "waitlist" | "quote", fields: Record<string, string>, context: FormContext, localRef: string) {
+export async function submitForm(form: "signup" | "waitlist" | "quote" | "interest", fields: Record<string, string>, context: FormContext, localRef: string) {
   const guid = process.env[`HUBSPOT_FORM_${form.toUpperCase()}`];
   const portal = process.env.HUBSPOT_PORTAL_ID;
   const ctx = { operation: "submit", objectType: `form:${form}`, localRef };

@@ -6,7 +6,7 @@ import { residential } from "@/config/residential";
 // 22575) and in the style of the CCPA, which doesn't currently apply to us (see 1798.140(d)).
 // Update UPDATED and the text whenever what we collect, the tools we use, or who we share with
 // changes, and review it at least once a year.
-const UPDATED = "November 15, 2026";
+const UPDATED = "November 16, 2026";
 
 export const metadata: Metadata = {
   title: { absolute: "Privacy Notice | Valet Waste Disposal & Doorstep Disposal" },
@@ -35,13 +35,13 @@ export default function PrivacyPage() {
         <p className={`${p} font-semibold`}>We do not sell your personal information, and we do not share it for targeted advertising.</p>
 
         <h2 className={h2}>Information we collect</h2>
-        <p className={p}><strong>Information you give us</strong> when you sign up, join the waitlist, request a quote or contact us:</p>
+        <p className={p}><strong>Information you give us</strong> when you fill out our Get started form, sign up, join the waitlist, request a quote or contact us:</p>
         <ul className={ul}>
-          <li>Name, mobile phone number and email address</li>
-          <li>Service address and ZIP code</li>
+          <li>Name, phone number and email address</li>
+          <li>Service address, city, state and ZIP code</li>
           <li>Service details: your plan, number of carts, trash day, property type, where your carts are kept, and access notes (such as a steep driveway, stairs or pets)</li>
           <li>Gate or access codes, if you choose to give them</li>
-          <li>How you heard about us, and any referral code</li>
+          <li>How you heard about us, and any promo or referral code</li>
           <li>For property managers and businesses: your company, role and property details</li>
         </ul>
         <p className={p}><strong>Information created when we provide service:</strong></p>
@@ -55,6 +55,10 @@ export default function PrivacyPage() {
           <li>Your IP address, browser and device type, the pages you visit, how you got to our site (for example a search engine or a link), and how you interact with pages (clicks, scrolling and taps)</li>
           <li>Cookies and similar technologies, described below</li>
         </ul>
+        <p className={p}>
+          When you use our trash day finder, the city or ZIP code you type is matched in your browser to show you the right page
+          or link. We don&apos;t store it or connect it to you.
+        </p>
         <p className={p}>We don&apos;t collect payment card numbers on this website.</p>
 
         <h2 className={h2}>How we use your information</h2>
@@ -84,7 +88,7 @@ export default function PrivacyPage() {
         <ul className={ul}>
           <li><strong>HubSpot</strong>: customer records, forms and website analytics</li>
           <li><strong>Supabase</strong>: our secure service database (routes, schedules and service records)</li>
-          <li><strong>Resend</strong>: sending service emails</li>
+          <li><strong>Resend</strong>: sending emails, including service emails and our own alerts when you fill out a form</li>
           <li><strong>Hostinger</strong>: website hosting</li>
           <li><strong>Microsoft Clarity</strong>: website analytics</li>
           <li>Our phone and text messaging providers, for calls and texts with you</li>
@@ -92,6 +96,12 @@ export default function PrivacyPage() {
         <p className={p}>
           We may also disclose information if the law requires it, to protect someone&apos;s safety, or as part of a sale or
           transfer of our business, in which case this notice would continue to apply to your information.
+        </p>
+
+        <h2 className={h2}>Links to other websites</h2>
+        <p className={p}>
+          Our site links to other websites, such as your city&apos;s or trash hauler&apos;s collection schedule lookup. We don&apos;t
+          control those sites, and their own privacy policies apply to anything you enter there.
         </p>
 
         <h2 className={h2}>How we protect your information</h2>

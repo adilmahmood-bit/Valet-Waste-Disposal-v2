@@ -22,10 +22,16 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ city: string }> }): Promise<Metadata> {
   const city = cityBySlug((await params).city);
   if (!city) return {};
+  const title = `Doorstep Disposal - Trash-to-Curb Service in ${city.name}, CA`;
+  const description = `Trash can to curb service in ${city.name}. Every week we roll your trash, recycling and green waste cans to the curb and back.`;
+  // Link previews (texts, social posts) show this city's photo. Made by scripts/city-og-images.mjs.
+  const image = { url: `/residential/og/${city.slug}.jpg`, width: 1200, height: 630, alt: `${city.name}, California` };
   return {
-    title: { absolute: `Doorstep Disposal - Trash-to-Curb Service in ${city.name}, CA` },
-    description: `Trash can to curb service in ${city.name}. Every week we roll your trash, recycling and green waste cans to the curb and back.`,
+    title: { absolute: title },
+    description,
     alternates: { canonical: `/residential/${city.slug}` },
+    openGraph: { title, description, url: `/residential/${city.slug}`, siteName: "Doorstep Disposal", locale: "en_US", type: "website", images: [image] },
+    twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }
 
@@ -72,7 +78,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
               className="object-cover"
               style={{ objectPosition: city.photo.position ?? "50% 50%" }}
             />
-            <div className="absolute inset-0 bg-res-navy/60" aria-hidden="true" />
+            <div className="absolute inset-0 bg-res-navy/75 md:bg-res-navy/60" aria-hidden="true" />
           </>
         )}
         {/* Dark text shadow keeps the copy readable over the photo. */}
@@ -89,9 +95,12 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             <div className="text-shadow-none">
               <ZipCheck dark />
             </div>
-            <p className="mt-3 text-sm text-white/75">
-              <Link href="/residential/pricing" className="font-semibold text-white underline underline-offset-4 hover:text-res-teal">See plans and pricing</Link>
-            </p>
+            <Link
+              href="/residential/pricing"
+              className="text-shadow-none mt-4 block w-full sm:inline-block sm:w-auto rounded-full border-2 border-white/70 px-6 py-3 text-center font-semibold text-white hover:border-res-teal hover:text-res-teal"
+            >
+              See plans and pricing
+            </Link>
           </div>
         </div>
       </section>
@@ -123,8 +132,18 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             </div>
           </div>
 
+          {city.strHeavy && (
+            <Link href="/hosts" className="mt-8 flex items-start gap-3 rounded-2xl bg-res-mist p-5 hover:ring-2 hover:ring-res-teal">
+              <IconBuildingCottage size={28} className="text-res-teal-dark shrink-0" aria-hidden="true" />
+              <span>
+                <span className="block font-semibold">Run a short-term rental in {city.name}?</span>
+                <span className="block text-sm text-slate-700">Airbnb, Vrbo or booked direct, guests don&apos;t need to know your trash day. See how it works for hosts →</span>
+              </span>
+            </Link>
+          )}
+
           {collector && (
-            <div className="mt-8 rounded-2xl border border-slate-200 p-5 md:p-6">
+            <div id="trash-day" className="scroll-mt-4 mt-8 rounded-2xl border border-slate-200 p-5 md:p-6">
               <h3 className="flex items-center gap-2 text-lg font-semibold">
                 <IconCalendarSearch size={22} className="text-res-teal-dark shrink-0" aria-hidden="true" />
                 When is trash day in {city.name}?
@@ -140,6 +159,23 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
               </a>
               <p className="mt-1.5 text-xs text-slate-500">Opens the {collector.lookupLabel}.</p>
               {collector.note && <p className="mt-3 text-sm text-slate-600">{collector.note}</p>}
+              {collector.map && (
+                <figure className="mt-5">
+                  <a href={collector.map.src} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <Image
+                      src={collector.map.src}
+                      alt={`${collector.name} trash pickup day map for ${city.name}`}
+                      width={collector.map.width}
+                      height={collector.map.height}
+                      sizes="(min-width: 768px) 700px, 100vw"
+                      className="h-auto w-full"
+                    />
+                  </a>
+                  <figcaption className="mt-1.5 text-xs text-slate-500">
+                    {city.name} pickup day map from {collector.name}. Tap to enlarge. Use the lookup above to confirm the day for your address.
+                  </figcaption>
+                </figure>
+              )}
               {ruleLabels.some(([k]) => collector.rules[k]) && (
                 <>
                   <h4 className="mt-5 font-semibold">Collection rules in {city.name}</h4>
@@ -159,28 +195,21 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             </div>
           )}
 
-          {city.strHeavy && (
-            <Link href="/hosts" className="mt-8 flex items-start gap-3 rounded-2xl bg-res-mist p-5 hover:ring-2 hover:ring-res-teal">
-              <IconBuildingCottage size={28} className="text-res-teal-dark shrink-0" aria-hidden="true" />
-              <span>
-                <span className="block font-semibold">Run a short-term rental in {city.name}?</span>
-                <span className="block text-sm text-slate-700">Airbnb, Vrbo or booked direct, guests don&apos;t need to know your trash day. See how it works for hosts →</span>
-              </span>
-            </Link>
-          )}
         </div>
       </section>
 
-      <section className="py-10 md:py-14 bg-slate-50">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold">Plans for {city.name} homes</h2>
-          <p className="mt-3 text-slate-700">Weekly service month-to-month or with an annual agreement, or a one-time round trip.</p>
-          <Link href="/residential/pricing" className="mt-6 inline-block rounded-full bg-res-navy px-6 py-3 font-semibold text-white hover:bg-res-teal-dark">
-            See plans and pricing
-          </Link>
-          <p className="mt-5 text-sm text-slate-600">
-            Steep driveway, stairs, or a long walk to the curb? We&apos;ll text you a custom price.
-          </p>
+      <section>
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="rounded-2xl bg-res-mist p-6 md:p-8">
+            <h2 className="text-xl md:text-2xl font-bold">Rather not worry about trash day for {city.name}?</h2>
+            <p className="mt-2 text-slate-700">
+              We track your trash day, holiday weeks included, and roll your cans to the curb the evening before and back after pickup.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href="/residential/signup" className="rounded-full bg-res-teal-dark px-6 py-3 font-semibold text-white hover:bg-res-navy">Get started</Link>
+              <Link href="/residential/pricing" className="rounded-full border-2 border-res-navy px-6 py-3 font-semibold hover:bg-res-navy hover:text-white">See plans and pricing</Link>
+            </div>
+          </div>
         </div>
       </section>
 

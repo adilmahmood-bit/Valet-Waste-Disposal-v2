@@ -7,11 +7,11 @@ export default function StickyCta() {
   return (
     <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-2.5 flex gap-2">
       <a href="#check" className="flex-1 text-center rounded-full bg-res-teal-dark text-white font-semibold py-3">Check my address</a>
-      <a href={`sms:${contact.phoneHref}`} aria-label={`Text ${contact.phone}`} className="grid place-items-center w-12 rounded-full border-2 border-res-navy text-res-navy">
-        <IconMessage size={20} aria-hidden="true" />
+      <a href={`sms:${contact.phoneHref}`} aria-label={`Text ${contact.phone}`} className="inline-flex items-center gap-1 px-3 rounded-full border-2 border-res-navy text-res-navy text-sm font-semibold">
+        <IconMessage size={18} aria-hidden="true" /> Text
       </a>
-      <a href={`tel:${contact.phoneHref}`} aria-label={`Call ${contact.phone}`} className="grid place-items-center w-12 rounded-full border-2 border-res-navy text-res-navy">
-        <IconPhone size={20} aria-hidden="true" />
+      <a href={`tel:${contact.phoneHref}`} aria-label={`Call ${contact.phone}`} className="inline-flex items-center gap-1 px-3 rounded-full border-2 border-res-navy text-res-navy text-sm font-semibold">
+        <IconPhone size={18} aria-hidden="true" /> Call
       </a>
     </div>
   );

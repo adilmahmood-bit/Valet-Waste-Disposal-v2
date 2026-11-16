@@ -12,7 +12,7 @@ export default function PlanCards() {
         return (
           <div
             key={p.id}
-            className={`relative rounded-2xl border bg-white p-6 flex flex-col ${p.mostPopular ? "border-res-teal border-2 shadow-lg" : "border-slate-200"}`}
+            className={`relative rounded-2xl border bg-white p-6 flex flex-col border-l-[6px] ${p.mostPopular ? "border-res-teal border-2 border-l-[6px] border-l-res-teal-dark shadow-lg" : "border-slate-200 border-l-[#C9622B]"}`}
           >
             {badge && (
               <span className={`absolute -top-3 left-6 rounded-full text-white text-xs font-semibold px-3 py-1 ${p.mostPopular ? "bg-res-teal-dark" : "bg-[#C9622B]"}`}>{badge}</span>
@@ -21,7 +21,7 @@ export default function PlanCards() {
             <p className="mt-1 text-sm text-slate-600">{p.blurb}</p>
             <p className="mt-4 flex flex-wrap items-baseline gap-x-2">
               {promo && <s className="text-xl font-semibold text-slate-400">{money(p.basePrice)}</s>}
-              <span className="text-4xl font-bold">{money(advertisedPrice(p))}</span>
+              <span className={`text-5xl font-bold ${p.mostPopular ? "text-res-teal-dark" : "text-[#9A4519]"}`}>{money(advertisedPrice(p))}</span>
               <span className="text-slate-600">{p.billing === "monthly" ? "/ month" : "one time"}</span>
             </p>
             {promo && (

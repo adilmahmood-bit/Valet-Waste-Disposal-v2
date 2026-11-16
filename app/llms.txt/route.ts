@@ -54,6 +54,7 @@ Valet Waste Disposal provides nightly doorstep valet trash for apartment communi
 - [Airbnb and Vrbo hosts](${SITE}/hosts)
 - [Service for seniors](${SITE}/residential/seniors)
 - [FAQ](${SITE}/residential/faq)
+- [When is trash day? Pickup day finder for San Diego County](${SITE}/residential/trash-day)
 - [Apartment valet trash](${SITE}/)
 
 ## City pages

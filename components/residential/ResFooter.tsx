@@ -23,6 +23,7 @@ export default function ResFooter() {
         <div className="flex flex-col gap-1">
           <Link href="/residential/pricing" className="hover:text-white">Pricing</Link>
           <Link href="/residential/service-area" className="hover:text-white">Service area</Link>
+          <Link href="/residential/trash-day" className="hover:text-white">When is trash day?</Link>
           <Link href="/residential/seniors" className="hover:text-white">For seniors</Link>
           <Link href="/hosts" className="hover:text-white">Airbnb &amp; Vrbo hosts</Link>
           <Link href="/residential/faq" className="hover:text-white">FAQ</Link>
