@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { IconChevronDown, IconExternalLink } from "@tabler/icons-react";
+import { IconCheck, IconChevronDown, IconExternalLink } from "@tabler/icons-react";
 import { residential } from "@/config/residential";
 import { cityPages } from "@/components/residential/cities";
-import { trashCollectors } from "@/components/residential/trashDay";
+import { trashCollectors, holidayNames, type Holiday } from "@/components/residential/trashDay";
 import { otherAreas, type OtherArea } from "@/components/residential/trashDayLookup";
 import TrashDayFinder from "@/components/residential/TrashDayFinder";
+import { currentYear, holidayDate, formatHolidayDate, isWeekend, joinNames } from "@/components/residential/holidayDates";
 import JsonLd from "@/components/JsonLd";
 import { faqPage, breadcrumbs } from "@/components/residential/schema";
+
+// Rebuild daily so the holiday schedule year and dates roll over on their own each January.
+export const revalidate = 86400;
 
 const shareImage = { url: "/residential/og/trash-day.jpg", width: 1200, height: 630, alt: "San Diego skyline at night" };
 
@@ -36,18 +40,89 @@ const faqs = [
     a: "There's no single trash day in San Diego. Each street has its own collection day, Monday through Friday, and a holiday can push it one day later that week. Enter your city, neighborhood or ZIP code above to find your day, or use the City of San Diego's collection lookup if you live in the city.",
   },
   {
-    q: "When is trash day in San Diego?",
-    a: "It depends on your street. In the City of San Diego, single-family homes are collected by Environmental Services on a set weekday, and the City's online lookup shows your day. Other cities in the county use a contracted hauler such as EDCO, WM or Republic Services, each with its own lookup.",
-  },
-  {
-    q: "Do holidays change my trash day?",
-    a: "Often, yes. In most San Diego County cities, a weekday holiday pushes pickup one day later for the rest of that week. Each city page above lists the holiday rules for that area.",
-  },
-  {
     q: "What time do trash cans need to be out?",
     a: "In most of San Diego County, carts need to be at the curb by 6 a.m. on collection day. Some cities also set a time to bring them back in. Check your city's page for its rules.",
   },
 ];
+
+const holidays = Object.keys(holidayNames) as Holiday[];
+
+// Holiday table rows. San Diego neighborhood pages share one row (same City rules), and
+// Cardiff is part of Encinitas, so it's listed under Encinitas. Other county cities are in
+// extraHolidayRows, behind "Show more cities".
+type HolidayRow = { key: string; label: string; href?: string; areas?: { slug: string; name: string }[]; observed: Holiday[] };
+const holidayRows: HolidayRow[] = (() => {
+  const rows: HolidayRow[] = [];
+  const sdLookup = trashCollectors["pacific-beach"]?.lookupUrl;
+  for (const c of cityPages) {
+    const col = trashCollectors[c.slug];
+    if (!col || c.slug === "cardiff-by-the-sea") continue;
+    if (col.lookupUrl === sdLookup) {
+      let sd = rows.find((r) => r.key === "san-diego");
+      if (!sd) rows.push((sd = { key: "san-diego", label: "San Diego", areas: [], observed: col.holidaysObserved }));
+      sd.areas!.push({ slug: c.slug, name: c.name });
+      continue;
+    }
+    rows.push({ key: c.slug, label: c.name, href: `/residential/${c.slug}#trash-day`, observed: col.holidaysObserved });
+  }
+  return rows.sort((a, b) => a.label.localeCompare(b.label));
+})();
+const extraHolidayRows: HolidayRow[] = otherAreas
+  .filter((a) => a.holidaysObserved)
+  .map((a) => ({ key: a.name, label: a.name, observed: a.holidaysObserved! }))
+  .sort((a, b) => a.label.localeCompare(b.label));
+
+// One question per holiday ("Is there trash pickup on Christmas in San Diego?"), built from the same
+// data as the table. Shown collapsed on the page and included in the FAQ markup for search and AI.
+function holidayFaqs(year: number) {
+  const all = [...holidayRows, ...extraHolidayRows];
+  return holidays.map((h) => {
+    const name = holidayNames[h];
+    const date = holidayDate(h, year);
+    const when = `In ${year}, ${name} is ${formatHolidayDate(date)}.`;
+    const off = all.filter((r) => r.observed.includes(h)).map((r) => r.label);
+    const on = all.filter((r) => !r.observed.includes(h)).map((r) => r.label);
+    const shift = isWeekend(date)
+      ? `Because it falls on a weekend in ${year}, pickup that week isn't delayed in most areas.`
+      : "Pickups later that week move one day later.";
+    let a: string;
+    if (!off.length) a = `Yes. ${name} is a regular trash pickup day across San Diego County. ${when}`;
+    else if (!on.length) a = `No. San Diego and the other cities in San Diego County don't collect trash on ${name}. ${shift} ${when}`;
+    else
+      a = `It depends on your city. There's no trash pickup on ${name} in ${joinNames(off)}. ${shift} ${joinNames(on)} ${
+        on.length > 1 ? "have" : "has"
+      } regular pickup. ${when}`;
+    return { q: `Is there trash pickup on ${name} in San Diego?`, a };
+  });
+}
+
+function HolidayCells({ observed }: { observed: Holiday[] }) {
+  return holidays.map((h) => (
+    <td key={h} className="px-1 py-2 text-center">
+      {observed.includes(h) ? (
+        <>
+          <IconCheck size={20} stroke={3} className="mx-auto text-green-600" aria-hidden="true" />
+          <span className="sr-only">Yes</span>
+        </>
+      ) : (
+        <>
+          <span className="text-slate-300" aria-hidden="true">–</span>
+          <span className="sr-only">No</span>
+        </>
+      )}
+    </td>
+  ));
+}
+
+// Same column widths in both tables, so the hidden rows line up with the ones above.
+const holidayCols = (
+  <colgroup>
+    <col className="w-[180px]" />
+    {holidays.map((h) => (
+      <col key={h} />
+    ))}
+  </colgroup>
+);
 
 // City pages grouped by who collects the trash, for the list under the finder.
 const byHauler = cityPages.reduce<Record<string, typeof cityPages>>((acc, c) => {
@@ -75,13 +150,15 @@ function AreaRow({ a }: { a: OtherArea }) {
 }
 
 export default function TrashDayPage() {
+  const year = currentYear();
+  const perHoliday = holidayFaqs(year);
   return (
     <>
       <JsonLd
         data={{
           "@context": "https://schema.org",
           "@graph": [
-            faqPage(faqs),
+            faqPage([...faqs, ...perHoliday]),
             breadcrumbs([
               { name: "For Homes", path: "/residential" },
               { name: "Trash day", path: "/residential/trash-day" },
@@ -112,6 +189,12 @@ export default function TrashDayPage() {
           <div className="mt-6">
             <TrashDayFinder />
           </div>
+          <a
+            href="#holidays"
+            className="text-shadow-none mt-5 inline-block rounded-full bg-res-teal px-5 py-3 font-semibold text-white hover:bg-res-teal-dark"
+          >
+            San Diego Trash Holiday Guide {year}
+          </a>
         </div>
       </section>
 
@@ -166,7 +249,96 @@ export default function TrashDayPage() {
 
           <h2 className="mt-12 text-2xl md:text-3xl font-bold">Trash day questions</h2>
           <dl className="mt-4 divide-y divide-slate-200">
-            {faqs.map((f) => (
+            {faqs.slice(0, 1).map((f) => (
+              <div key={f.q} className="py-4">
+                <dt className="font-semibold">{f.q}</dt>
+                <dd className="mt-1.5 text-slate-700">{f.a}</dd>
+              </div>
+            ))}
+          </dl>
+
+          {/* San Diego Trash Holiday Guide. A real table (not an image) so search engines and AI tools
+              can read it. Checks come from holidaysObserved in trashDay.ts and trashDayLookup.ts. */}
+          <div id="holidays" className="scroll-mt-4 border-t border-slate-200 py-4">
+            <h3 className="font-semibold">San Diego Trash Holiday Schedule {year}: Is There Trash Pickup on Holidays?</h3>
+            <p className="mt-1.5 text-slate-700">
+              Covers {joinNames(holidays.map((h) => holidayNames[h]))}. A check means the holiday <strong>changes</strong> trash
+              pickup that week in that area.
+            </p>
+            <div className="mt-4 overflow-x-auto rounded-xl ring-1 ring-slate-200 lg:-mx-24">
+              <table className="min-w-[900px] w-full text-sm table-fixed">
+                <caption className="sr-only">Trash pickup holidays by city in San Diego County</caption>
+                {holidayCols}
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th scope="col" className="sticky left-0 bg-slate-50 px-3 py-2 text-left font-semibold">City</th>
+                    {holidays.map((h) => (
+                      <th key={h} scope="col" className="px-1 py-2 text-center text-xs font-semibold leading-tight">{holidayNames[h]}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {holidayRows.map((r) => (
+                    <tr key={r.key}>
+                      <th scope="row" className="sticky left-0 bg-white px-3 py-2 text-left font-medium">
+                        {r.href ? <Link href={r.href} className="hover:text-res-teal-dark hover:underline">{r.label}</Link> : r.label}
+                        {r.areas && (
+                          <span className="block text-xs font-normal text-slate-500 leading-snug">
+                            {r.areas.map((a, i) => (
+                              <span key={a.slug}>
+                                {i > 0 && ", "}
+                                <Link href={`/residential/${a.slug}#trash-day`} className="hover:text-res-teal-dark hover:underline">{a.name}</Link>
+                              </span>
+                            ))}
+                          </span>
+                        )}
+                      </th>
+                      <HolidayCells observed={r.observed} />
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <details className="group min-w-[900px] border-t border-slate-200">
+                <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-sm font-semibold text-res-teal-dark [&::-webkit-details-marker]:hidden">
+                  <span className="group-open:hidden">Show {extraHolidayRows.length} more San Diego County cities</span>
+                  <span className="hidden group-open:inline">Show fewer cities</span>
+                  <IconChevronDown size={18} className="transition-transform group-open:rotate-180" aria-hidden="true" />
+                </summary>
+                <table className="w-full text-sm table-fixed border-t border-slate-200">
+                  <caption className="sr-only">Trash pickup holidays in other San Diego County cities</caption>
+                  {holidayCols}
+                  <tbody className="divide-y divide-slate-200">
+                    {extraHolidayRows.map((r) => (
+                      <tr key={r.key}>
+                        <th scope="row" className="sticky left-0 bg-white px-3 py-2 text-left font-medium">{r.label}</th>
+                        <HolidayCells observed={r.observed} />
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </details>
+            </div>
+
+            {/* Collapsed to keep the page short. The text is still in the page HTML (and the FAQ markup),
+                so Google, Bing and AI tools read it. */}
+            <details className="group/q mt-4 rounded-xl ring-1 ring-slate-200">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 font-semibold text-res-teal-dark [&::-webkit-details-marker]:hidden">
+                Is there trash pickup on a holiday? Answers by holiday
+                <IconChevronDown size={18} className="shrink-0 transition-transform group-open/q:rotate-180" aria-hidden="true" />
+              </summary>
+              <dl className="divide-y divide-slate-200 border-t border-slate-200 px-4">
+                {perHoliday.map((f) => (
+                  <div key={f.q} className="py-3">
+                    <dt className="font-semibold">{f.q}</dt>
+                    <dd className="mt-1 text-sm text-slate-700">{f.a}</dd>
+                  </div>
+                ))}
+              </dl>
+            </details>
+          </div>
+
+          <dl className="divide-y divide-slate-200 border-t border-slate-200">
+            {faqs.slice(1).map((f) => (
               <div key={f.q} className="py-4">
                 <dt className="font-semibold">{f.q}</dt>
                 <dd className="mt-1.5 text-slate-700">{f.a}</dd>

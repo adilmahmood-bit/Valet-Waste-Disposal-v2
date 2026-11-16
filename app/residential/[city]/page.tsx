@@ -10,10 +10,13 @@ import ZipCheck from "@/components/residential/ZipCheck";
 import StickyCta from "@/components/residential/StickyCta";
 import JsonLd from "@/components/JsonLd";
 import { trashCollectors, ruleLabels } from "@/components/residential/trashDay";
+import { currentYear } from "@/components/residential/holidayDates";
 
 
 // One static page per city in cities.ts; any other slug is a 404.
 export const dynamicParams = false;
+// Rebuild daily so the year in "Holiday schedule <city> <year>" rolls over on its own.
+export const revalidate = 86400;
 
 export function generateStaticParams() {
   return cityPages.map((c) => ({ city: c.slug }));
@@ -41,6 +44,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
   const { contact } = residential;
   const others = cityPages.filter((c) => c.slug !== city.slug);
   const collector = trashCollectors[city.slug];
+  const year = currentYear();
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -183,7 +187,7 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
                     {ruleLabels.map(([k, label]) =>
                       collector.rules[k] ? (
                         <div key={k}>
-                          <dt className="inline font-semibold">{label}: </dt>
+                          <dt className="inline font-semibold">{k === "holidays" ? `Holiday schedule ${city.name} ${year}` : label}: </dt>
                           <dd className="inline">{collector.rules[k]}</dd>
                         </div>
                       ) : null,

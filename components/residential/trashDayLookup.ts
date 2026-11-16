@@ -3,7 +3,7 @@
 // County gets a link to the hauler's (or city's) own lookup. Haulers checked 2026-11-16 against each
 // city's trash page; confirm here when a city changes hauler.
 import { cityPages } from "./cities";
-import { trashCollectors } from "./trashDay";
+import { trashCollectors, sixHolidays, type Holiday } from "./trashDay";
 
 export type OtherArea = {
   name: string;
@@ -13,6 +13,8 @@ export type OtherArea = {
   zips: string[];
   aliases?: string[];
   note?: string;
+  // For the holiday table on /residential/trash-day. Left out where it varies (unincorporated county).
+  holidaysObserved?: Holiday[];
 };
 
 const edcoLookup = (sub: string) => `https://${sub}.edcodisposal.com/service-schedules/`;
@@ -43,18 +45,20 @@ export const sanDiegoCity: OtherArea = {
   ],
 };
 
+// holidaysObserved checked 2026-11-16: EDCO's San Diego County holiday schedule, WM Santee's newsletter
+// and Republic Services' Chula Vista page all list the same six holidays.
 export const otherAreas: OtherArea[] = [
   sanDiegoCity,
-  { name: "Escondido", hauler: "Escondido Disposal (EDCO)", url: "https://www.escondidodisposal.com/service-schedules/", linkLabel: "Escondido Disposal collection day lookup", zips: ["92025", "92026", "92027", "92029"] },
-  { name: "Poway", hauler: "EDCO", url: edcoLookup("poway"), linkLabel: "EDCO Poway collection day lookup", zips: ["92064"] },
+  { name: "Escondido", hauler: "Escondido Disposal (EDCO)", url: "https://www.escondidodisposal.com/service-schedules/", linkLabel: "Escondido Disposal collection day lookup", zips: ["92025", "92026", "92027", "92029"], holidaysObserved: sixHolidays },
+  { name: "Poway", hauler: "EDCO", url: edcoLookup("poway"), linkLabel: "EDCO Poway collection day lookup", zips: ["92064"], holidaysObserved: sixHolidays },
   // Republic Services' all-locations schedule lookup (Adil, 2026-11-15).
-  { name: "Chula Vista", hauler: "Republic Services", url: "https://www.republicservices.com/schedule", linkLabel: "Republic Services pickup schedule", zips: ["91910", "91911", "91913", "91914", "91915"], aliases: ["eastlake", "otay ranch", "rancho del rey"] },
-  { name: "El Cajon", hauler: "EDCO", url: edcoLookup("city-of-el-cajon"), linkLabel: "EDCO El Cajon collection day lookup", zips: ["92019", "92020", "92021"], aliases: ["fletcher hills"] },
-  { name: "Imperial Beach", hauler: "EDCO", url: edcoLookup("imperial-beach"), linkLabel: "EDCO Imperial Beach collection day lookup", zips: ["91932"] },
-  { name: "La Mesa", hauler: "EDCO", url: edcoLookup("la-mesa-city"), linkLabel: "EDCO La Mesa collection day lookup", zips: ["91941", "91942"] },
-  { name: "Lemon Grove", hauler: "EDCO", url: edcoLookup("lemon-grove"), linkLabel: "EDCO Lemon Grove collection day lookup", zips: ["91945"] },
-  { name: "National City", hauler: "EDCO", url: edcoLookup("national-city"), linkLabel: "EDCO National City collection day lookup", zips: ["91950"] },
-  { name: "Santee", hauler: "Waste Management", url: "https://www.wm.com/us/en/location/ca/santee/trash-pickup-santee-ca", linkLabel: "WM Santee trash pickup page", zips: ["92071"] },
+  { name: "Chula Vista", hauler: "Republic Services", url: "https://www.republicservices.com/schedule", linkLabel: "Republic Services pickup schedule", zips: ["91910", "91911", "91913", "91914", "91915"], aliases: ["eastlake", "otay ranch", "rancho del rey"], holidaysObserved: sixHolidays },
+  { name: "El Cajon", hauler: "EDCO", url: edcoLookup("city-of-el-cajon"), linkLabel: "EDCO El Cajon collection day lookup", zips: ["92019", "92020", "92021"], aliases: ["fletcher hills"], holidaysObserved: sixHolidays },
+  { name: "Imperial Beach", hauler: "EDCO", url: edcoLookup("imperial-beach"), linkLabel: "EDCO Imperial Beach collection day lookup", zips: ["91932"], holidaysObserved: sixHolidays },
+  { name: "La Mesa", hauler: "EDCO", url: edcoLookup("la-mesa-city"), linkLabel: "EDCO La Mesa collection day lookup", zips: ["91941", "91942"], holidaysObserved: sixHolidays },
+  { name: "Lemon Grove", hauler: "EDCO", url: edcoLookup("lemon-grove"), linkLabel: "EDCO Lemon Grove collection day lookup", zips: ["91945"], holidaysObserved: sixHolidays },
+  { name: "National City", hauler: "EDCO", url: edcoLookup("national-city"), linkLabel: "EDCO National City collection day lookup", zips: ["91950"], holidaysObserved: sixHolidays },
+  { name: "Santee", hauler: "Waste Management", url: "https://www.wm.com/us/en/location/ca/santee/trash-pickup-santee-ca", linkLabel: "WM Santee trash pickup page", zips: ["92071"], holidaysObserved: sixHolidays },
   // Unincorporated county: several haulers by community, listed in the County's guide.
   {
     name: "Unincorporated San Diego County",

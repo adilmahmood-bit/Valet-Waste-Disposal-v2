@@ -3,6 +3,7 @@
 // list a day: they link to the official lookup. Only add a rule that an official city or
 // hauler page states, and record where it came from in the comment next to it.
 // Naming the city's hauler is fine; never name competitors (other trash can valet services).
+// Don't list haulers' or cities' phone numbers (Adil, 2026-11-16).
 
 export type CollectionRules = {
   carts?: string; // which carts and how often, and whether they're collected the same day
@@ -11,6 +12,20 @@ export type CollectionRules = {
   placement?: string; // where carts go at the curb
   holidays?: string; // how holidays shift pickup
 };
+
+// Holidays shown in the holiday table on /residential/trash-day, in calendar order.
+export const holidayNames = {
+  newYears: "New Year's Day",
+  mlk: "Martin Luther King Jr. Day",
+  presidents: "Presidents' Day",
+  memorial: "Memorial Day",
+  independence: "Independence Day",
+  labor: "Labor Day",
+  veterans: "Veterans Day",
+  thanksgiving: "Thanksgiving",
+  christmas: "Christmas",
+} as const;
+export type Holiday = keyof typeof holidayNames;
 
 export type TrashCollector = {
   // Who does the pickup, as residents know it.
@@ -24,8 +39,12 @@ export type TrashCollector = {
   // The hauler's collection-day map, saved at public/residential/trash-maps/<file>. Pickup days
   // can change, so pages show it as a guide and still point people to the lookup.
   map?: { src: string; width: number; height: number };
+  // Holidays that change pickup (no pickup that day, so the week shifts). Keep in step with rules.holidays.
+  holidaysObserved: Holiday[];
   rules: CollectionRules;
 };
+
+export const sixHolidays: Holiday[] = ["newYears", "memorial", "independence", "labor", "thanksgiving", "christmas"];
 
 // Source: sandiego.gov/environmental-services/collection/general and /collection/schedule (checked 2026-11-15;
 // cart, hours and 2026 holiday text confirmed by Adil 2026-11-15).
@@ -34,7 +53,8 @@ const sanDiego: TrashCollector = {
   who: "Most single-family homes here are served by the City of San Diego's Environmental Services Department.",
   lookupUrl: "https://getitdone.sandiego.gov/CollectionMapLookup",
   lookupLabel: "City of San Diego collection schedule lookup",
-  note: "If your address isn't in the city's lookup (common for condos and private streets), your home is served by a private hauler. Check with your HOA or property manager. City Environmental Services: 858-694-7000.",
+  holidaysObserved: ["newYears", "memorial", "labor", "thanksgiving", "christmas"],
+  note: "If your address isn't in the city's lookup (common for condos and private streets), your home is served by a private hauler. Check with your HOA or property manager.",
   rules: {
     carts:
       "Gray trash and green organics carts are collected every week, and light blue recycling every other week on the same day as your trash, between 6 a.m. and 5:30 p.m. Bag loose trash. Don't put organics or recycling in plastic bags, even ones labeled compostable.",
@@ -72,6 +92,7 @@ const edco = (
   who: `Home trash, recycling and organics in ${city} are collected by EDCO, the city's contracted hauler.`,
   lookupUrl: `https://${sub}.edcodisposal.com/service-schedules/`,
   lookupLabel: `EDCO ${city} collection day lookup`,
+  holidaysObserved: sixHolidays,
   ...(map && { map }),
   rules: { ...edcoRules, ...rules },
 });
@@ -87,7 +108,7 @@ export const trashCollectors: Record<string, TrashCollector> = {
     who: "The City of Oceanside contracts with WM for home trash, recycling and organics collection.",
     lookupUrl: "https://www.wm.com/us/en/location/ca/oceanside/trash-pickup-oceanside-ca", // link set by Adil 2026-11-15
     lookupLabel: "WM Oceanside trash pickup page",
-    note: "WM customer service: (760) 439-2824.",
+    holidaysObserved: sixHolidays,
     rules: {
       carts: "Trash and recycling are picked up every week, and trash, recycling and organics all go out on the same day.", // confirmed by Adil 2026-11-15
       setOut: "Carts must be at the street by 6 a.m. on your service day at the latest.",
@@ -104,7 +125,8 @@ export const trashCollectors: Record<string, TrashCollector> = {
     who: "Home trash, recycling and organics in Carlsbad are collected by Republic Services, the city's contracted hauler.",
     lookupUrl: "https://www.republicservices.com/schedule", // Republic's schedule lookup for all locations, set by Adil 2026-11-15
     lookupLabel: "Republic Services pickup schedule lookup",
-    note: "Enter your address to see your pickup days. Republic Services Carlsbad: (760) 332-6464.",
+    note: "Enter your address to see your pickup days.",
+    holidaysObserved: ["newYears", "thanksgiving", "christmas"],
     map: { src: "/residential/trash-maps/carlsbad.jpg", width: 1347, height: 1026 }, // sent by Adil 2026-11-16
     rules: {
       carts: "Trash and recycling are typically collected on the same day.",
