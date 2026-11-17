@@ -1,4 +1,4 @@
-import Script from "next/script";
+import QuoteForm from "@/components/QuoteForm";
 import { IconPhone, IconMail, IconMapPin } from "@tabler/icons-react";
 
 export default function CTABand() {
@@ -53,25 +53,16 @@ export default function CTABand() {
           </div>
         </div>
 
-        {/* Right — HubSpot quote form */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 overflow-hidden">
+        {/* Right — quote form (posts to /api/quote) */}
+        <div className="bg-white rounded-3xl shadow-xl p-8">
           <h3
             className="text-xl font-bold text-ink mb-1"
             style={{ fontFamily: "var(--font-libre-franklin)" }}
           >
             Request a Free Quote
           </h3>
-          <p className="text-ink-mid text-sm">We will follow-up today.</p>
-
-          {/* The form renders in an iframe with its own padding; negative
-              margins pull it flush with the card so the spacing stays tight. */}
-          <div
-            className="hs-form-frame min-h-[420px] -mx-8 -mt-9 -mb-10"
-            data-region="na2"
-            data-form-id="bfe62776-5fcc-449f-aac4-e267292a157f"
-            data-portal-id="246187700"
-          />
-          <Script src="https://js-na2.hsforms.net/forms/embed/246187700.js" strategy="afterInteractive" />
+          <p className="text-ink-mid text-sm">We will follow up today.</p>
+          <QuoteForm />
         </div>
       </div>
     </section>
