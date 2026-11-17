@@ -138,6 +138,8 @@ type ContactInput = {
   source?: string | null;
   referralCode?: string | null;
   propertyType?: string | null;
+  // Apartment-community leads (the homepage quote form) are "Multifamily".
+  customerType?: "Residential" | "Multifamily";
 };
 
 function contactProps(c: ContactInput) {
@@ -146,7 +148,7 @@ function contactProps(c: ContactInput) {
     email: c.email,
     firstname: c.firstname ?? first,
     lastname: c.lastname ?? rest.join(" "),
-    customer_type: "Residential",
+    customer_type: c.customerType ?? "Residential",
   };
   if (c.mobile) props.mobilephone = c.mobile;
   if (c.street) props.address = c.street;
