@@ -28,10 +28,10 @@ export const posts: Post[] = [
     published: "2026-11-17",
     updated: "2026-11-17",
     image: {
-      src: "/blog/porter-time/overfilled-trash-dumpster-recyclables.jpg",
-      alt: "Apartment trash dumpster filled to the rim with paper bags, cardboard and bubble wrap",
+      src: "/blog/porter-time/dumpster-lid-cannot-close.jpg",
+      alt: "Trash bags and an open shoe box piled above the rim of an apartment dumpster so the lid can't close",
       width: 1600,
-      height: 568,
+      height: 424,
     },
     readMinutes: 7,
   },

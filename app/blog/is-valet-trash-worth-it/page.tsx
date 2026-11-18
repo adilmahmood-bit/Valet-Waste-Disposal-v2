@@ -264,7 +264,7 @@ export default function Page() {
             <h2>When valet trash isn&apos;t the right fit</h2>
             <p>
               Not every property needs it. Managers at smaller communities with plenty of easy-to-reach dumpsters often told us
-              they have no real trash problem, and they&apos;re right. Valet trash makes the most sense at three-story
+              they have no real trash problem, and they&apos;re right. Valet trash makes the most sense at multi-story
               garden communities without elevators or chutes, where residents carry trash down stairs and across the
               property every day. It matters even more at 55+ and independent-living communities, and at properties with lots of families. Seniors can struggle with heavy bags on the stairs, and when teenagers take out the trash, the bag doesn&apos;t always make it into the dumpster.
             </p>
