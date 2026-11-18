@@ -15,11 +15,13 @@ export default function Footer() {
 
         {/* Nav links */}
         <div className="flex gap-6 justify-start md:justify-center">
-          {["#services", "#why-us", "#how-it-works", "#contact"].map((href) => {
-            const label = href.replace("#", "").replace(/-/g, " ");
+          {["#services", "#why-us", "#how-it-works", "#contact"].map((hash) => {
+            const label = hash.replace("#", "").replace(/-/g, " ");
+            // Absolute so the links also work from /blog pages.
+            const href = `/${hash}`;
             return (
               <a
-                key={href}
+                key={hash}
                 href={href}
                 className="text-sm capitalize transition-opacity hover:opacity-100"
                 style={{ color: "rgba(255,255,255,0.75)" }}

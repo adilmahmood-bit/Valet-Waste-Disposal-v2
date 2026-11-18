@@ -19,10 +19,13 @@ export default function Nav() {
   // The app demo, residential pages (including /hosts) and admin have their own chrome.
   if (["/app", "/residential", "/hosts", "/admin"].some((p) => pathname?.startsWith(p))) return null;
 
+  // Section links point at the homepage, so they also work from /blog pages.
+  const home = pathname === "/" ? "" : "/";
   const links = [
-    { label: "Services", href: "#services" },
-    { label: "How It Works", href: "#how-it-works" },
-    { label: "Why Us", href: "#why-us" },
+    { label: "Services", href: `${home}#services` },
+    { label: "How It Works", href: `${home}#how-it-works` },
+    { label: "Why Us", href: `${home}#why-us` },
+    { label: "Blog", href: "/blog" },
   ];
 
   return (
@@ -35,7 +38,7 @@ export default function Nav() {
     >
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-[68px] md:h-[72px]">
         {/* Logo lockup */}
-        <a href="#hero" className="flex items-center text-white" style={{ color: "#fff" }}>
+        <a href={`${home}#hero`} className="flex items-center text-white" style={{ color: "#fff" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo/vwd-icon-white.png" alt="Valet Waste Disposal logo" aria-hidden="true" className="block h-11 md:h-12 w-auto mr-3" />
           {/* Poppins, like the "Doorstep Disposal" logo on the residential pages. */}
@@ -67,7 +70,7 @@ export default function Nav() {
             </a>
           ))}
           <a
-            href="#contact"
+            href={`${home}#contact`}
             className="text-sm font-semibold rounded-full px-5 py-2 transition-colors duration-200"
             style={{ backgroundColor: "#0E9AA7", color: "#fff" }}
             onMouseEnter={e => {
@@ -118,7 +121,7 @@ export default function Nav() {
             </a>
           ))}
           <a
-            href="#contact"
+            href={`${home}#contact`}
             className="text-sm font-semibold rounded-full px-4 py-2 text-center"
             style={{ backgroundColor: "#0E9AA7", color: "#fff" }}
             onClick={() => setOpen(false)}

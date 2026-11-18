@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { cityPages } from "@/components/residential/cities";
+import { posts } from "@/lib/blog";
 
 const SITE = "https://yourdoorstepdisposal.com";
 
@@ -14,6 +15,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: SITE, lastModified, changeFrequency: "monthly", priority: 1 },
     { url: `${SITE}/app/features`, lastModified, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE}/hosts`, lastModified, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE}/blog`, lastModified, changeFrequency: "weekly", priority: 0.6 },
+    ...posts.map((p) => ({ url: `${SITE}/blog/${p.slug}`, lastModified: new Date(p.updated), changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: `${SITE}/privacy`, lastModified, changeFrequency: "yearly", priority: 0.2 },
     ...["", "/pricing", "/service-area", "/seniors", "/faq", "/trash-day", ...cityPages.map((c) => `/${c.slug}`)].map((path) => ({
       url: `${SITE}/residential${path}`,
