@@ -24,6 +24,42 @@ export type CityPage = {
 };
 
 export const cityPages: CityPage[] = [
+  // The City of San Diego itself, for "trash can valet San Diego" searches. Its ZIPs are the
+  // city neighborhoods that have no page of their own, so no ZIP is shared with another page.
+  {
+    slug: "san-diego",
+    name: "San Diego",
+    zips: ["92101", "92110", "92111", "92117", "92121", "92122", "92126", "92127", "92128", "92129", "92130", "92131"],
+    intro:
+      "Trash can valet for San Diego homes. The evening before your trash day, we roll your trash, recycling and green waste cans to the curb. After the truck comes, we bring them back to their spot.",
+    localHeading: "Trash day in San Diego",
+    local: [
+      "Most single-family homes in the City of San Diego have gray trash and green organics carts picked up every week, and blue recycling every other week. Keeping track of which cans go out which week is easy to get wrong.",
+      "From Clairemont and Bay Park to Mira Mesa, Carmel Valley and Rancho Bernardo, a lot of homes keep their cans in a side yard, behind a gate or up a sloped driveway. Tell us where yours live and we'll take them out and bring them back the same way every week.",
+    ],
+    neighborhoods: [
+      "Clairemont", "Bay Park", "Linda Vista", "University City", "Mira Mesa", "Carmel Valley",
+      "Rancho Peñasquitos", "Rancho Bernardo", "Scripps Ranch", "Downtown San Diego",
+    ],
+    whoUsesIt: [
+      "Busy families and commuters",
+      "Homeowners with sloped driveways or cans behind a gate",
+      "Frequent travelers and owners of second homes",
+      "Older residents and their families",
+    ],
+    faqs: [
+      {
+        q: "Which parts of San Diego do you serve?",
+        a: "We serve these San Diego ZIP codes: 92101, 92110, 92111, 92117, 92121, 92122, 92126, 92127, 92128, 92129, 92130 and 92131. We also have pages for La Jolla, Pacific Beach, Mission Beach, Ocean Beach, Point Loma, Hillcrest and North Park. Type your ZIP above to check your street.",
+      },
+      {
+        q: "Do you know which weeks are recycling weeks?",
+        a: "Yes. We follow the City of San Diego schedule for your street, including holiday weeks, so the right cans go out each week.",
+      },
+    ],
+    strHeavy: false,
+    photo: { position: "50% 55%" },
+  },
   {
     slug: "oceanside",
     name: "Oceanside",

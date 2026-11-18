@@ -41,7 +41,7 @@ function serviceJsonLd() {
       residentialBusiness(),
       {
         "@type": "Service",
-        name: "Doorstep Disposal Trash-to-Curb Service",
+        name: "Doorstep Disposal Trash Can Valet",
         serviceType: "Curbside trash can service",
         url: `${SITE}/residential`,
         description: "We take trash, recycling and green waste cans to the curb the evening before pickup and bring them back after.",
@@ -67,8 +67,11 @@ export default function ResidentialHome() {
         <div className="relative max-w-6xl mx-auto px-4 pt-8 pb-10 md:py-20 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           {/* Dark text shadow keeps the copy readable over the photo. */}
           <div className="text-shadow-md text-shadow-black/80">
-            <p className="text-[#7FDDE6] font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">Can-to-curb valet · San Diego</p>
-            <h1 className="mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Your trash cans to the curb and back. Every week.</h1>
+            {/* The small line is part of the h1 so the heading says "trash can valet in San Diego". */}
+            <h1>
+              <span className="block text-[#7FDDE6] font-semibold text-xs md:text-sm uppercase tracking-[0.15em]">Trash can valet in San Diego</span>
+              <span className="block mt-2 md:mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">Your trash cans to the curb and back. Every week.</span>
+            </h1>
             <p className="mt-3 md:mt-4 md:text-lg text-white/85">
               We roll your trash, recycling and green waste cans out the evening before pickup, then bring them back after.
             </p>

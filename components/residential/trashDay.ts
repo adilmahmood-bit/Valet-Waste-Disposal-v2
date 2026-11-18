@@ -147,6 +147,7 @@ export const trashCollectors: Record<string, TrashCollector> = {
   // San Marcos and Vista added 2026-11-15; Adil confirmed EDCO serves both.
   "san-marcos": edco("San Marcos", "san-marcos", {}, { src: "/residential/trash-maps/san-marcos.jpg", width: 700, height: 506 }),
   vista: edco("Vista", "city-of-vista", {}, { src: "/residential/trash-maps/vista.jpg", width: 1400, height: 1074 }),
+  "san-diego": sanDiego,
   "mission-beach": sanDiego,
   "pacific-beach": sanDiego,
   "la-jolla": sanDiego,

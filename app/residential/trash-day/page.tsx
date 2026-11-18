@@ -60,7 +60,9 @@ const holidayRows: HolidayRow[] = (() => {
     if (col.lookupUrl === sdLookup) {
       let sd = rows.find((r) => r.key === "san-diego");
       if (!sd) rows.push((sd = { key: "san-diego", label: "San Diego", areas: [], observed: col.holidaysObserved }));
-      sd.areas!.push({ slug: c.slug, name: c.name });
+      // The San Diego city page is the row's own link; its neighborhoods are listed under it.
+      if (c.slug === "san-diego") sd.href = `/residential/${c.slug}#trash-day`;
+      else sd.areas!.push({ slug: c.slug, name: c.name });
       continue;
     }
     rows.push({ key: c.slug, label: c.name, href: `/residential/${c.slug}#trash-day`, observed: col.holidaysObserved });
