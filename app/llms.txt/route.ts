@@ -2,6 +2,7 @@ import { residential, enabledPlans, advertisedPrice, promoOn, money } from "@/co
 import { cityPages } from "@/components/residential/cities";
 import { faqs } from "@/components/residential/faq";
 import { SITE } from "@/components/residential/schema";
+import { posts } from "@/lib/blog";
 
 // /llms.txt: a plain-text summary of the business for AI assistants and crawlers
 // (see llmstxt.org). Built from config at build time, so prices, areas and contact
@@ -56,6 +57,10 @@ Valet Waste Disposal provides nightly doorstep valet trash for apartment communi
 - [FAQ](${SITE}/residential/faq)
 - [When is trash day? Pickup day finder for San Diego County](${SITE}/residential/trash-day)
 - [Apartment valet trash](${SITE}/)
+
+## Articles for apartment managers
+
+${posts.map((p) => `- [${p.title}](${SITE}/blog/${p.slug}): ${p.description}`).join("\n")}
 
 ## City pages
 
