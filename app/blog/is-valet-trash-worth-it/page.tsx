@@ -4,7 +4,7 @@ import JsonLd from "@/components/JsonLd";
 import Footer from "@/components/Footer";
 import PorterCalculator from "@/components/blog/PorterCalculator";
 import PollResults from "@/components/blog/PollResults";
-import { author, postUrl, posts, SITE } from "@/lib/blog";
+import { postUrl, posts, SITE } from "@/lib/blog";
 
 const post = posts.find((p) => p.slug === "is-valet-trash-worth-it")!;
 const url = postUrl(post.slug);
@@ -22,7 +22,6 @@ export const metadata: Metadata = {
     type: "article",
     publishedTime: post.published,
     modifiedTime: post.updated,
-    authors: [author.name],
     images: [{ url: post.image.src, width: post.image.width, height: post.image.height, alt: post.image.alt }],
   },
   twitter: { card: "summary_large_image" },
@@ -59,7 +58,8 @@ const jsonLd = {
       image: `${SITE}${post.image.src}`,
       datePublished: post.published,
       dateModified: post.updated,
-      author: { "@type": "Person", name: author.name, jobTitle: author.jobTitle, url: author.url },
+      // Credited to the company (the #org node on the homepage), not a named person.
+      author: { "@id": `${SITE}/#org` },
       publisher: { "@id": `${SITE}/#org` },
       mainEntityOfPage: url,
       about: ["Valet trash", "Cost of valet trash", "Apartment waste management", "Dumpster pad maintenance", "Contamination fines"],
@@ -108,7 +108,7 @@ export default function Page() {
             put a number on it for your own property.
           </p>
           <p className="mt-4 text-sm text-muted">
-            By {author.name}, {author.jobTitle} · <time dateTime={post.published}>November 17, 2026</time> ·{" "}
+            <time dateTime={post.published}>November 17, 2026</time> ·{" "}
             {post.readMinutes} min read
           </p>
 

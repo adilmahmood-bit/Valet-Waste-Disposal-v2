@@ -3,12 +3,6 @@
 
 export const SITE = "https://yourdoorstepdisposal.com";
 
-export const author = {
-  name: "Adil Mahmood",
-  jobTitle: "CEO, Valet Waste Disposal",
-  url: `${SITE}/blog`,
-};
-
 export type Post = {
   slug: string;
   title: string;
