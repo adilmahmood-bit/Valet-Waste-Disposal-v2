@@ -10,14 +10,21 @@ import { residential, planById, advertisedPrice } from "@/config/residential";
 export const PRICING = {
   monthlyPerProperty: advertisedPrice(planById("weekly")!),
   annualPerPropertyPerMonth: advertisedPrice(planById("annual")!), // founding 50
-  overflowFirstBag: 49, // on-demand pickup: first bag
-  overflowExtraBag: 20, // each bag after the first
+  // On-demand pickup, set by Adil 2026-11-19: $75 for the first 95-gallon can (7 bags of
+  // 13 gallons), then $9 per bag, so a second full can is $63.
+  overflowFirstCan: 75,
+  overflowBagsPerCan: 7,
+  overflowExtraBag: 9,
   extraCartPull: 15, // per extra cart, per month, where EDCO is the only hauler
   overflowWeeklyPlan: 90, // per week, up to 2 properties
   foundingBadge: "Founding 50 pricing locked in",
 };
 
-export const overflowPrice = (bags: number) => PRICING.overflowFirstBag + Math.max(0, bags - 1) * PRICING.overflowExtraBag;
+// bags: 13-gallon bags. The first can's worth (7 bags) is the $75 minimum.
+export const overflowPrice = (bags: number) =>
+  PRICING.overflowFirstCan + Math.max(0, bags - PRICING.overflowBagsPerCan) * PRICING.overflowExtraBag;
+
+export const overflowLoad = (bags: number) => `${bags} ${bags === 1 ? "bag" : "bags"}`;
 
 export const CONTACT_PHONE = residential.contact.phone;
 
@@ -154,7 +161,7 @@ export interface Overflow {
   id: string;
   propertyId: string;
   option: "ondemand" | "weekly";
-  bags: number;
+  bags: number; // 13-gallon bags
   window: "next" | "24h";
   note: string;
   photo?: string;
@@ -341,9 +348,9 @@ function initial(): HostState {
   const monthly = properties.reduce((n, p) => n + planPrice(p.plan), 0);
   const ws = weekStart();
   const overflows: Overflow[] = [
-    { id: "o1", propertyId: "p2", option: "ondemand", bags: 3, window: "24h", note: "Big group checkout", status: "completed", createdAt: ws - 9 * DAY, amount: overflowPrice(3), receipt: "#7KD2M" },
-    { id: "o2", propertyId: "p1", option: "ondemand", bags: 2, window: "next", note: "", status: "completed", createdAt: ws - 23 * DAY, amount: overflowPrice(2), receipt: "#Q4XN8" },
-    { id: "o3", propertyId: "p3", option: "ondemand", bags: 3, window: "24h", note: "Boxes from new furniture", status: "completed", createdAt: ws - 38 * DAY, amount: overflowPrice(3), receipt: "#B9TR3" },
+    { id: "o1", propertyId: "p2", option: "ondemand", bags: 10, window: "24h", note: "Big group checkout", status: "completed", createdAt: ws - 9 * DAY, amount: overflowPrice(10), receipt: "#7KD2M" },
+    { id: "o2", propertyId: "p1", option: "ondemand", bags: 6, window: "next", note: "", status: "completed", createdAt: ws - 23 * DAY, amount: overflowPrice(6), receipt: "#Q4XN8" },
+    { id: "o3", propertyId: "p3", option: "ondemand", bags: 14, window: "24h", note: "Boxes from new furniture", status: "completed", createdAt: ws - 38 * DAY, amount: overflowPrice(14), receipt: "#B9TR3" },
   ];
   // Monthly invoices on the 1st for the last three months.
   const invoices: Invoice[] = [1, 2, 3].map((m) => {

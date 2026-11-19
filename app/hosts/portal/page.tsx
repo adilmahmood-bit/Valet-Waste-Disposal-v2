@@ -66,6 +66,7 @@ import {
   invoiceTotal,
   haulerName,
   overflowAllowed,
+  overflowLoad,
   overflowPrice,
   propertyMonthly,
   planLabel,
@@ -369,7 +370,7 @@ function Dashboard({
         <IconTrashX size={30} className="shrink-0" />
         <span className="flex-1">
           <span className="block font-semibold">Need extra trash removed?</span>
-          <span className="block text-sm opacity-90">Big checkout? We&apos;ll grab the extra bags. From {usd(PRICING.overflowFirstBag)}.</span>
+          <span className="block text-sm opacity-90">Big checkout? We&apos;ll haul the extra. {usd(PRICING.overflowFirstCan)} for the first 95-gallon can, then {usd(PRICING.overflowExtraBag)} a bag.</span>
         </span>
         <IconChevronRight size={22} />
       </button>
@@ -503,7 +504,7 @@ function SavingsCard({ s }: { s: HostState }) {
   const rows: [React.ReactNode, React.ReactNode][] = [
     [
       <>
-        Overflow pickups: {v.pickups} ({v.bags} bags) = <b>{usd(v.withUs)}</b>
+        Overflow pickups: {v.pickups} ({overflowLoad(v.bags)}) = <b>{usd(v.withUs)}</b>
       </>,
       <>
         On-demand junk removal: {v.pickups} × ~{usd(SAVINGS_ASSUMPTIONS.junkRemovalPerVisit)} = <b>~{usd(v.without)}</b>
@@ -1035,7 +1036,7 @@ function OverflowFlow({ s, initial, onHome }: { s: HostState; initial: string | 
   const [step, setStep] = useState(initial ? 2 : 1);
   const [propertyId, setPropertyId] = useState(initial ?? "");
   const [option, setOption] = useState<Overflow["option"]>("ondemand");
-  const [bags, setBags] = useState(2);
+  const [bags, setBags] = useState<number>(PRICING.overflowBagsPerCan); // 13-gallon bags; starts at one full can
   const [window_, setWindow] = useState<Overflow["window"]>("24h");
   const [note, setNote] = useState("");
   const [photo, setPhoto] = useState<string | undefined>();
@@ -1044,7 +1045,7 @@ function OverflowFlow({ s, initial, onHome }: { s: HostState; initial: string | 
 
   const p = s.properties.find((x) => x.id === propertyId);
   const amount = option === "ondemand" ? overflowPrice(bags) : PRICING.overflowWeeklyPlan;
-  const maxBags = 20;
+  const maxBags = 4 * PRICING.overflowBagsPerCan; // up to four 95-gallon cans
   const when = (o: { window: Overflow["window"] }, prop: Property) =>
     o.window === "24h" ? "tomorrow by 2 PM" : `on the next service run (${dayBefore(prop.trashDay)} evening)`;
 
@@ -1064,7 +1065,7 @@ function OverflowFlow({ s, initial, onHome }: { s: HostState; initial: string | 
           Got it.
         </h1>
         <p className="mt-2 max-w-md mx-auto">
-          We&apos;ll grab {done.bags} {done.bags === 1 ? "bag" : "bags"} from {p.nickname} {when(done, p)}. You&apos;ll get a photo when it&apos;s done.
+          We&apos;ll haul {done.option === "ondemand" ? overflowLoad(done.bags) : "the extra trash"} from {p.nickname} {when(done, p)}. You&apos;ll get a photo when it&apos;s done.
         </p>
         <div className="mt-3">
           <ReceiptLine receipt={done.receipt} />
@@ -1127,7 +1128,7 @@ function OverflowFlow({ s, initial, onHome }: { s: HostState; initial: string | 
         <Card className="space-y-3">
           <StepHeader title="Pick an option" sub={p.nickname} onBack={() => setStep(1)} />
           {[
-            { id: "ondemand" as const, title: `On-demand pickup · ${usd(PRICING.overflowFirstBag)} first bag`, text: `${usd(PRICING.overflowExtraBag)} for each bag after that.` },
+            { id: "ondemand" as const, title: `On-demand pickup · ${usd(PRICING.overflowFirstCan)} first 95-gallon can`, text: `That's about ${PRICING.overflowBagsPerCan} kitchen bags (13 gallons). Then ${usd(PRICING.overflowExtraBag)} a bag, so a second full can is ${usd(PRICING.overflowBagsPerCan * PRICING.overflowExtraBag)}.` },
             { id: "weekly" as const, title: `Weekly overflow plan · ${usd(PRICING.overflowWeeklyPlan)}/week`, text: "All extra trash, up to 2 properties per week. Great for busy seasons." },
           ].map((o) => (
             <label key={o.id} className="flex items-start gap-3 rounded-xl border bg-white p-4 cursor-pointer has-[:checked]:border-[#0E9AA7] has-[:checked]:bg-[#f0fafb]" style={{ borderColor: C.border }}>
@@ -1156,7 +1157,7 @@ function OverflowFlow({ s, initial, onHome }: { s: HostState; initial: string | 
         <Card className="space-y-4">
           <StepHeader title="Details" sub={p.nickname} onBack={() => setStep(2)} />
           <div>
-            <div className={labelCls}>How many bags?</div>
+            <div className={labelCls}>How many bags? (13-gallon kitchen bags)</div>
             <div className="inline-flex items-center rounded-xl border bg-white" style={{ borderColor: C.border }}>
               <button onClick={() => setBags((b) => Math.max(1, b - 1))} className="p-3" aria-label="Fewer bags">
                 <IconMinus size={18} />
@@ -1168,7 +1169,7 @@ function OverflowFlow({ s, initial, onHome }: { s: HostState; initial: string | 
             </div>
             {option === "ondemand" && (
               <p className="mt-1 text-xs" style={{ color: C.muted }}>
-                {usd(PRICING.overflowFirstBag)} first bag + {usd(PRICING.overflowExtraBag)} each after: <b>{usd(overflowPrice(bags))}</b> for {bags} {bags === 1 ? "bag" : "bags"}.
+                {usd(PRICING.overflowFirstCan)} covers the first {PRICING.overflowBagsPerCan} bags (one 95-gallon can), then {usd(PRICING.overflowExtraBag)} each: <b>{usd(overflowPrice(bags))}</b> for {overflowLoad(bags)}.
               </p>
             )}
           </div>
@@ -1257,7 +1258,7 @@ function OverflowFlow({ s, initial, onHome }: { s: HostState; initial: string | 
               <li key={o.id} className="py-2.5 flex items-center gap-3" style={{ borderColor: C.border }}>
                 <span className="flex-1 min-w-0">
                   <span className="block font-medium truncate">
-                    {prop?.nickname}, {o.bags} {o.bags === 1 ? "bag" : "bags"}, {usd(o.amount)}
+                    {prop?.nickname}, {o.option === "ondemand" ? `${overflowLoad(o.bags)}, ` : ""}{usd(o.amount)}
                   </span>
                   <span className="block text-xs" style={{ color: C.muted }}>
                     Requested {fmtDate(o.createdAt)}
