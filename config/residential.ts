@@ -178,8 +178,13 @@ export const residential = {
     attorneyReviewed: false,
   },
 
-  // Payments are off for now: sign-ups are recorded and Adil sets up billing directly.
-  payments: { enabled: false },
+  // Card checkout through Stripe at sign-up. On only where NEXT_PUBLIC_RES_PAYMENTS=on (set in
+  // .env.local for the sandbox). Off elsewhere: sign-ups are recorded and Adil sets up billing by text.
+  // portalUrl is the Stripe customer portal login page, where customers update their card or cancel.
+  payments: {
+    enabled: process.env.NEXT_PUBLIC_RES_PAYMENTS === "on",
+    portalUrl: process.env.NEXT_PUBLIC_STRIPE_PORTAL_URL ?? "",
+  },
 
   // Open policies. null means not decided: pages say so and point to Adil instead of
   // making a promise. Fill these in once set.
@@ -243,7 +248,7 @@ export function openDecisions() {
     `Extra can ${money(weekly.extraBinPrice)}/mo`,
     `Push-out plan ${pushOut.enabled ? "on" : "off"}`,
     "Missed-visit policy",
-    "Payments off (billing set up by text)",
+    residential.payments.enabled ? "Card checkout on (Stripe)" : "Payments off (billing set up by text)",
     "Terms not attorney-reviewed",
   ];
 }

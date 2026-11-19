@@ -17,10 +17,15 @@ import { encryptGateCode } from "@/lib/residential/crypto";
 import { firstServiceDate, addDays, formatLong, fullDayName } from "@/lib/residential/schedule";
 import { syncCustomer, addNote, addTask, submitForm } from "@/lib/residential/hubspot";
 import { sendEmail } from "@/lib/residential/email";
+import { ensureStripeCustomer, createCheckout } from "@/lib/residential/stripe";
 import { cleanCode, normalizeSource } from "@/lib/residential/tracking";
 import { clientIp, formContext, isEmail, splitName, str } from "@/lib/residential/request";
 
-const bad = (error: string) => NextResponse.json({ error }, { status: 400 });
+// The public origin for Stripe's return links. NEXT_PUBLIC_SITE_URL wins, because behind
+// Hostinger's proxy the request URL may not be the public one.
+const siteOrigin = (req: NextRequest) => (process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin).replace(/\/$/, "");
+
+const bad =(error: string) => NextResponse.json({ error }, { status: 400 });
 
 async function handle(req: NextRequest) {
   const b = await req.json().catch(() => ({}));
@@ -100,7 +105,9 @@ async function handle(req: NextRequest) {
       .single(),
   ) as { id: string };
 
-  must(await db().from("res_subscriptions").insert({ address_id: address.id, plan: plan.id, price, start_date: startDate }));
+  const subscription = must(
+    await db().from("res_subscriptions").insert({ address_id: address.id, plan: plan.id, price, start_date: startDate }).select("id").single(),
+  ) as { id: string };
 
   const reason = needsQuote.map((f) => f.label).join(", ");
   if (needsQuote.length) {
@@ -121,6 +128,43 @@ async function handle(req: NextRequest) {
       .select("accepted_at")
       .single(),
   ) as { accepted_at: string };
+
+  // Card checkout: the customer pays on Stripe's page next. The webhook marks the subscription
+  // active and sends the confirmation email once payment goes through.
+  const payNow = residential.payments.enabled && status === "signed_up";
+  let checkoutUrl: string | null = null;
+  if (payNow) {
+    const stripeCustomerId = await ensureStripeCustomer({
+      id: customerId,
+      name,
+      email,
+      mobile,
+      stripeCustomerId: existing?.stripe_customer_id ?? null,
+      address: { street, city, zip },
+    });
+    if (stripeCustomerId !== existing?.stripe_customer_id) {
+      must(await db().from("res_customers").update({ stripe_customer_id: stripeCustomerId }).eq("id", customerId));
+    }
+    const thanks = new URLSearchParams({ status, day: trashDay, name: name.split(" ")[0] });
+    if (startDate) thanks.set("start", startDate);
+    const session = await createCheckout({
+      stripeCustomerId,
+      plan,
+      bins,
+      referralCode,
+      addressId: address.id,
+      subscriptionRowId: subscription.id,
+      origin: siteOrigin(req),
+      successQuery: thanks,
+    });
+    must(
+      await db()
+        .from("res_subscriptions")
+        .update({ stripe_customer_id: stripeCustomerId, stripe_checkout_session_id: session.id })
+        .eq("id", subscription.id),
+    );
+    checkoutUrl = session.url;
+  }
 
   const ip = clientIp(req);
   const ctx = formContext(req, b.pageUri, needsQuote.length ? "Residential quote request" : "Residential sign-up");
@@ -160,7 +204,8 @@ async function handle(req: NextRequest) {
     );
 
     const first = name.split(" ")[0];
-    await sendEmail(
+    // Paid sign-ups get their confirmation from the Stripe webhook after payment.
+    if (!payNow) await sendEmail(
       email,
       needsQuote.length ? "We got your request - Valet Waste Disposal" : "You're signed up - Valet Waste Disposal",
       needsQuote.length
@@ -169,13 +214,13 @@ async function handle(req: NextRequest) {
     );
     await sendEmail(
       residential.notifyEmail,
-      `${needsQuote.length ? "Quote needed" : "New residential sign-up"}: ${full}`,
-      `${needsQuote.length ? `Quote needed (${reason}).` : `First service ${startDate}.`}\n\n${summary}`,
+      `${needsQuote.length ? "Quote needed" : payNow ? "New sign-up (awaiting card payment)" : "New residential sign-up"}: ${full}`,
+      `${needsQuote.length ? `Quote needed (${reason}).` : `First service ${startDate}.`}${payNow ? "\nThey were sent to Stripe Checkout. You'll get a second email when they pay." : ""}\n\n${summary}`,
       email,
     );
   });
 
-  return NextResponse.json({ ok: true, status, startDate });
+  return NextResponse.json({ ok: true, status, startDate, checkoutUrl });
 }
 
 export async function POST(req: NextRequest) {

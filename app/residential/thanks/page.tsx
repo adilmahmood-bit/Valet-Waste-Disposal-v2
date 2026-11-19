@@ -6,16 +6,22 @@ import { addDays, formatLong } from "@/lib/residential/schedule";
 export const metadata: Metadata = { title: "Thank you", robots: { index: false } };
 
 export default async function ThanksPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const { status, start, name } = await searchParams;
+  const { status, start, name, paid } = await searchParams;
   const { contact, payments } = residential;
   const quote = status === "quote_needed";
+  const unpaid = status === "unpaid";
   const validStart = start && /^\d{4}-\d{2}-\d{2}$/.test(start) ? start : null;
 
   return (
     <div className="max-w-xl mx-auto px-4 py-12 md:py-16">
       <h1 className="text-3xl md:text-4xl font-bold">{name ? `Thank you, ${name}!` : "Thank you!"}</h1>
 
-      {quote ? (
+      {unpaid ? (
+        <div className="mt-6 space-y-4 text-lg text-slate-700">
+          <p>We saved your sign-up, but your payment wasn&apos;t finished.</p>
+          <p>No charge was made. We&apos;ll text you to finish setting up billing, or you can call or text us anytime.</p>
+        </div>
+      ) : quote ? (
         <div className="mt-6 space-y-4 text-lg text-slate-700">
           <p>We got your request.</p>
           <p>
@@ -38,6 +44,17 @@ export default async function ThanksPage({ searchParams }: { searchParams: Promi
           )}
           {!payments.enabled && (
             <p className="text-slate-700">We&apos;ll text you to set up billing before your first visit.</p>
+          )}
+          {payments.enabled && paid && (
+            <p className="text-slate-700">
+              Your payment went through. Stripe emails your receipt.
+              {payments.portalUrl && (
+                <>
+                  {" "}To update your card or cancel later, use{" "}
+                  <a href={payments.portalUrl} className="font-semibold text-res-teal-dark underline">billing settings</a>.
+                </>
+              )}
+            </p>
           )}
           <p className="text-slate-700">A confirmation email is on its way.</p>
         </div>

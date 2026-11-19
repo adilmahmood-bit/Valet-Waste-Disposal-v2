@@ -26,6 +26,7 @@ export type CustomerRow = {
   referral_code: string | null;
   hubspot_contact_id: string | null;
   hubspot_synced_at: string | null;
+  stripe_customer_id: string | null;
   created_at: string;
 };
 

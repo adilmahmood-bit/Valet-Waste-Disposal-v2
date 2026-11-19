@@ -156,7 +156,7 @@ export default function ResidentialHome() {
               </li>
             ))}
           </ol>
-          <p className="mt-8 md:mt-12 mx-auto w-fit flex items-center gap-3 rounded-2xl md:rounded-full bg-res-mist px-5 md:px-6 py-3 text-[16.8px] md:text-[19.2px] text-res-navy">
+          <p className="mt-8 md:mt-12 mx-auto w-fit flex items-center gap-3 rounded-2xl md:rounded-full bg-[#A7E1E8] px-5 md:px-6 py-3 text-[16.8px] md:text-[19.2px] text-res-navy shadow-sm">
             <IconCamera size={24} className="shrink-0 text-res-teal-dark" aria-hidden="true" />
             <span><span className="font-semibold">Photo proof on every visit.</span> We snap a photo when your trash cans go out and when they&apos;re back.</span>
           </p>
