@@ -104,6 +104,11 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
         JSON.stringify({ name: f.name, mobile: f.mobile, email: f.email, propertyType: f.propertyType, source: f.source, referralCode: f.referralCode }),
       );
     } catch {}
+    // Card checkout on: pay on Stripe's page, which returns to the thanks page.
+    if (data.checkoutUrl) {
+      window.location.assign(data.checkoutUrl);
+      return;
+    }
     const q = new URLSearchParams({ status: data.status, day: f.trashDay, name: f.name.split(" ")[0] });
     if (data.startDate) q.set("start", data.startDate);
     router.push(`/residential/thanks?${q}`);
@@ -324,11 +329,14 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
           {!residential.payments.enabled && !needsQuote && (
             <p className="text-sm text-slate-600">No card needed today. We&apos;ll text you to set up billing before your first visit.</p>
           )}
+          {residential.payments.enabled && !needsQuote && (
+            <p className="text-sm text-slate-600">Next, you&apos;ll pay securely on Stripe&apos;s checkout page.</p>
+          )}
           {error && <p className="text-sm text-red-600" role="alert">{error}</p>}
           <div className="flex gap-3">
             <button type="button" onClick={back} className="rounded-full border-2 border-slate-300 px-6 py-3 font-semibold">Back</button>
             <button type="submit" disabled={sending || !f.termsAccepted} className="flex-1 rounded-full bg-res-teal-dark px-6 py-3 font-semibold text-white hover:bg-res-navy disabled:opacity-60">
-              {sending ? "Sending…" : needsQuote ? "Request my price" : "Sign up"}
+              {sending ? "Sending…" : needsQuote ? "Request my price" : residential.payments.enabled ? "Continue to payment" : "Sign up"}
             </button>
           </div>
         </form>
