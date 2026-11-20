@@ -2,7 +2,7 @@ import { db, must, type AddressRow, type CustomerRow, type PauseRow, type ShiftR
 import { addDays, pickupsNear } from "./schedule";
 import { decryptGateCode } from "./crypto";
 
-export type VisitRow = { id: string; address_id: string; date: string; type: "out" | "back"; status: string; note: string | null; completed_at: string };
+export type VisitRow = { id: string; address_id: string; date: string; type: "out" | "back"; status: string; note: string | null; photo_url: string | null; completed_at: string };
 
 export type Stop = {
   type: "out" | "back";

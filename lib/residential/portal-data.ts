@@ -1,4 +1,5 @@
 import { db, must, type AddressRow, type PauseRow, type ShiftRow, type SubscriptionRow } from "./db";
+import { resolvePhotoUrls } from "./photos";
 import { addDays, effectivePickup, todaySD, weekStart } from "./schedule";
 
 // Everything the customer portal (/account) shows, read from Supabase for one customer.
@@ -60,6 +61,9 @@ export async function loadPortal(customerId: string): Promise<PortalProperty[]> 
       .then(must),
   ]);
 
+  // Stored photos are private; swap in signed links that last an hour.
+  const photoLinks = await resolvePhotoUrls((visits as { photo_url: string | null }[]).map((v) => v.photo_url));
+
   return addresses.map((address) => {
     const sub = (subs as SubscriptionRow[]).find((s) => s.address_id === address.id) ?? null;
     const myPauses = (pauses as PauseRow[]).filter((p) => p.address_id === address.id);
@@ -86,7 +90,7 @@ export async function loadPortal(customerId: string): Promise<PortalProperty[]> 
       if (v.address_id !== address.id) continue;
       const pickup = v.type === "out" ? addDays(v.date, 1) : v.date;
       const entry = byPickup.get(pickup) ?? { pickup, out: null, back: null };
-      entry[v.type] = { type: v.type, date: v.date, status: v.status, note: v.note, photoUrl: v.photo_url, completedAt: v.completed_at };
+      entry[v.type] = { type: v.type, date: v.date, status: v.status, note: v.note, photoUrl: v.photo_url ? photoLinks.get(v.photo_url) ?? null : null, completedAt: v.completed_at };
       byPickup.set(pickup, entry);
     }
     const services = [...byPickup.values()].sort((a, b) => b.pickup.localeCompare(a.pickup));

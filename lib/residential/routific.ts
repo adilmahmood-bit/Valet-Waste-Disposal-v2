@@ -75,6 +75,25 @@ export async function getOrder(uuid: string) {
   return (await call<RoutificOrder>("GET", `/orders/${uuid}`)).data;
 }
 
+// A proof-of-delivery photo. `ref` is an entry of order.proofOfDelivery.photos, a relative
+// path like "/v1/orders/<order>/photos/<photo>"; only the photo id at the end is used.
+export async function getPhoto(orderUuid: string, ref: string) {
+  const photoUuid = ref.split("/").filter(Boolean).pop();
+  if (!photoUuid) throw new Error(`Bad photo reference: ${ref}`);
+  const token = process.env.ROUTIFIC_API_TOKEN;
+  const res = await fetch(`${BASE}/orders/${orderUuid}/photos/${photoUuid}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!res.ok) throw new RoutificError(res.status, await res.text());
+  const type = res.headers.get("content-type") ?? "";
+  const raw = Buffer.from(await res.arrayBuffer());
+  // The docs describe the body as a "hexadecimal representation" of the JPEG; accept either.
+  const text = raw.subarray(0, 64).toString("latin1");
+  const bytes = !type.startsWith("image/") && /^[0-9a-fA-F]+$/.test(text) ? Buffer.from(raw.toString("latin1").trim(), "hex") : raw;
+  return { photoUuid, bytes, contentType: type.startsWith("image/") ? type.split(";")[0] : "image/jpeg" };
+}
+
 // Full replacement: every field must be sent, or Routific clears it.
 export async function updateOrder(uuid: string, order: RoutificOrderInput) {
   return (await call<{ status: string; actionUuid?: string }>("PUT", `/orders/${uuid}`, order)).data;

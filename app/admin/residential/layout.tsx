@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: "Residential ops | Valet Waste Dispos
 
 const tabs = [
   { label: "Routes", href: "/admin/residential" },
+  { label: "Roll-ins", href: "/admin/residential/crew" },
   { label: "Customers", href: "/admin/residential/customers" },
   { label: "Quotes", href: "/admin/residential/quotes" },
   { label: "Waitlist", href: "/admin/residential/waitlist" },
