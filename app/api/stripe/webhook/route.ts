@@ -1,7 +1,8 @@
 import type Stripe from "stripe";
 import { residential, money, planById } from "@/config/residential";
 import { db, must } from "@/lib/residential/db";
-import { stripe } from "@/lib/residential/stripe";
+import { startClientSubscription, stripe } from "@/lib/residential/stripe";
+import { linesForAddresses } from "@/lib/residential/client-billing";
 import { sendEmail } from "@/lib/residential/email";
 import { addNote } from "@/lib/residential/hubspot";
 import { addDays, formatLong } from "@/lib/residential/schedule";
@@ -42,8 +43,8 @@ async function addressAndCustomer(addressId: string) {
 // Checkout finished and the money is in (cards are paid at once; bank debits arrive later
 // through checkout.session.async_payment_succeeded).
 async function checkoutPaid(session: Stripe.Checkout.Session) {
-  if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
   if (session.metadata?.res_kind === "client") return clientCheckoutPaid(session);
+  if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
   const row = await subRowFor({ rowId: session.client_reference_id });
   if (!row || row.status !== "pending_billing") return;
 
@@ -85,14 +86,29 @@ async function checkoutPaid(session: Stripe.Checkout.Session) {
   }
 }
 
-// An agreement client finished the autopay checkout: link their Stripe customer and the
-// subscription to every property in it. Stripe emails them the receipt; we only alert Adil.
+// An agreement client finished the autopay checkout: start their monthly subscription on the
+// bank account or card they just saved, and link it to every property in it. Stripe emails
+// them the receipt; we only alert Adil. Runs on checkout completion and again when a bank
+// payment clears (in case the bank account wasn't usable yet the first time).
 async function clientCheckoutPaid(session: Stripe.Checkout.Session) {
   const customerId = session.metadata?.res_customer_id;
   const addressIds = (session.metadata?.res_address_ids ?? "").split(",").filter(Boolean);
   if (!customerId || !addressIds.length) return;
-  const stripeSubscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id ?? null;
+  let stripeSubscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id ?? null;
   const stripeCustomerId = typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
+  if (session.mode === "subscription") {
+    // Links made before 2026-11-21 (subscription-mode checkout).
+    if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
+  } else {
+    const billed = must(
+      await db().from("res_subscriptions").select("id").in("address_id", addressIds).not("stripe_subscription_id", "is", null),
+    ) as { id: string }[];
+    if (billed.length) return;
+    const sub = await startClientSubscription(session, await linesForAddresses(customerId, addressIds));
+    if (!sub) return;
+    stripeSubscriptionId = sub.id;
+  }
+  const clearing = session.mode === "payment" && session.payment_status !== "paid";
   must(await db().from("res_customers").update({ stripe_customer_id: stripeCustomerId }).eq("id", customerId));
   must(
     await db()
@@ -104,7 +120,7 @@ async function clientCheckoutPaid(session: Stripe.Checkout.Session) {
   await sendEmail(
     residential.notifyEmail,
     `Autopay set up: ${c.name}`,
-    `${c.name} set up autopay for ${addressIds.length} ${addressIds.length === 1 ? "property" : "properties"} and paid ${money((session.amount_total ?? 0) / 100)} for this month (from each first service day). Stripe charges them on the 1st from now on.\n\nStripe: ${dashboard(stripeSubscriptionId ? `subscriptions/${stripeSubscriptionId}` : `customers/${stripeCustomerId}`)}`,
+    `${c.name} set up autopay for ${addressIds.length} ${addressIds.length === 1 ? "property" : "properties"} and ${clearing ? "made a bank payment of" : "paid"} ${money((session.amount_total ?? 0) / 100)} for this month (from each first service day)${clearing ? ", which clears in a few business days" : ""}. Stripe charges them on the 1st from now on.\n\nStripe: ${dashboard(stripeSubscriptionId ? `subscriptions/${stripeSubscriptionId}` : `customers/${stripeCustomerId}`)}`,
     c.email,
   );
 }
@@ -160,7 +176,9 @@ async function handle(event: Stripe.Event) {
     case "checkout.session.async_payment_succeeded":
       return checkoutPaid(event.data.object);
     case "checkout.session.async_payment_failed":
-      return moneyAlert("Sign-up payment failed", "A bank payment from Checkout failed, so the sign-up is still unpaid.", `checkout/sessions/${event.data.object.id}`);
+      return event.data.object.metadata?.res_kind === "client"
+        ? moneyAlert("Client bank payment failed", "A client's bank payment for this month failed. Their autopay is set up, but this month's charge didn't go through; check the bank account with them.", `checkout/sessions/${event.data.object.id}`)
+        : moneyAlert("Sign-up payment failed", "A bank payment from Checkout failed, so the sign-up is still unpaid.", `checkout/sessions/${event.data.object.id}`);
     case "customer.subscription.updated":
     case "customer.subscription.deleted":
       return subscriptionChanged(event.data.object);

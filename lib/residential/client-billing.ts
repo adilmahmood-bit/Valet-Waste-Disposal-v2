@@ -32,6 +32,13 @@ export async function unbilledLines(customerId: string): Promise<ClientLine[]> {
     .map((r) => ({ addressId: r.id, street: r.street, city: r.city, monthly: Number(subOf(r)!.price), startDate: subOf(r)!.start_date }));
 }
 
+// The billing lines for specific properties (the ones a client's checkout covered).
+export async function linesForAddresses(customerId: string, addressIds: string[]): Promise<ClientLine[]> {
+  return (await propertiesOf(customerId))
+    .filter((r) => addressIds.includes(r.id) && Number(subOf(r)?.price) > 0)
+    .map((r) => ({ addressId: r.id, street: r.street, city: r.city, monthly: Number(subOf(r)!.price), startDate: subOf(r)!.start_date }));
+}
+
 // Makes (or reuses) the Stripe customer and returns a Checkout link for the unbilled properties.
 export async function clientCheckoutUrl(customerId: string, returnUrl: string) {
   const c = must(await db().from("res_customers").select("*").eq("id", customerId).single()) as CustomerRow;
