@@ -39,8 +39,12 @@ export function orderFor(stop: Stop): RoutificOrderInput {
   const { address, customer, sub, gateCode } = stop;
   const { rollOutWindow, stopSeconds } = residential.routific;
   const cans = `${address.bins} ${address.bins === 1 ? "can" : "cans"}`;
+  // "5966 Baja Dr (front house)": the bracket note goes to the driver, not to the map lookup.
+  const unit = address.street.match(/\(([^)]*)\)/)?.[1];
+  const street = address.street.replace(/\s*\([^)]*\)\s*/g, " ").trim();
   const lines = [
     `ROLL OUT ${cans} for trash pickup ${formatLong(stop.pickupDate)}.`,
+    unit ? `Which one: ${unit}` : null,
     sub?.plan === "push_out" ? "Roll-out only plan: we do NOT bring these back." : "Bring them back in after pickup (not a Routific stop).",
     gateCode ? `Gate code: ${gateCode}` : null,
     address.access_flags.length ? `Access: ${address.access_flags.map(accessFlagLabel).join(", ")}` : null,
@@ -48,7 +52,7 @@ export function orderFor(stop: Stop): RoutificOrderInput {
   ];
   return {
     name: customer.name,
-    locations: [{ address: `${address.street}, ${address.city}, CA ${address.zip}` }],
+    locations: [{ address: `${street}, ${address.city}, CA ${address.zip}` }],
     duration: stopSeconds.base + stopSeconds.perBin * address.bins,
     instructions: lines.filter(Boolean).join("\n"),
     timeWindows: [{ startTime: rollOutWindow.start, endTime: rollOutWindow.end }],

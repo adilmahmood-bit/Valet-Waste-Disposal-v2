@@ -24,6 +24,8 @@ const VISIT_STATUS: Record<string, { label: string; cls: string }> = {
   issue: { label: "Issue", cls: "bg-amber-100 text-amber-900" },
 };
 
+const money = (n: number) => (Number.isInteger(Number(n)) ? String(Number(n)) : Number(n).toFixed(2));
+
 function Badge({ meta }: { meta: { label: string; cls: string } }) {
   return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${meta.cls}`}>{meta.label}</span>;
 }
@@ -58,6 +60,25 @@ export default async function AccountPage() {
       {properties.map((p) => (
         <PropertyCard key={p.address.id} p={p} />
       ))}
+
+      {customer.overflow_first_can != null && customer.overflow_per_bag != null && (
+        <section className="rounded-2xl bg-white border border-slate-200 p-5">
+          <h2 className="text-lg font-bold">Extra trash pickup</h2>
+          <p className="mt-2 text-slate-700">
+            Guests left more than the cans hold? We&apos;ll haul it away, usually the same day, any day of the week, and send you a photo when it&apos;s done.
+          </p>
+          <p className="mt-2 font-semibold">
+            ${money(customer.overflow_first_can)} for the first full can (about seven 13-gallon bags), then ${money(customer.overflow_per_bag)} per extra bag.
+          </p>
+          <p className="mt-1 text-sm text-slate-600">Bags must be tied. Pickups at more than one of your properties on the same day count as one visit.</p>
+          <a
+            href={`sms:${contact.phoneHref}`}
+            className="mt-4 inline-block rounded-full bg-res-teal-dark hover:bg-res-teal text-white font-semibold px-5 py-2.5"
+          >
+            Text us the address and a photo
+          </a>
+        </section>
+      )}
 
       <PasswordSettings email={customer.email} hasPassword={!!customer.password_set_at} minLength={PASSWORD_MIN} />
 
