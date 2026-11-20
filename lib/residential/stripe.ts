@@ -158,10 +158,14 @@ export function firstMonthCharges(lines: ClientLine[], now = new Date()) {
   });
 }
 
-// Stripe Checkout for an agreement client: one subscription, one line per active property at
-// its agreed monthly rate. They add a card or bank account and pay this month's share now,
-// counted from each property's first service day (not from the day they pay); after that
-// Stripe charges the full rate automatically on the 1st. The webhook links it back.
+const usd = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+// Stripe Checkout for an agreement client. The page is a plain payment for this month's share
+// (counted from each property's first service day, not from the day they pay) that also saves
+// their bank account or card. After they pay, the webhook calls startClientSubscription, which
+// charges the full monthly rate on the 1st from then on. (A subscription-mode Checkout would
+// show the gap until the 1st as "X days free", which isn't the deal.) If nothing is owed this
+// month, the page only saves the payment method.
 export async function createClientCheckout(o: {
   customerId: string;
   stripeCustomerId: string;
@@ -169,39 +173,85 @@ export async function createClientCheckout(o: {
   returnUrl: string;
 }) {
   if (!o.lines.length) throw new Error("No active properties with a monthly rate to bill.");
-  const metadata = { res_kind: "client", res_customer_id: o.customerId, res_address_ids: o.lines.map((l) => l.addressId).join(",") };
+  const anchor = nextFirstOfMonth();
+  const metadata = {
+    res_kind: "client",
+    res_customer_id: o.customerId,
+    res_address_ids: o.lines.map((l) => l.addressId).join(","),
+    res_anchor: String(anchor),
+  };
+  const monthly = o.lines.reduce((n, l) => n + Math.round(l.monthly * 100), 0);
+  const first = new Date(anchor * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "America/Los_Angeles" });
+  const what = `${o.lines.length} ${o.lines.length === 1 ? "property" : "properties"}`;
+  const description = `Trash can valet, ${what}`;
+  const charges = firstMonthCharges(o.lines);
   const pmConfig = await bankDebitConfig();
-  return stripe().checkout.sessions.create({
-    mode: "subscription",
+  const common = {
     ...(pmConfig ? { payment_method_configuration: pmConfig } : {}),
     customer: o.stripeCustomerId,
     client_reference_id: o.customerId,
-    line_items: [
-      ...o.lines.map((l) => ({
-        quantity: 1,
-        price_data: {
-          currency: "usd",
-          unit_amount: Math.round(l.monthly * 100),
-          recurring: { interval: "month" as const },
-          product_data: { name: `Weekly trash can valet: ${l.street}, ${l.city}` },
-        },
-      })),
-      // One-time lines go on the first invoice: this month from each first service day.
-      ...firstMonthCharges(o.lines).map((c) => ({
-        quantity: 1,
-        price_data: { currency: "usd", unit_amount: c.cents, product_data: { name: `Trash can valet, ${c.label}` } },
-      })),
-    ],
-    subscription_data: {
-      // The monthly rate starts on the 1st; this month is the one-time lines above. (Stripe won't
-      // take a billing anchor without prorating when there are one-time lines, so wait till the 1st.)
-      trial_end: nextFirstOfMonth(),
-      description: `Trash can valet, ${o.lines.length} ${o.lines.length === 1 ? "property" : "properties"}`,
-      metadata,
-    },
     metadata,
-    customer_update: { address: "auto", name: "auto" },
+    customer_update: { address: "auto" as const, name: "auto" as const },
+    custom_text: {
+      submit: { message: `Autopay: ${usd(monthly)} a month for ${what} is charged on the 1st of each month to the bank account or card you use here, starting ${first}.` },
+    },
     success_url: `${o.returnUrl}${o.returnUrl.includes("?") ? "&" : "?"}autopay=done`,
     cancel_url: o.returnUrl,
+  };
+  if (!charges.length) {
+    return stripe().checkout.sessions.create({ ...common, mode: "setup", currency: "usd", setup_intent_data: { description, metadata } });
+  }
+  return stripe().checkout.sessions.create({
+    ...common,
+    mode: "payment",
+    line_items: charges.map((c) => ({
+      quantity: 1,
+      price_data: { currency: "usd", unit_amount: c.cents, product_data: { name: `Trash can valet, ${c.label}` } },
+    })),
+    payment_intent_data: { setup_future_usage: "off_session", description, metadata },
+    invoice_creation: { enabled: true, invoice_data: { description, metadata } },
   });
+}
+
+// After a client's checkout: put the saved bank account or card on a monthly subscription, one
+// item per property at its rate, first charged on the 1st (the anchor saved on the checkout).
+// Returns null while the payment method isn't usable yet (a bank account still being verified);
+// the webhook tries again when the payment clears.
+export async function startClientSubscription(session: Stripe.Checkout.Session, lines: ClientLine[]) {
+  const customer = typeof session.customer === "string" ? session.customer : session.customer?.id;
+  if (!customer || !lines.length) return null;
+  const intentId = (x: string | { id: string } | null) => (typeof x === "string" ? x : x?.id ?? null);
+  const setupId = intentId(session.setup_intent);
+  const paymentId = intentId(session.payment_intent);
+  const intent = setupId ? await stripe().setupIntents.retrieve(setupId) : paymentId ? await stripe().paymentIntents.retrieve(paymentId) : null;
+  const pmId = intentId(intent?.payment_method ?? null);
+  if (!pmId) return null;
+  const pm = await stripe().paymentMethods.retrieve(pmId);
+  if (intentId(pm.customer) !== customer) return null;
+
+  await stripe().customers.update(customer, { invoice_settings: { default_payment_method: pmId } });
+  const items = [];
+  for (const l of lines) {
+    const product = await stripe().products.create(
+      { name: `Weekly trash can valet: ${l.street}, ${l.city}`, metadata: { res_address_id: l.addressId } },
+      { idempotencyKey: `res-product-${session.id}-${l.addressId}` },
+    );
+    items.push({ quantity: 1, price_data: { currency: "usd", product: product.id, unit_amount: Math.round(l.monthly * 100), recurring: { interval: "month" as const } } });
+  }
+  // Normally the 1st after the link was made. If that's already passed (paid late), start now
+  // and prorate the rest of this month instead.
+  const anchor = Number(session.metadata?.res_anchor);
+  const onTime = anchor > Math.floor(Date.now() / 1000) + 60;
+  return stripe().subscriptions.create(
+    {
+      customer,
+      items,
+      default_payment_method: pmId,
+      billing_cycle_anchor: onTime ? anchor : nextFirstOfMonth(),
+      proration_behavior: onTime ? "none" : "create_prorations",
+      description: `Trash can valet, ${lines.length} ${lines.length === 1 ? "property" : "properties"}`,
+      metadata: { res_kind: "client", res_customer_id: session.metadata?.res_customer_id ?? "", res_address_ids: lines.map((l) => l.addressId).join(",") },
+    },
+    { idempotencyKey: `res-clientsub-${session.id}` },
+  );
 }
