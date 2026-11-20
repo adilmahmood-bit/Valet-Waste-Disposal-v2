@@ -10,6 +10,8 @@ import { syncCustomer, retrySync, pullContacts, addNote } from "@/lib/residentia
 import { firstServiceDate } from "@/lib/residential/schedule";
 import { routificConfigured } from "@/lib/residential/routific";
 import { syncRoutific } from "@/lib/residential/routific-sync";
+import { saveVisitPhoto } from "@/lib/residential/photos";
+import { notifyVisit } from "@/lib/residential/visit-notify";
 
 const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
@@ -158,5 +160,35 @@ async function routificSyncQuietly(by: string) {
 export async function runRoutificSync() {
   await requireAdmin();
   await saveLastSync(await syncRoutific(), "admin button");
+  refresh();
+}
+
+// ---------- crew roll-ins ----------
+
+export async function markRollIn(f: FormData) {
+  await requireAdmin();
+  const addressId = s(f, "address_id");
+  const date = s(f, "date");
+  const status = s(f, "status");
+  if (!addressId || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !["done", "issue"].includes(status)) throw new Error("Missing details.");
+  const note = s(f, "note") || null;
+
+  let photoUrl: string | null = null;
+  const photo = f.get("photo");
+  if (photo instanceof File && photo.size > 0) {
+    if (!photo.type.startsWith("image/")) throw new Error("That file isn't a photo.");
+    const bytes = Buffer.from(await photo.arrayBuffer());
+    photoUrl = await saveVisitPhoto(`${addressId}/${date}-back-${Date.now()}.jpg`, bytes, "image/jpeg");
+  }
+
+  must(
+    await db()
+      .from("res_visits")
+      .upsert(
+        { address_id: addressId, date, type: "back", status, note, photo_url: photoUrl, completed_by: "crew", completed_at: new Date().toISOString() },
+        { onConflict: "address_id,date,type" },
+      ),
+  );
+  after(() => notifyVisit(addressId, "back", status, note));
   refresh();
 }

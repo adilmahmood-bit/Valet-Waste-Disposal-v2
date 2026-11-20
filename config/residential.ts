@@ -53,6 +53,12 @@ export const residential = {
     daysAhead: 1,
   },
 
+  // Emails to customers when cans go out or come back in. Off until Adil says to start
+  // (2026-11-19: "don't send any welcome emails out yet"). Missed visits always alert notifyEmail.
+  notifications: {
+    visitEmails: false,
+  },
+
   plans: [
     {
       id: "weekly",
