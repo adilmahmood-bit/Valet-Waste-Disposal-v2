@@ -10,14 +10,14 @@ type Row = {
   city: string;
   zip: string;
   status: string;
-  sub: { id: string; price: number; plan: string; status: string; stripe_subscription_id: string | null }[] | null;
+  sub: { id: string; price: number; plan: string; status: string; start_date: string | null; stripe_subscription_id: string | null }[] | null;
 };
 
 async function propertiesOf(customerId: string) {
   return must(
     await db()
       .from("res_addresses")
-      .select("id, street, city, zip, status, sub:res_subscriptions(id, price, plan, status, stripe_subscription_id)")
+      .select("id, street, city, zip, status, sub:res_subscriptions(id, price, plan, status, start_date, stripe_subscription_id)")
       .eq("customer_id", customerId)
       .order("created_at"),
   ) as unknown as Row[];
@@ -29,7 +29,7 @@ const subOf = (r: Row) => r.sub?.[0] ?? null;
 export async function unbilledLines(customerId: string): Promise<ClientLine[]> {
   return (await propertiesOf(customerId))
     .filter((r) => r.status === "active" && Number(subOf(r)?.price) > 0 && !subOf(r)?.stripe_subscription_id)
-    .map((r) => ({ addressId: r.id, street: r.street, city: r.city, monthly: Number(subOf(r)!.price) }));
+    .map((r) => ({ addressId: r.id, street: r.street, city: r.city, monthly: Number(subOf(r)!.price), startDate: subOf(r)!.start_date }));
 }
 
 // Makes (or reuses) the Stripe customer and returns a Checkout link for the unbilled properties.

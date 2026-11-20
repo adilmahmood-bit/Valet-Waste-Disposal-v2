@@ -157,7 +157,7 @@ export function BillingTab({ customer, properties, autopay, preview }: { custome
           <h2 className="font-semibold">Set up autopay</h2>
           <p className="mt-1 text-sm">
             Add a card or bank account once for {unbilled.length === 1 ? unbilled[0].address.street : `${unbilled.length} properties`} ({money(unbilledTotal)}/month). You&apos;ll pay
-            for the rest of this month now, then it&apos;s charged automatically on the 1st of each month. Payments are handled securely by Stripe.
+            for this month from your first service day now, then it&apos;s charged automatically on the 1st of each month. Payments are handled securely by Stripe.
           </p>
           {preview ? (
             <p className="mt-2 text-sm" style={{ color: P.muted }}>Preview: the button is hidden here.</p>

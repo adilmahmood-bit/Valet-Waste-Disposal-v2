@@ -104,7 +104,7 @@ async function clientCheckoutPaid(session: Stripe.Checkout.Session) {
   await sendEmail(
     residential.notifyEmail,
     `Autopay set up: ${c.name}`,
-    `${c.name} set up autopay for ${addressIds.length} ${addressIds.length === 1 ? "property" : "properties"} and paid ${money((session.amount_total ?? 0) / 100)} for the rest of this month. Stripe charges them on the 1st from now on.\n\nStripe: ${dashboard(stripeSubscriptionId ? `subscriptions/${stripeSubscriptionId}` : `customers/${stripeCustomerId}`)}`,
+    `${c.name} set up autopay for ${addressIds.length} ${addressIds.length === 1 ? "property" : "properties"} and paid ${money((session.amount_total ?? 0) / 100)} for this month (from each first service day). Stripe charges them on the 1st from now on.\n\nStripe: ${dashboard(stripeSubscriptionId ? `subscriptions/${stripeSubscriptionId}` : `customers/${stripeCustomerId}`)}`,
     c.email,
   );
 }
@@ -118,7 +118,9 @@ async function subRowsFor(stripeSubscriptionId: string | null) {
 async function subscriptionChanged(sub: Stripe.Subscription) {
   const rows = await subRowsFor(sub.id);
   if (!rows.length) return;
-  must(await db().from("res_subscriptions").update({ status: sub.status }).eq("stripe_subscription_id", sub.id));
+  // Client subscriptions sit in "trialing" until the 1st (this month is paid up front), which is active here.
+  const status = sub.status === "trialing" ? "active" : sub.status;
+  must(await db().from("res_subscriptions").update({ status }).eq("stripe_subscription_id", sub.id));
   if (sub.status === "canceled" && rows.some((r) => r.status !== "canceled")) {
     must(await db().from("res_addresses").update({ status: "cancelled" }).in("id", rows.map((r) => r.address_id)));
     const a = await addressAndCustomer(rows[0].address_id);

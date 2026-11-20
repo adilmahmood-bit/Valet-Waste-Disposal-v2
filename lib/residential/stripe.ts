@@ -129,11 +129,39 @@ export function nextFirstOfMonth(now = new Date()) {
   return Math.floor(Date.UTC(y, m, 1, 8) / 1000);
 }
 
-export type ClientLine = { addressId: string; street: string; city: string; monthly: number };
+// The Stripe payment-method settings that offer bank debit (ACH), so client checkouts can
+// pay by bank. Stripe keeps several settings groups; the default one may have ACH off.
+async function bankDebitConfig() {
+  const configs = (await stripe().paymentMethodConfigurations.list({ limit: 20 })).data;
+  const ach = (c: (typeof configs)[number]) => c.active && c.us_bank_account?.available;
+  return (configs.find((c) => ach(c) && c.is_default) ?? configs.find(ach))?.id ?? null;
+}
+
+export type ClientLine = { addressId: string; street: string; city: string; monthly: number; startDate: string | null };
+
+// This month's share for each property, counted from its first service day (or today if it has
+// none) to the end of the month. A property starting next month or later owes nothing yet.
+export function firstMonthCharges(lines: ClientLine[], now = new Date()) {
+  const today = now.toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" }); // YYYY-MM-DD
+  const [y, m] = today.split("-").map(Number);
+  const monthStart = `${today.slice(0, 7)}-01`;
+  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const monthName = new Date(Date.UTC(y, m - 1, 15)).toLocaleString("en-US", { month: "long", timeZone: "UTC" });
+  return lines.flatMap((l) => {
+    let from = l.startDate ?? today;
+    if (from.slice(0, 7) > today.slice(0, 7)) return [];
+    if (from < monthStart) from = monthStart;
+    const day = Number(from.slice(8, 10));
+    const days = daysInMonth - day + 1;
+    const cents = Math.round((l.monthly * 100 * days) / daysInMonth);
+    return cents > 0 ? [{ line: l, cents, label: `${monthName} ${day}–${daysInMonth} (${days} days): ${l.street}, ${l.city}` }] : [];
+  });
+}
 
 // Stripe Checkout for an agreement client: one subscription, one line per active property at
-// its agreed monthly rate. They add a card or bank account and pay the prorated part of this
-// month now; after that Stripe charges automatically on the 1st. The webhook links it back.
+// its agreed monthly rate. They add a card or bank account and pay this month's share now,
+// counted from each property's first service day (not from the day they pay); after that
+// Stripe charges the full rate automatically on the 1st. The webhook links it back.
 export async function createClientCheckout(o: {
   customerId: string;
   stripeCustomerId: string;
@@ -142,22 +170,32 @@ export async function createClientCheckout(o: {
 }) {
   if (!o.lines.length) throw new Error("No active properties with a monthly rate to bill.");
   const metadata = { res_kind: "client", res_customer_id: o.customerId, res_address_ids: o.lines.map((l) => l.addressId).join(",") };
+  const pmConfig = await bankDebitConfig();
   return stripe().checkout.sessions.create({
     mode: "subscription",
+    ...(pmConfig ? { payment_method_configuration: pmConfig } : {}),
     customer: o.stripeCustomerId,
     client_reference_id: o.customerId,
-    line_items: o.lines.map((l) => ({
-      quantity: 1,
-      price_data: {
-        currency: "usd",
-        unit_amount: Math.round(l.monthly * 100),
-        recurring: { interval: "month" as const },
-        product_data: { name: `Weekly trash can valet: ${l.street}, ${l.city}` },
-      },
-    })),
+    line_items: [
+      ...o.lines.map((l) => ({
+        quantity: 1,
+        price_data: {
+          currency: "usd",
+          unit_amount: Math.round(l.monthly * 100),
+          recurring: { interval: "month" as const },
+          product_data: { name: `Weekly trash can valet: ${l.street}, ${l.city}` },
+        },
+      })),
+      // One-time lines go on the first invoice: this month from each first service day.
+      ...firstMonthCharges(o.lines).map((c) => ({
+        quantity: 1,
+        price_data: { currency: "usd", unit_amount: c.cents, product_data: { name: `Trash can valet, ${c.label}` } },
+      })),
+    ],
     subscription_data: {
-      billing_cycle_anchor: nextFirstOfMonth(),
-      proration_behavior: "create_prorations",
+      // The monthly rate starts on the 1st; this month is the one-time lines above. (Stripe won't
+      // take a billing anchor without prorating when there are one-time lines, so wait till the 1st.)
+      trial_end: nextFirstOfMonth(),
       description: `Trash can valet, ${o.lines.length} ${o.lines.length === 1 ? "property" : "properties"}`,
       metadata,
     },
