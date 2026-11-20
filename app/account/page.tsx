@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { accessFlagLabel, planById, residential } from "@/config/residential";
 import { PASSWORD_MIN, requireCustomer } from "@/lib/residential/portal-auth";
-import { loadPortal, shortDate, timeSD, type PortalProperty, type PortalService, type PortalVisit } from "@/lib/residential/portal-data";
+import { dateSD, loadPortal, shortDate, timeSD, type PortalProperty, type PortalService, type PortalVisit } from "@/lib/residential/portal-data";
 import { addDays, formatLong } from "@/lib/residential/schedule";
 import { signOutAction } from "./actions";
 import PasswordSettings from "./PasswordSettings";
+import AlertSettings from "./AlertSettings";
 
 export const metadata: Metadata = { title: "Your account" };
 
@@ -79,6 +80,8 @@ export default async function AccountPage() {
           </a>
         </section>
       )}
+
+      <AlertSettings alertOut={customer.alert_out} alertBack={customer.alert_back} live={residential.notifications.visitEmails} />
 
       <PasswordSettings email={customer.email} hasPassword={!!customer.password_set_at} minLength={PASSWORD_MIN} />
 
@@ -159,6 +162,31 @@ function PropertyCard({ p }: { p: PortalProperty }) {
                 Pickup{pushOut ? "" : " and cans back"}: <strong>{formatLong(next.pickup)}</strong>
               </p>
               {next.shifted && <p className="mt-1 text-sm text-slate-600">Moved one day later this week for a holiday.</p>}
+              {next.rolledOut ? (
+                <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-green-100 text-green-800 px-3 py-1 text-sm font-semibold">Cans are out at the curb</p>
+              ) : (
+                (next.eta || next.trackingUrl) && (
+                  <div className="mt-3 rounded-xl bg-white border border-slate-200 p-3 flex flex-wrap items-center justify-between gap-3">
+                    {next.eta && (
+                      <p>
+                        <span className="text-sm text-slate-500 block">Expected roll-out</span>
+                        <strong className="text-lg">around {timeSD(next.eta)}</strong>
+                        {dateSD(next.eta) !== addDays(next.pickup, -1) && <span className="text-sm text-slate-600"> ({shortDate(dateSD(next.eta))})</span>}
+                      </p>
+                    )}
+                    {next.trackingUrl && dateSD(new Date().toISOString()) === addDays(next.pickup, -1) && (
+                      <a
+                        href={next.trackingUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-full bg-res-teal-dark hover:bg-res-teal text-white font-semibold px-4 py-2 text-sm"
+                      >
+                        Track live
+                      </a>
+                    )}
+                  </div>
+                )
+              )}
             </>
           ) : (
             <p className="mt-1">No upcoming pickups scheduled.</p>

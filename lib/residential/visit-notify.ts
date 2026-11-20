@@ -25,6 +25,8 @@ export async function notifyVisit(addressId: string, type: "out" | "back", statu
     }
 
     if (!residential.notifications.visitEmails || status !== "done") return;
+    const prefs = a.customer as CustomerRow & { alert_out?: boolean; alert_back?: boolean };
+    if ((type === "out" ? prefs.alert_out : prefs.alert_back) === false) return;
     const first = a.customer.name.split(" ")[0] || "there";
     await sendEmail(
       a.customer.email,

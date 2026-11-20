@@ -208,12 +208,14 @@ async function endOtherSessions(customerId: string) {
 
 // Customer fields the portal uses. Password fields are never loaded here.
 const CUSTOMER_COLUMNS =
-  "id, name, mobile, email, property_type, source, referral_code, hubspot_contact_id, hubspot_synced_at, stripe_customer_id, created_at, password_set_at, overflow_first_can, overflow_per_bag";
+  "id, name, mobile, email, property_type, source, referral_code, hubspot_contact_id, hubspot_synced_at, stripe_customer_id, created_at, password_set_at, overflow_first_can, overflow_per_bag, alert_out, alert_back";
 
 export type PortalCustomer = CustomerRow & {
   password_set_at: string | null;
   overflow_first_can: number | null; // excess-pickup rate from the client's agreement; null = not offered
   overflow_per_bag: number | null;
+  alert_out: boolean;
+  alert_back: boolean;
 };
 
 // The signed-in customer, or null.

@@ -1,6 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { db, must } from "@/lib/residential/db";
 import {
   PASSWORD_MIN,
   removePassword,
@@ -54,6 +55,17 @@ export async function savePassword(_prev: FormState, form: FormData): Promise<Fo
 export async function deletePassword() {
   const customer = await requireCustomer();
   await removePassword(customer);
+  revalidatePath("/account");
+}
+
+export async function saveAlerts(form: FormData) {
+  const customer = await requireCustomer();
+  must(
+    await db()
+      .from("res_customers")
+      .update({ alert_out: form.get("alert_out") === "on", alert_back: form.get("alert_back") === "on" })
+      .eq("id", customer.id),
+  );
   revalidatePath("/account");
 }
 

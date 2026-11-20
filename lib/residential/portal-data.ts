@@ -25,6 +25,10 @@ export type UpcomingPickup = {
   pickup: string;
   shifted: boolean; // moved by a holiday
   paused: boolean;
+  // From Routific once the roll-out is on a published route (Phase 4).
+  eta: string | null; // expected roll-out arrival, ISO
+  trackingUrl: string | null; // Routific's live tracking page for that stop
+  rolledOut: boolean; // Routific says the roll-out is already done
 };
 
 export type PortalProperty = {
@@ -48,7 +52,7 @@ export async function loadPortal(customerId: string): Promise<PortalProperty[]> 
   const ids = addresses.map((a) => a.id);
   const today = todaySD();
 
-  const [subs, pauses, shifts, visits] = await Promise.all([
+  const [subs, pauses, shifts, visits, orders] = await Promise.all([
     db().from("res_subscriptions").select("*").in("address_id", ids).order("created_at", { ascending: false }).then(must),
     db().from("res_pauses").select("*").in("address_id", ids).gte("end_date", today).order("start_date").then(must),
     db().from("res_service_shifts").select("*").gte("date", addDays(today, -HISTORY_DAYS - 7)).lte("date", addDays(today, 7 * (UPCOMING + 10))).then(must),
@@ -59,7 +63,17 @@ export async function loadPortal(customerId: string): Promise<PortalProperty[]> 
       .gte("date", addDays(today, -HISTORY_DAYS))
       .order("date", { ascending: false })
       .then(must),
+    db()
+      .from("res_routific_orders")
+      .select("address_id, pickup_date, routific_status, eta, tracking_url")
+      .in("address_id", ids)
+      .gte("pickup_date", today)
+      .is("deleted_at", null)
+      .then(must),
   ]);
+  type OrderInfo = { address_id: string; pickup_date: string; routific_status: string | null; eta: string | null; tracking_url: string | null };
+  const orderFor = (addressId: string, pickup: string) =>
+    (orders as OrderInfo[]).find((o) => o.address_id === addressId && o.pickup_date === pickup);
 
   // Stored photos are private; swap in signed links that last an hour.
   const photoLinks = await resolvePhotoUrls((visits as { photo_url: string | null }[]).map((v) => v.photo_url));
@@ -80,7 +94,15 @@ export async function loadPortal(customerId: string): Promise<PortalProperty[]> 
         if (pickup < today) continue;
         if (sub?.start_date && pickup < sub.start_date) continue;
         if (sub?.plan === "one_time" && sub.start_date && pickup !== sub.start_date) continue;
-        upcoming.push({ pickup, shifted: pickup !== nominal, paused: address.status === "paused" || isPaused(pickup) });
+        const o = orderFor(address.id, pickup);
+        upcoming.push({
+          pickup,
+          shifted: pickup !== nominal,
+          paused: address.status === "paused" || isPaused(pickup),
+          eta: o?.routific_status === "scheduled" ? o.eta : null,
+          trackingUrl: o?.routific_status === "scheduled" ? o.tracking_url : null,
+          rolledOut: o?.routific_status === "delivered",
+        });
       }
     }
 
@@ -112,6 +134,9 @@ export async function loadPortal(customerId: string): Promise<PortalProperty[]> 
 // "6:42 PM" in San Diego time.
 export const timeSD = (iso: string) =>
   new Date(iso).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" });
+
+// The San Diego calendar date (YYYY-MM-DD) of an ISO time.
+export const dateSD = (iso: string) => new Date(iso).toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
 
 // "Tue, Nov 18" for a YYYY-MM-DD date.
 export const shortDate = (d: string) =>
