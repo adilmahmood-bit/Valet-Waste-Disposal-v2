@@ -233,6 +233,11 @@ export async function currentCustomer(): Promise<PortalCustomer | null> {
   return row?.customer ?? null;
 }
 
+// For the admin "View as customer" preview. Same fields the customer's own session loads.
+export async function customerById(id: string): Promise<PortalCustomer | null> {
+  return must(await db().from("res_customers").select(CUSTOMER_COLUMNS).eq("id", id).maybeSingle()) as unknown as PortalCustomer | null;
+}
+
 export async function requireCustomer() {
   const customer = await currentCustomer();
   if (!customer) redirect("/account/login");

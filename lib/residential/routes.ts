@@ -1,5 +1,6 @@
 import { db, must, type AddressRow, type CustomerRow, type PauseRow, type ShiftRow, type SubscriptionRow } from "./db";
 import { addDays, pickupsNear } from "./schedule";
+import { cityHolidayShifts } from "./holidays";
 import { decryptGateCode } from "./crypto";
 
 export type VisitRow = { id: string; address_id: string; date: string; type: "out" | "back"; status: string; note: string | null; photo_url: string | null; completed_at: string };
@@ -47,7 +48,8 @@ export async function buildRoute(date: string): Promise<RouteList> {
 
   for (const { customer, ...address } of addresses) {
     const sub = ((subs as SubscriptionRow[]).find((s) => s.address_id === address.id) ?? null);
-    const pickups = pickupsNear(address.trash_day, address.zip, date, shifts as ShiftRow[]);
+    // Manual shifts plus the city's hauler holidays from the trash-day guide.
+    const pickups = pickupsNear(address.trash_day, address.zip, date, [...(shifts as ShiftRow[]), ...cityHolidayShifts(address.city, Number(date.slice(0, 4)))]);
     const inService = (pickup: string) => {
       if (!sub?.start_date) return true;
       if (sub.plan === "one_time") return pickup === sub.start_date;

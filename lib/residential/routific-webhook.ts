@@ -29,11 +29,11 @@ export function verifySignature(rawBody: string, header: string | null, timestam
   return Number.isFinite(at) && Date.now() - at <= MAX_AGE_MS;
 }
 
-type OrderRow = { id: string; address_id: string; delivery_date: string; routific_status: string | null };
+type OrderRow = { id: string; address_id: string; delivery_date: string; routific_status: string | null; kind: string };
 
 async function orderRow(uuid: string) {
   return must(
-    await db().from("res_routific_orders").select("id, address_id, delivery_date, routific_status").eq("order_uuid", uuid).maybeSingle(),
+    await db().from("res_routific_orders").select("id, address_id, delivery_date, routific_status, kind").eq("order_uuid", uuid).maybeSingle(),
   ) as OrderRow | null;
 }
 
@@ -59,11 +59,18 @@ async function onOrderStatus(body: StatusEvent) {
   );
   if (!status) return `status ${o.status} recorded`;
 
+  // Extra trash pickups aren't roll-outs or roll-ins: record the status, and flag a miss.
+  if (row.kind === "extra") {
+    if (status === "missed") await notifyVisit(row.address_id, "out", "missed", `Extra trash pickup: ${o.deliveryMissedReason ?? "no reason given"}`);
+    return `extra pickup ${status}`;
+  }
+  const type = row.kind === "rollin" ? "back" : "out";
+
   const note = [o.deliveryNotes, o.deliveryMissedReason].filter(Boolean).join(" · ") || null;
   const visit = {
     address_id: row.address_id,
     date: row.delivery_date,
-    type: "out",
+    type,
     status,
     note,
     completed_by: "routific",
@@ -79,9 +86,9 @@ async function onOrderStatus(body: StatusEvent) {
       const ref = full.proofOfDelivery?.photos?.[0];
       if (ref) {
         const photo = await getPhoto(o.uuid, ref);
-        const url = await saveVisitPhoto(`${row.address_id}/${row.delivery_date}-out-${photo.photoUuid}.jpg`, photo.bytes, photo.contentType);
+        const url = await saveVisitPhoto(`${row.address_id}/${row.delivery_date}-${type}-${photo.photoUuid}.jpg`, photo.bytes, photo.contentType);
         must(
-          await db().from("res_visits").update({ photo_url: url }).eq("address_id", row.address_id).eq("date", row.delivery_date).eq("type", "out"),
+          await db().from("res_visits").update({ photo_url: url }).eq("address_id", row.address_id).eq("date", row.delivery_date).eq("type", type),
         );
       }
     } catch (e) {
@@ -89,7 +96,7 @@ async function onOrderStatus(body: StatusEvent) {
     }
   }
 
-  await notifyVisit(row.address_id, "out", status, note);
+  await notifyVisit(row.address_id, type, status, note);
   return `visit ${status}`;
 }
 

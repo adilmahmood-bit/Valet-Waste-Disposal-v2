@@ -1,5 +1,6 @@
 import { db, must, type AddressRow, type PauseRow, type ShiftRow, type SubscriptionRow } from "./db";
 import { resolvePhotoUrls } from "./photos";
+import { cityHolidayShifts, holidayMoving } from "./holidays";
 import { addDays, effectivePickup, todaySD, weekStart } from "./schedule";
 
 // Everything the customer portal (/account) shows, read from Supabase for one customer.
@@ -24,6 +25,7 @@ export type PortalService = {
 export type UpcomingPickup = {
   pickup: string;
   shifted: boolean; // moved by a holiday
+  holidayName: string | null; // e.g. "Thanksgiving", when the city's hauler moved it
   paused: boolean;
   // From Routific once the roll-out is on a published route (Phase 4).
   eta: string | null; // expected roll-out arrival, ISO
@@ -89,7 +91,7 @@ export async function loadPortal(customerId: string): Promise<PortalProperty[]> 
     if (active) {
       for (let w = 0; upcoming.length < UPCOMING && w < UPCOMING + 10; w++) {
         const week = addDays(weekStart(today), 7 * w);
-        const pickup = effectivePickup(address.trash_day, address.zip, week, shifts as ShiftRow[]);
+        const pickup = effectivePickup(address.trash_day, address.zip, week, [...(shifts as ShiftRow[]), ...cityHolidayShifts(address.city, Number(week.slice(0, 4)))]);
         const nominal = effectivePickup(address.trash_day, address.zip, week, []);
         if (pickup < today) continue;
         if (sub?.start_date && pickup < sub.start_date) continue;
@@ -98,6 +100,7 @@ export async function loadPortal(customerId: string): Promise<PortalProperty[]> 
         upcoming.push({
           pickup,
           shifted: pickup !== nominal,
+          holidayName: pickup !== nominal ? holidayMoving(address.city, nominal, week)?.name ?? null : null,
           paused: address.status === "paused" || isPaused(pickup),
           eta: o?.routific_status === "scheduled" ? o.eta : null,
           trackingUrl: o?.routific_status === "scheduled" ? o.tracking_url : null,
