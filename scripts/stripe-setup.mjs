@@ -25,8 +25,8 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://yourdoorstepdisposal.c
 
 // Mirrors config/residential.ts. Amounts in dollars.
 const PLANS = [
-  { id: "weekly", name: "Month-to-Month Term", amount: 59, recurring: true, desc: "Weekly trash can valet: cans to the curb and back. Month-to-month." },
-  { id: "annual", name: "Annual Agreement", amount: 49, recurring: true, desc: "Weekly trash can valet: cans to the curb and back. 12-month agreement, billed monthly." },
+  { id: "weekly", name: "Month-to-Month Term", amount: 59.99, recurring: true, desc: "Weekly trash can valet: cans to the curb and back. Month-to-month." },
+  { id: "annual", name: "Annual Agreement", amount: 54.99, recurring: true, desc: "Weekly trash can valet: cans to the curb and back. 12-month agreement, billed monthly." },
   { id: "push_out", name: "Push-Out Only", amount: 35, recurring: true, desc: "Weekly: cans to the curb the evening before pickup." },
   { id: "one_time", name: "One-Time Round Trip", amount: 25, recurring: false, desc: "One visit: cans to the curb and back." },
 ];

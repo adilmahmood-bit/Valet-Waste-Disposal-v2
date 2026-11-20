@@ -1,0 +1,77 @@
+import { db, must, type CustomerRow } from "./db";
+import { createClientCheckout, ensureStripeCustomer, type ClientLine } from "./stripe";
+
+// Stripe autopay for agreement clients (custom monthly rates per property, billed on the 1st).
+// A property is "billed" once its res_subscriptions row has a stripe_subscription_id.
+
+type Row = {
+  id: string;
+  street: string;
+  city: string;
+  zip: string;
+  status: string;
+  sub: { id: string; price: number; plan: string; status: string; stripe_subscription_id: string | null }[] | null;
+};
+
+async function propertiesOf(customerId: string) {
+  return must(
+    await db()
+      .from("res_addresses")
+      .select("id, street, city, zip, status, sub:res_subscriptions(id, price, plan, status, stripe_subscription_id)")
+      .eq("customer_id", customerId)
+      .order("created_at"),
+  ) as unknown as Row[];
+}
+
+const subOf = (r: Row) => r.sub?.[0] ?? null;
+
+// Active properties with a monthly rate that aren't on a Stripe subscription yet.
+export async function unbilledLines(customerId: string): Promise<ClientLine[]> {
+  return (await propertiesOf(customerId))
+    .filter((r) => r.status === "active" && Number(subOf(r)?.price) > 0 && !subOf(r)?.stripe_subscription_id)
+    .map((r) => ({ addressId: r.id, street: r.street, city: r.city, monthly: Number(subOf(r)!.price) }));
+}
+
+// Makes (or reuses) the Stripe customer and returns a Checkout link for the unbilled properties.
+export async function clientCheckoutUrl(customerId: string, returnUrl: string) {
+  const c = must(await db().from("res_customers").select("*").eq("id", customerId).single()) as CustomerRow;
+  const lines = await unbilledLines(customerId);
+  if (!lines.length) throw new Error("Nothing to set up: every active property is already on autopay, or none is active yet.");
+  const first = (await propertiesOf(customerId)).find((r) => r.id === lines[0].addressId)!;
+  const stripeCustomerId = await ensureStripeCustomer({
+    id: c.id,
+    name: c.name,
+    email: c.email,
+    mobile: c.mobile,
+    stripeCustomerId: c.stripe_customer_id,
+    address: { street: first.street, city: first.city, zip: first.zip },
+  });
+  if (stripeCustomerId !== c.stripe_customer_id) must(await db().from("res_customers").update({ stripe_customer_id: stripeCustomerId }).eq("id", c.id));
+  const session = await createClientCheckout({ customerId: c.id, stripeCustomerId, lines, returnUrl });
+  if (!session.url) throw new Error("Stripe didn't return a checkout link.");
+  return { url: session.url, lines, expiresAt: session.expires_at };
+}
+
+// For the admin Billing page: every customer with properties, and where their billing stands.
+export async function billingOverview() {
+  const customers = must(
+    await db().from("res_customers").select("id, name, email, stripe_customer_id").order("name"),
+  ) as { id: string; name: string; email: string; stripe_customer_id: string | null }[];
+  const out = [];
+  for (const c of customers) {
+    const props = await propertiesOf(c.id);
+    if (!props.length) continue;
+    const rows = props.map((r) => {
+      const s = subOf(r);
+      return { id: r.id, street: r.street, city: r.city, status: r.status, price: s ? Number(s.price) : 0, plan: s?.plan ?? null, billing: s?.status ?? null, stripeSub: s?.stripe_subscription_id ?? null };
+    });
+    const active = rows.filter((r) => r.status === "active");
+    out.push({
+      ...c,
+      rows,
+      monthly: active.reduce((n, r) => n + r.price, 0),
+      unbilled: active.filter((r) => r.price > 0 && !r.stripeSub).length,
+    });
+  }
+  return out;
+}

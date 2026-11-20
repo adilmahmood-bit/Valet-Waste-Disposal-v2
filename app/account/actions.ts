@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db, must } from "@/lib/residential/db";
 import { addTeamMember, createRequest, overflowEstimate, removeTeamMember } from "@/lib/residential/portal-requests";
+import { clientCheckoutUrl } from "@/lib/residential/client-billing";
+import { SITE } from "@/lib/blog";
 import {
   PASSWORD_MIN,
   removePassword,
@@ -155,4 +157,20 @@ export async function removeTeamMemberAction(f: FormData) {
   const c = await requireCustomer();
   await removeTeamMember(c.id, str(f, "id", 40));
   revalidatePath("/account");
+}
+
+// ---------- Stripe autopay ----------
+
+// Sends the signed-in customer to Stripe to add a card or bank account for their properties.
+export async function startAutopay() {
+  const c = await requireCustomer();
+  const base = process.env.NODE_ENV === "production" ? SITE : "http://localhost:3000";
+  let url: string;
+  try {
+    url = (await clientCheckoutUrl(c.id, `${base}/account?tab=billing`)).url;
+  } catch (e) {
+    console.error("[account] autopay checkout failed", e);
+    redirect("/account?tab=billing&autopay=error");
+  }
+  redirect(url);
 }
