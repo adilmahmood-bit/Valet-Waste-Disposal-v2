@@ -108,31 +108,63 @@ export function ReferTab({ link, referrals }: { link: string | null; referrals: 
 
 const stripeSubOf = (p: PortalProperty) => (p.sub as (PortalProperty["sub"] & { stripe_subscription_id?: string | null }) | null)?.stripe_subscription_id ?? null;
 
+const groupOf = (p: PortalProperty) => p.sub?.billing_group ?? null;
+
 export function BillingTab({ customer, properties, autopay, preview }: { customer: PortalCustomer; properties: PortalProperty[]; autopay?: string; preview: boolean }) {
   const { payments, contact } = residential;
   const billed = properties.filter((p) => p.address.status === "active" && p.sub?.price);
   const total = billed.reduce((n, p) => n + Number(p.sub!.price), 0);
-  const unbilled = billed.filter((p) => !stripeSubOf(p));
   const onAutopay = billed.filter((p) => stripeSubOf(p));
-  const unbilledTotal = unbilled.reduce((n, p) => n + Number(p.sub!.price), 0);
+  // Separately billed accounts (main account first). Most customers have just one.
+  const groups = [...new Set(properties.map(groupOf))].sort((a, b) => (a === null ? -1 : b === null ? 1 : a.localeCompare(b)));
+  const accounts = groups.map((group) => {
+    const props = properties.filter((p) => groupOf(p) === group);
+    const active = props.filter((p) => p.address.status === "active" && p.sub?.price);
+    const unbilled = active.filter((p) => !stripeSubOf(p));
+    return {
+      group,
+      name: group ?? (groups.length > 1 ? "Main account" : null),
+      props,
+      monthly: active.reduce((n, p) => n + Number(p.sub!.price), 0),
+      unbilled,
+      unbilledTotal: unbilled.reduce((n, p) => n + Number(p.sub!.price), 0),
+      onAutopay: active.length > 0 && unbilled.length === 0,
+    };
+  });
+  const several = accounts.length > 1;
   return (
     <>
       <Card>
         <h2 className="font-semibold text-lg">Your plan</h2>
+        {several && <p className="mt-1 text-sm" style={{ color: P.muted }}>Your properties are billed as {accounts.length} separate accounts, each with its own autopay.</p>}
         <div className="mt-2 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-left" style={{ color: P.muted }}>
               <tr><th className="py-1 pr-2">Property</th><th className="py-1 pr-2">Plan</th><th className="py-1 text-right">Monthly</th></tr>
             </thead>
-            <tbody>
-              {properties.map((p) => (
-                <tr key={p.address.id} className="border-t" style={{ borderColor: P.border }}>
-                  <td className="py-2 pr-2">{p.address.street}<span className="block text-xs" style={{ color: P.muted }}>{p.address.status === "active" ? p.address.city : p.address.status.replace("_", " ")}</span></td>
-                  <td className="py-2 pr-2">{p.sub ? planById(p.sub.plan)?.name ?? p.sub.plan : "—"}</td>
-                  <td className="py-2 text-right">{p.sub?.price ? money(Number(p.sub.price)) : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
+            {accounts.map((a) => (
+              <tbody key={a.group ?? ""}>
+                {several && (
+                  <tr className="border-t" style={{ borderColor: P.border }}>
+                    <td className="pt-3 pb-1 font-semibold" colSpan={2}>{a.name}</td>
+                    <td className="pt-3 pb-1 text-right text-xs" style={{ color: P.muted }}>{a.onAutopay ? "On autopay" : a.unbilled.length ? "Autopay not set up" : ""}</td>
+                  </tr>
+                )}
+                {a.props.map((p) => (
+                  <tr key={p.address.id} className="border-t" style={{ borderColor: P.border }}>
+                    <td className="py-2 pr-2">{p.address.street}<span className="block text-xs" style={{ color: P.muted }}>{p.address.status === "active" ? p.address.city : p.address.status.replace("_", " ")}</span></td>
+                    <td className="py-2 pr-2">{p.sub ? planById(p.sub.plan)?.name ?? p.sub.plan : "—"}</td>
+                    <td className="py-2 text-right">{p.sub?.price ? money(Number(p.sub.price)) : "—"}</td>
+                  </tr>
+                ))}
+                {several && (
+                  <tr className="border-t" style={{ borderColor: P.border }}>
+                    <td className="py-2" colSpan={2}>{a.name} monthly</td>
+                    <td className="py-2 text-right font-semibold">{money(a.monthly)}</td>
+                  </tr>
+                )}
+              </tbody>
+            ))}
             <tfoot>
               <tr className="border-t font-semibold" style={{ borderColor: P.border }}>
                 <td className="py-2" colSpan={2}>Monthly total (active properties)</td>
@@ -152,22 +184,27 @@ export function BillingTab({ customer, properties, autopay, preview }: { custome
           We couldn&apos;t open the payment page. Please try again, or call or text us at {contact.phone}.
         </p>
       )}
-      {unbilled.length > 0 && (
-        <Card>
-          <h2 className="font-semibold">Set up autopay</h2>
-          <p className="mt-1 text-sm">
-            Add a card or bank account once for {unbilled.length === 1 ? unbilled[0].address.street : `${unbilled.length} properties`} ({money(unbilledTotal)}/month). You&apos;ll pay
-            for this month from your first service day now, then it&apos;s charged automatically on the 1st of each month. Payments are handled securely by Stripe.
-          </p>
-          {preview ? (
-            <p className="mt-2 text-sm" style={{ color: P.muted }}>Preview: the button is hidden here.</p>
-          ) : (
-            <form action={startAutopay} className="mt-3">
-              <button className="rounded-full text-white font-semibold px-5 py-2.5" style={{ backgroundColor: P.tealDark }}>Set up autopay</button>
-            </form>
-          )}
-        </Card>
-      )}
+      {accounts
+        .filter((a) => a.unbilled.length > 0)
+        .map((a) => (
+          <Card key={a.group ?? ""}>
+            <h2 className="font-semibold">Set up autopay{a.name ? `: ${a.name}` : ""}</h2>
+            <p className="mt-1 text-sm">
+              Add a card or bank account once for {a.unbilled.length === 1 ? a.unbilled[0].address.street : a.unbilled.map((p) => p.address.street).join(", ")} ({money(a.unbilledTotal)}/month). You&apos;ll
+              pay for this month&apos;s service now, then it&apos;s charged automatically on the 1st of each month. Payments are handled securely by Stripe.
+            </p>
+            {preview ? (
+              <p className="mt-2 text-sm" style={{ color: P.muted }}>Preview: the button is hidden here.</p>
+            ) : (
+              <form action={startAutopay} className="mt-3">
+                <input type="hidden" name="group" value={a.group ?? ""} />
+                <button className="rounded-full text-white font-semibold px-5 py-2.5" style={{ backgroundColor: P.tealDark }}>
+                  Set up autopay{several && a.name ? ` for ${a.name}` : ""}
+                </button>
+              </form>
+            )}
+          </Card>
+        ))}
       <Card>
         <h2 className="font-semibold">Payments</h2>
         {onAutopay.length > 0 ? (

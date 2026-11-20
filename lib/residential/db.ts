@@ -53,6 +53,9 @@ export type SubscriptionRow = {
   price: number;
   status: string;
   start_date: string | null;
+  billing_group?: string | null;
+  first_month_charge?: number | null;
+  stripe_subscription_id?: string | null;
 };
 
 export type ShiftRow = { id: string; date: string; zips: string[]; shift_days: number; note: string | null };
