@@ -1,0 +1,118 @@
+import { residential } from "@/config/residential";
+import { db } from "./db";
+import { sendEmail } from "./email";
+
+// Thin client for the Routific Platform API v2 (api-docs.routific.com). Server only: the token
+// can read and change every order in the workspace.
+
+const BASE = "https://api.plan.routific.com/v2";
+
+export const routificConfigured = () => !!process.env.ROUTIFIC_API_TOKEN && !!process.env.ROUTIFIC_WORKSPACE_UUID;
+
+export class RoutificError extends Error {
+  constructor(
+    public status: number,
+    public body: string,
+  ) {
+    super(`Routific ${status}: ${body.slice(0, 300)}`);
+  }
+  get authFailed() {
+    return this.status === 401 || this.status === 403;
+  }
+}
+
+async function call<T>(method: string, path: string, body?: unknown): Promise<{ status: number; data: T }> {
+  const token = process.env.ROUTIFIC_API_TOKEN;
+  if (!token) throw new Error("ROUTIFIC_API_TOKEN is not set in .env.local");
+  const res = await fetch(`${BASE}${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+    cache: "no-store",
+  });
+  const text = await res.text();
+  if (!res.ok) {
+    const err = new RoutificError(res.status, text);
+    if (err.authFailed) await alertAuthFailure(err);
+    throw err;
+  }
+  return { status: res.status, data: (text ? JSON.parse(text) : null) as T };
+}
+
+const workspace = () => {
+  const w = process.env.ROUTIFIC_WORKSPACE_UUID;
+  if (!w) throw new Error("ROUTIFIC_WORKSPACE_UUID is not set in .env.local");
+  return w;
+};
+
+export type RoutificOrderInput = {
+  name: string;
+  locations: { address: string }[];
+  duration: number;
+  instructions: string;
+  timeWindows: { startTime: string; endTime: string }[];
+  customerOrderNumber: string;
+  deliveryDate: string;
+};
+
+export type RoutificOrder = RoutificOrderInput & {
+  uuid: string;
+  routificOrderNumber: string;
+  status: string;
+  deliveryTime?: string | null;
+  deliveryNotes?: string | null;
+  deliveryMissedReason?: string | null;
+  deliveryTracking?: { url: string; shortUrl: string } | null;
+  proofOfDelivery?: { signature?: string | null; photos?: string[] } | null;
+};
+
+export async function createOrders(orders: RoutificOrderInput[]) {
+  const { data } = await call<RoutificOrder[]>("POST", `/orders?workspaceUuid=${workspace()}`, orders);
+  return data;
+}
+
+export async function getOrder(uuid: string) {
+  return (await call<RoutificOrder>("GET", `/orders/${uuid}`)).data;
+}
+
+// Full replacement: every field must be sent, or Routific clears it.
+export async function updateOrder(uuid: string, order: RoutificOrderInput) {
+  return (await call<{ status: string; actionUuid?: string }>("PUT", `/orders/${uuid}`, order)).data;
+}
+
+// 204 when deleted, 202 when it was on a route (Routific finishes the delete in the background).
+// A 404 means it is already gone, which is what we wanted.
+export async function deleteOrder(uuid: string) {
+  try {
+    await call("DELETE", `/orders/${uuid}`);
+    return true;
+  } catch (e) {
+    if (e instanceof RoutificError && e.status === 404) return true;
+    throw e;
+  }
+}
+
+// Emails Adil at most once a day when the token stops working (Routific tokens expire).
+async function alertAuthFailure(err: RoutificError) {
+  try {
+    const key = "routific_auth_alert";
+    const prev = await db().from("res_app_state").select("value").eq("key", key).maybeSingle();
+    const last = (prev.data?.value as { at?: string } | null)?.at;
+    if (last && Date.now() - new Date(last).getTime() < 86_400_000) return;
+    await db().from("res_app_state").upsert({ key, value: { at: new Date().toISOString() }, updated_at: new Date().toISOString() });
+    await sendEmail(
+      residential.notifyEmail,
+      "Routific sync stopped: API token rejected",
+      [
+        `Routific refused the API token (HTTP ${err.status}). Tonight's roll-outs may not be in Routific.`,
+        "",
+        "Fix: in plan.routific.com, go to Settings > Integrations > Create API Token, then put the new token in",
+        "ROUTIFIC_API_TOKEN (in .env.local and in Hostinger's environment variables).",
+        "",
+        `Routific said: ${err.body.slice(0, 300)}`,
+      ].join("\n"),
+    );
+  } catch (e) {
+    console.error("[routific] could not send auth alert", e);
+  }
+}

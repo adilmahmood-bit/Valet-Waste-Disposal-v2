@@ -4,7 +4,9 @@ import { db } from "./db";
 // Sends through Resend when RESEND_API_KEY and EMAIL_FROM are set. Otherwise the email is
 // only logged (server console + res_email_log), which is how the local demo runs.
 // Replies go to the business inbox unless replyTo says otherwise (alerts reply to the lead).
-export async function sendEmail(to: string, subject: string, body: string, replyTo: string = residential.contact.email) {
+// logBody, when given, is what res_email_log keeps instead of the body (e.g. with a sign-in
+// link removed, so the log never holds a working link).
+export async function sendEmail(to: string, subject: string, body: string, replyTo: string = residential.contact.email, logBody?: string) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
   let provider = "log";
@@ -29,5 +31,5 @@ export async function sendEmail(to: string, subject: string, body: string, reply
     console.log(`[email:log] to=${to} subject=${subject}\n${body}`);
   }
 
-  await db().from("res_email_log").insert({ to, subject, body, provider, status, error });
+  await db().from("res_email_log").insert({ to, subject, body: logBody ?? body, provider, status, error });
 }

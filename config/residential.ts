@@ -43,6 +43,16 @@ export const residential = {
   // Internal: where new sign-up, quote and waitlist alerts go. Never shown on the site.
   notifyEmail: "adil.mahmood@valetwastedisposal.com",
 
+  // Routific: one order per property per trash day, for the evening roll-out (set by Adil
+  // 2026-11-19). Roll-ins are not sent. Times are 24-hour, San Diego time.
+  routific: {
+    rollOutWindow: { start: "16:00", end: "21:00" },
+    // Time at each stop, in seconds: a base plus a little per can.
+    stopSeconds: { base: 120, perBin: 30 },
+    // Days ahead to keep in Routific. 1 = tonight's and tomorrow night's roll-outs.
+    daysAhead: 1,
+  },
+
   plans: [
     {
       id: "weekly",

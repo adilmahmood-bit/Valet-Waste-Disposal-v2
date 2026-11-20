@@ -57,6 +57,10 @@ export default async function ThanksPage({ searchParams }: { searchParams: Promi
             </p>
           )}
           <p className="text-slate-700">A confirmation email is on its way.</p>
+          <p className="text-slate-700">
+            You can check your schedule and visit photos anytime in{" "}
+            <Link href="/account" className="font-semibold text-res-teal-dark underline">your account</Link>.
+          </p>
         </div>
       )}
 

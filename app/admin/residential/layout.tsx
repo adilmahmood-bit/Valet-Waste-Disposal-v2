@@ -12,6 +12,7 @@ const tabs = [
   { label: "Quotes", href: "/admin/residential/quotes" },
   { label: "Waitlist", href: "/admin/residential/waitlist" },
   { label: "Holiday shifts", href: "/admin/residential/shifts" },
+  { label: "Routific", href: "/admin/residential/routific" },
   { label: "Sync", href: "/admin/residential/sync" },
 ];
 

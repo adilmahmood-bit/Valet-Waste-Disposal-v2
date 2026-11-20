@@ -8,6 +8,8 @@ import { db, must, type AddressStatus } from "@/lib/residential/db";
 import { requireAdmin, passwordMatches, startAdminSession, endAdminSession } from "@/lib/residential/admin-auth";
 import { syncCustomer, retrySync, pullContacts, addNote } from "@/lib/residential/hubspot";
 import { firstServiceDate } from "@/lib/residential/schedule";
+import { routificConfigured } from "@/lib/residential/routific";
+import { syncRoutific } from "@/lib/residential/routific-sync";
 
 const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
@@ -54,6 +56,7 @@ export async function setAddressStatus(f: FormData) {
   must(await db().from("res_addresses").update({ status }).eq("id", id));
   const customerId = await customerOf(id);
   after(() => syncCustomer(customerId));
+  after(() => routificSyncQuietly("status change"));
   refresh();
 }
 
@@ -63,12 +66,14 @@ export async function addPause(f: FormData) {
   const end = s(f, "end_date") || start;
   if (!start || end < start) return;
   must(await db().from("res_pauses").insert({ address_id: s(f, "address_id"), start_date: start, end_date: end }));
+  after(() => routificSyncQuietly("pause added"));
   refresh();
 }
 
 export async function deletePause(f: FormData) {
   await requireAdmin();
   must(await db().from("res_pauses").delete().eq("id", s(f, "id")));
+  after(() => routificSyncQuietly("pause removed"));
   refresh();
 }
 
@@ -130,5 +135,28 @@ export async function retryHubSpot(f: FormData) {
 export async function pullFromHubSpot() {
   await requireAdmin();
   await pullContacts();
+  refresh();
+}
+
+// ---------- Routific ----------
+
+async function saveLastSync(result: Awaited<ReturnType<typeof syncRoutific>>, by: string) {
+  await db().from("res_app_state").upsert({ key: "routific_last_sync", value: { ...result, by }, updated_at: new Date().toISOString() });
+}
+
+// After a pause or status change, so tonight's Routific orders match. Errors only get logged:
+// the admin change itself already succeeded.
+async function routificSyncQuietly(by: string) {
+  if (!routificConfigured()) return;
+  try {
+    await saveLastSync(await syncRoutific(), by);
+  } catch (e) {
+    console.error("[routific] sync after change failed", e);
+  }
+}
+
+export async function runRoutificSync() {
+  await requireAdmin();
+  await saveLastSync(await syncRoutific(), "admin button");
   refresh();
 }
