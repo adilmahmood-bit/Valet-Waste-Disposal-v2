@@ -8,13 +8,13 @@ export const metadata: Metadata = { title: "Residential ops | Valet Waste Dispos
 
 const tabs = [
   { label: "Routes", href: "/admin/residential" },
-  { label: "Roll-ins", href: "/admin/residential/crew" },
+  { label: "Roll-outs (Routific)", href: "/admin/residential/routific" },
+  { label: "Roll-ins (crew)", href: "/admin/residential/crew" },
   { label: "Customers", href: "/admin/residential/customers" },
   { label: "Requests", href: "/admin/residential/requests" },
   { label: "Quotes", href: "/admin/residential/quotes" },
   { label: "Waitlist", href: "/admin/residential/waitlist" },
   { label: "Holiday shifts", href: "/admin/residential/shifts" },
-  { label: "Routific", href: "/admin/residential/routific" },
   { label: "Sync", href: "/admin/residential/sync" },
 ];
 
