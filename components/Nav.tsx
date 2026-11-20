@@ -17,7 +17,7 @@ export default function Nav() {
   }, []);
 
   // The app demo, residential pages (including /hosts) and admin have their own chrome.
-  if (["/app", "/residential", "/hosts", "/admin"].some((p) => pathname?.startsWith(p))) return null;
+  if (["/app", "/residential", "/hosts", "/admin", "/account"].some((p) => pathname?.startsWith(p))) return null;
 
   // Section links point at the homepage, so they also work from /blog pages.
   const home = pathname === "/" ? "" : "/";

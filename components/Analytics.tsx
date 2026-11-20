@@ -12,8 +12,9 @@ const CLARITY_ID = "ze8pdezj8r"; // clarity.microsoft.com project for yourdoorst
 
 export default function Analytics() {
   const path = usePathname() ?? "";
-  // Never track the admin tools, or local dev/preview (keeps test visits out of the reports).
-  if (path.startsWith("/admin") || process.env.NODE_ENV !== "production") return null;
+  // Never track the admin tools, the customer account pages (sign-in link URLs carry a
+  // one-time token, and session recordings would show customers' addresses), or local dev/preview (keeps test visits out of the reports).
+  if (path.startsWith("/admin") || path.startsWith("/account") || process.env.NODE_ENV !== "production") return null;
 
   return (
     <>
