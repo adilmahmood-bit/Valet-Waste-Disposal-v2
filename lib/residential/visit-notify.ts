@@ -25,9 +25,14 @@ export async function notifyVisit(addressId: string, type: "out" | "back", statu
     }
 
     if (!residential.notifications.visitEmails || status !== "done") return;
+    const prefs = a.customer as CustomerRow & { alert_out?: boolean; alert_back?: boolean };
+    if ((type === "out" ? prefs.alert_out : prefs.alert_back) === false) return;
     const first = a.customer.name.split(" ")[0] || "there";
-    await sendEmail(
-      a.customer.email,
+    // The customer plus any team members they added (cleaners, co-hosts) with an email.
+    const team = must(await db().from("res_team_members").select("email").eq("customer_id", a.customer.id)) as { email: string | null }[];
+    const to = [a.customer.email, ...team.map((t) => t.email).filter((e): e is string => !!e)];
+    for (const email of [...new Set(to)]) await sendEmail(
+      email,
       type === "out" ? `Your cans are out at ${a.street}` : `Your cans are back in at ${a.street}`,
       [
         `Hi ${first},`,

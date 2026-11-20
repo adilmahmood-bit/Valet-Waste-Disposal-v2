@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { after } from "next/server";
 import { requireAdmin } from "@/lib/residential/admin-auth";
 import { loadCustomers, type CustomerFilters, type CustomerLine } from "@/lib/residential/admin-data";
@@ -90,6 +91,7 @@ function Row({ r }: { r: CustomerLine }) {
           <p className="mt-1 flex gap-3 text-xs">
             {c.hubspot_contact_id ? <a className="underline text-res-teal-dark" target="_blank" rel="noreferrer" href={hubspotRecordUrl("contact", c.hubspot_contact_id)}>HubSpot contact</a> : <span className="text-amber-700">Not in HubSpot yet</span>}
             {r.hubspot_deal_id && <a className="underline text-res-teal-dark" target="_blank" rel="noreferrer" href={hubspotRecordUrl("deal", r.hubspot_deal_id)}>Deal</a>}
+            <Link className="underline text-res-teal-dark" href={`/admin/residential/customers/${c.id}/view`}>View as customer</Link>
           </p>
         </div>
         <form action={setAddressStatus} className="flex items-center gap-2 self-start">

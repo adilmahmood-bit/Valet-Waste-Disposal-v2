@@ -1,6 +1,6 @@
 "use client";
 import { useActionState } from "react";
-import { passwordSignIn } from "../actions";
+import { passwordSignIn } from "@/app/account/actions";
 
 export default function PasswordForm() {
   const [state, action, pending] = useActionState(passwordSignIn, null);

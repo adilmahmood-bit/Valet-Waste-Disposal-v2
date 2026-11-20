@@ -1,26 +1,60 @@
+import Link from "next/link";
 import { requireAdmin } from "@/lib/residential/admin-auth";
 import { db, must, type ShiftRow } from "@/lib/residential/db";
 import { formatLong, todaySD, addDays } from "@/lib/residential/schedule";
+import { collectorFor, cityHolidayShifts } from "@/lib/residential/holidays";
 import { addShift, deleteShift } from "../actions";
 import { btn, card, field, SetupNotice } from "../ui";
 
 export default async function ShiftsPage() {
   await requireAdmin();
   let shifts: ShiftRow[];
+  let cities: string[];
   try {
     shifts = must(await db().from("res_service_shifts").select("*").gte("date", addDays(todaySD(), -30)).order("date")) as ShiftRow[];
+    const addrs = must(await db().from("res_addresses").select("city").in("status", ["active", "signed_up", "paused"])) as { city: string }[];
+    cities = [...new Set(addrs.map((a) => a.city.trim()))].sort();
   } catch (e) {
     return <SetupNotice error={e} />;
   }
+  const today = todaySD();
+  const horizon = addDays(today, 120);
 
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold">Holiday shifts</h1>
         <p className="text-sm text-slate-600 mt-1">
-          Enter the holiday date. Pickups on or after that day, in that week, move later by the number of days you set. The route list follows the shift.
+          City holidays are automatic: each customer&apos;s city follows its hauler&apos;s holidays from the{" "}
+          <Link href="/residential/trash-day" className="underline">trash day guide</Link>. A weekday holiday moves that day&apos;s pickup and the rest of the week one day later.
+          Add a shift below only for something else, like a storm delay.
         </p>
       </div>
+
+      <section className={`${card} p-4`}>
+        <h2 className="font-semibold">Automatic holidays, next 4 months</h2>
+        <ul className="mt-2 space-y-2 text-sm">
+          {cities.map((city) => {
+            const c = collectorFor(city);
+            const upcoming = c ? cityHolidayShifts(city, Number(today.slice(0, 4))).filter((h) => h.date >= today && h.date <= horizon) : [];
+            return (
+              <li key={city}>
+                <span className="font-semibold">{city}</span>{" "}
+                {c ? (
+                  <>
+                    <span className="text-slate-500">
+                      (<a href={c.lookupUrl} target="_blank" rel="noopener noreferrer" className="underline">{c.name}</a>)
+                    </span>
+                    : {upcoming.length ? upcoming.map((h) => `${h.name} ${formatLong(h.date)}`).join(" · ") : "none"}
+                  </>
+                ) : (
+                  <span className="text-amber-800">: not in the trash day guide yet, so no automatic holidays. Add its hauler to the guide, or add shifts below.</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
       <form action={addShift} className={`${card} p-4 grid gap-3 sm:grid-cols-2`}>
         <label className="text-sm font-semibold">

@@ -147,6 +147,9 @@ export const trashCollectors: Record<string, TrashCollector> = {
   // San Marcos and Vista added 2026-11-15; Adil confirmed EDCO serves both.
   "san-marcos": edco("San Marcos", "san-marcos", {}, { src: "/residential/trash-maps/san-marcos.jpg", width: 700, height: 506 }),
   vista: edco("Vista", "city-of-vista", {}, { src: "/residential/trash-maps/vista.jpg", width: 1400, height: 1074 }),
+  // Source: poway.edcodisposal.com/service-schedules (checked 2026-11-20; link sent by Adil). Same
+  // EDCO holiday rule. Used for holiday weeks on routes; no Poway city page yet.
+  poway: edco("Poway", "poway"),
   "san-diego": sanDiego,
   "mission-beach": sanDiego,
   "pacific-beach": sanDiego,

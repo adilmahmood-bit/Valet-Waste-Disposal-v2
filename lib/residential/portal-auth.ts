@@ -208,12 +208,15 @@ async function endOtherSessions(customerId: string) {
 
 // Customer fields the portal uses. Password fields are never loaded here.
 const CUSTOMER_COLUMNS =
-  "id, name, mobile, email, property_type, source, referral_code, hubspot_contact_id, hubspot_synced_at, stripe_customer_id, created_at, password_set_at, overflow_first_can, overflow_per_bag";
+  "id, name, mobile, email, property_type, source, referral_code, hubspot_contact_id, hubspot_synced_at, stripe_customer_id, created_at, password_set_at, overflow_first_can, overflow_per_bag, alert_out, alert_back, my_referral_code";
 
 export type PortalCustomer = CustomerRow & {
   password_set_at: string | null;
   overflow_first_can: number | null; // excess-pickup rate from the client's agreement; null = not offered
   overflow_per_bag: number | null;
+  alert_out: boolean;
+  alert_back: boolean;
+  my_referral_code: string | null;
 };
 
 // The signed-in customer, or null.
@@ -229,6 +232,11 @@ export async function currentCustomer(): Promise<PortalCustomer | null> {
       .maybeSingle(),
   ) as unknown as { customer: PortalCustomer | null } | null;
   return row?.customer ?? null;
+}
+
+// For the admin "View as customer" preview. Same fields the customer's own session loads.
+export async function customerById(id: string): Promise<PortalCustomer | null> {
+  return must(await db().from("res_customers").select(CUSTOMER_COLUMNS).eq("id", id).maybeSingle()) as unknown as PortalCustomer | null;
 }
 
 export async function requireCustomer() {

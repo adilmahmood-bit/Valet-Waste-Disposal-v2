@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { confirmSignIn } from "../actions";
+import { confirmSignIn } from "@/app/account/actions";
 
 export const metadata: Metadata = { title: "Sign in", referrer: "no-referrer" };
 
