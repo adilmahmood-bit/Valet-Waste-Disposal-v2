@@ -43,6 +43,7 @@ async function addressAndCustomer(addressId: string) {
 // through checkout.session.async_payment_succeeded).
 async function checkoutPaid(session: Stripe.Checkout.Session) {
   if (session.payment_status !== "paid" && session.payment_status !== "no_payment_required") return;
+  if (session.metadata?.res_kind === "client") return clientCheckoutPaid(session);
   const row = await subRowFor({ rowId: session.client_reference_id });
   if (!row || row.status !== "pending_billing") return;
 
@@ -84,17 +85,48 @@ async function checkoutPaid(session: Stripe.Checkout.Session) {
   }
 }
 
+// An agreement client finished the autopay checkout: link their Stripe customer and the
+// subscription to every property in it. Stripe emails them the receipt; we only alert Adil.
+async function clientCheckoutPaid(session: Stripe.Checkout.Session) {
+  const customerId = session.metadata?.res_customer_id;
+  const addressIds = (session.metadata?.res_address_ids ?? "").split(",").filter(Boolean);
+  if (!customerId || !addressIds.length) return;
+  const stripeSubscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id ?? null;
+  const stripeCustomerId = typeof session.customer === "string" ? session.customer : session.customer?.id ?? null;
+  must(await db().from("res_customers").update({ stripe_customer_id: stripeCustomerId }).eq("id", customerId));
+  must(
+    await db()
+      .from("res_subscriptions")
+      .update({ status: "active", stripe_subscription_id: stripeSubscriptionId, stripe_customer_id: stripeCustomerId, stripe_checkout_session_id: session.id })
+      .in("address_id", addressIds),
+  );
+  const c = must(await db().from("res_customers").select("name, email").eq("id", customerId).single()) as { name: string; email: string };
+  await sendEmail(
+    residential.notifyEmail,
+    `Autopay set up: ${c.name}`,
+    `${c.name} set up autopay for ${addressIds.length} ${addressIds.length === 1 ? "property" : "properties"} and paid ${money((session.amount_total ?? 0) / 100)} for the rest of this month. Stripe charges them on the 1st from now on.\n\nStripe: ${dashboard(stripeSubscriptionId ? `subscriptions/${stripeSubscriptionId}` : `customers/${stripeCustomerId}`)}`,
+    c.email,
+  );
+}
+
+// All local rows on one Stripe subscription (a client's subscription covers several properties).
+async function subRowsFor(stripeSubscriptionId: string | null) {
+  if (!stripeSubscriptionId) return [] as SubRow[];
+  return must(await db().from("res_subscriptions").select("*").eq("stripe_subscription_id", stripeSubscriptionId)) as SubRow[];
+}
+
 async function subscriptionChanged(sub: Stripe.Subscription) {
-  const row = await subRowFor({ stripeSubscriptionId: sub.id });
-  if (!row) return;
-  must(await db().from("res_subscriptions").update({ status: sub.status }).eq("id", row.id));
-  if (sub.status === "canceled" && row.status !== "canceled") {
-    must(await db().from("res_addresses").update({ status: "cancelled" }).eq("id", row.address_id));
-    const a = await addressAndCustomer(row.address_id);
+  const rows = await subRowsFor(sub.id);
+  if (!rows.length) return;
+  must(await db().from("res_subscriptions").update({ status: sub.status }).eq("stripe_subscription_id", sub.id));
+  if (sub.status === "canceled" && rows.some((r) => r.status !== "canceled")) {
+    must(await db().from("res_addresses").update({ status: "cancelled" }).in("id", rows.map((r) => r.address_id)));
+    const a = await addressAndCustomer(rows[0].address_id);
+    const where = rows.length === 1 ? `${a.street}, ${a.city} ${a.zip}` : `${rows.length} properties`;
     await sendEmail(
       residential.notifyEmail,
-      `Cancelled: ${a.street}, ${a.city} ${a.zip}`,
-      `${a.customer.name}'s Stripe subscription ended, so the address is now cancelled and off the route.\n\n${dashboard(`subscriptions/${sub.id}`)}`,
+      `Cancelled: ${where} (${a.customer.name})`,
+      `${a.customer.name}'s Stripe subscription ended, so ${rows.length === 1 ? "the address is" : "those addresses are"} now cancelled and off the route.\n\n${dashboard(`subscriptions/${sub.id}`)}`,
       a.customer.email,
     );
   }
@@ -106,7 +138,7 @@ const invoiceSubscriptionId = (inv: Stripe.Invoice) => {
 };
 
 async function invoicePaymentFailed(inv: Stripe.Invoice) {
-  const row = await subRowFor({ stripeSubscriptionId: invoiceSubscriptionId(inv) });
+  const row = (await subRowsFor(invoiceSubscriptionId(inv)))[0] ?? null;
   const who = inv.customer_name || inv.customer_email || "A customer";
   await sendEmail(
     residential.notifyEmail,
@@ -131,8 +163,9 @@ async function handle(event: Stripe.Event) {
     case "customer.subscription.deleted":
       return subscriptionChanged(event.data.object);
     case "invoice.paid": {
-      const row = await subRowFor({ stripeSubscriptionId: invoiceSubscriptionId(event.data.object) });
-      if (row && row.status === "past_due") must(await db().from("res_subscriptions").update({ status: "active" }).eq("id", row.id));
+      const rows = await subRowsFor(invoiceSubscriptionId(event.data.object));
+      const late = rows.filter((r) => r.status === "past_due").map((r) => r.id);
+      if (late.length) must(await db().from("res_subscriptions").update({ status: "active" }).in("id", late));
       return;
     }
     case "invoice.payment_failed":

@@ -69,7 +69,7 @@ export const residential = {
         "Cans back to their spot after pickup",
         "Month-to-month billing",
       ],
-      basePrice: 59, // Set by Adil 2026-11-02; $49 with the launch promo
+      basePrice: 59.99, // Set by Adil 2026-11-20 (was 59); $49.99 with the launch promo
       includedBins: 3, // FILL IN
       extraBinPrice: 5, // FILL IN: per extra bin, per month
       billing: "monthly",
@@ -85,7 +85,7 @@ export const residential = {
         "Cans back to their spot after pickup",
         "12-month agreement, billed monthly",
       ],
-      basePrice: 49, // Set by Adil 2026-11-02; $39 with the launch promo
+      basePrice: 54.99, // Set by Adil 2026-11-20 (was 49); $44.99 with the launch promo
       includedBins: 3,
       extraBinPrice: 5,
       billing: "monthly",

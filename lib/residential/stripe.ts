@@ -111,3 +111,59 @@ export async function createCheckout(o: {
     { idempotencyKey: `res-checkout-${o.subscriptionRowId}` },
   );
 }
+
+// ---------- agreement clients (property managers, hosts) ----------
+
+// The 1st of next month at midnight, San Diego time, as a Unix timestamp: client invoices
+// go out on the 1st, with the first one prorated (per the service agreements).
+export function nextFirstOfMonth(now = new Date()) {
+  const sd = new Date(now.toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+  const y = sd.getMonth() === 11 ? sd.getFullYear() + 1 : sd.getFullYear();
+  const m = (sd.getMonth() + 1) % 12;
+  // Midnight Pacific on the 1st: 08:00 UTC in winter, 07:00 UTC in summer.
+  for (const h of [8, 7]) {
+    const t = new Date(Date.UTC(y, m, 1, h));
+    const local = t.toLocaleString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false });
+    if (local === "0" || local === "24") return Math.floor(t.getTime() / 1000);
+  }
+  return Math.floor(Date.UTC(y, m, 1, 8) / 1000);
+}
+
+export type ClientLine = { addressId: string; street: string; city: string; monthly: number };
+
+// Stripe Checkout for an agreement client: one subscription, one line per active property at
+// its agreed monthly rate. They add a card or bank account and pay the prorated part of this
+// month now; after that Stripe charges automatically on the 1st. The webhook links it back.
+export async function createClientCheckout(o: {
+  customerId: string;
+  stripeCustomerId: string;
+  lines: ClientLine[];
+  returnUrl: string;
+}) {
+  if (!o.lines.length) throw new Error("No active properties with a monthly rate to bill.");
+  const metadata = { res_kind: "client", res_customer_id: o.customerId, res_address_ids: o.lines.map((l) => l.addressId).join(",") };
+  return stripe().checkout.sessions.create({
+    mode: "subscription",
+    customer: o.stripeCustomerId,
+    client_reference_id: o.customerId,
+    line_items: o.lines.map((l) => ({
+      quantity: 1,
+      price_data: {
+        currency: "usd",
+        unit_amount: Math.round(l.monthly * 100),
+        recurring: { interval: "month" as const },
+        product_data: { name: `Weekly trash can valet: ${l.street}, ${l.city}` },
+      },
+    })),
+    subscription_data: {
+      billing_cycle_anchor: nextFirstOfMonth(),
+      proration_behavior: "create_prorations",
+      description: `Trash can valet, ${o.lines.length} ${o.lines.length === 1 ? "property" : "properties"}`,
+      metadata,
+    },
+    metadata,
+    customer_update: { address: "auto", name: "auto" },
+    success_url: `${o.returnUrl}${o.returnUrl.includes("?") ? "&" : "?"}autopay=done`,
+    cancel_url: o.returnUrl,
+  });
+}

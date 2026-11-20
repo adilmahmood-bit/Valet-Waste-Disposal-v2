@@ -13,6 +13,8 @@ import { addOneOff, pushRollouts, removeOrders, syncRoutific, type OneOffKind } 
 import { saveVisitPhoto } from "@/lib/residential/photos";
 import { notifyVisit } from "@/lib/residential/visit-notify";
 import { acceptRequest, declineRequest } from "@/lib/residential/portal-requests";
+import { clientCheckoutUrl } from "@/lib/residential/client-billing";
+import { SITE } from "@/lib/blog";
 
 const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
@@ -280,4 +282,21 @@ export async function declinePortalRequest(f: FormData) {
   await requireAdmin();
   await declineRequest(s(f, "id"), s(f, "note") || null);
   toRequests("Declined.");
+}
+
+// ---------- Stripe autopay for customers ----------
+
+export async function makeClientPaymentLink(f: FormData) {
+  await requireAdmin();
+  const id = s(f, "customer_id");
+  const c = must(await db().from("res_customers").select("name").eq("id", id).single()) as { name: string };
+  let to: string;
+  try {
+    const base = process.env.NODE_ENV === "production" ? SITE : "http://localhost:3000";
+    const { url } = await clientCheckoutUrl(id, `${base}/account?tab=billing`);
+    to = `/admin/residential/billing?link=${encodeURIComponent(url)}&for=${encodeURIComponent(c.name)}`;
+  } catch (e) {
+    to = `/admin/residential/billing?err=${encodeURIComponent((e instanceof Error ? e.message : String(e)).slice(0, 300))}`;
+  }
+  redirect(to);
 }

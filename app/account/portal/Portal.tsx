@@ -47,7 +47,7 @@ export async function Portal({ customer, params, preview = false }: { customer: 
     const code = preview ? customer.my_referral_code ?? null : await referralCodeFor(customer);
     body = <ReferTab link={code ? `yourdoorstepdisposal.com/r?ref=${code}` : null} referrals={code ? await referralsFor(code) : []} />;
   } else if (tab === "billing") {
-    body = <BillingTab customer={customer} properties={properties} />;
+    body = <BillingTab customer={customer} properties={properties} autopay={params.autopay} preview={preview} />;
   } else if (tab === "alerts") {
     body = <AlertsTab customer={customer} team={await teamFor(customer.id)} preview={preview} />;
   } else {

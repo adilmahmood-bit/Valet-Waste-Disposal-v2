@@ -5,7 +5,7 @@ import type { PortalProperty } from "@/lib/residential/portal-data";
 import type { PortalRequest, TeamMember } from "@/lib/residential/portal-requests";
 import AlertSettings from "../AlertSettings";
 import PasswordSettings from "../PasswordSettings";
-import { signOutAction } from "../actions";
+import { signOutAction, startAutopay } from "../actions";
 import { AddPropertyForm, CopyLink, OverflowForm, RemoveTeamButton, TeamForm } from "./forms";
 import { Card, P, Pill } from "./Shell";
 
@@ -106,10 +106,15 @@ export function ReferTab({ link, referrals }: { link: string | null; referrals: 
   );
 }
 
-export function BillingTab({ customer, properties }: { customer: PortalCustomer; properties: PortalProperty[] }) {
+const stripeSubOf = (p: PortalProperty) => (p.sub as (PortalProperty["sub"] & { stripe_subscription_id?: string | null }) | null)?.stripe_subscription_id ?? null;
+
+export function BillingTab({ customer, properties, autopay, preview }: { customer: PortalCustomer; properties: PortalProperty[]; autopay?: string; preview: boolean }) {
   const { payments, contact } = residential;
   const billed = properties.filter((p) => p.address.status === "active" && p.sub?.price);
   const total = billed.reduce((n, p) => n + Number(p.sub!.price), 0);
+  const unbilled = billed.filter((p) => !stripeSubOf(p));
+  const onAutopay = billed.filter((p) => stripeSubOf(p));
+  const unbilledTotal = unbilled.reduce((n, p) => n + Number(p.sub!.price), 0);
   return (
     <>
       <Card>
@@ -137,14 +142,45 @@ export function BillingTab({ customer, properties }: { customer: PortalCustomer;
           </table>
         </div>
       </Card>
+      {autopay === "done" && (
+        <p className="rounded-xl bg-green-50 border border-green-200 text-green-900 px-4 py-3 text-sm" role="status">
+          Thanks, autopay is set up. Stripe emails your receipt. It can take a minute to show below.
+        </p>
+      )}
+      {autopay === "error" && (
+        <p className="rounded-xl bg-red-50 border border-red-200 text-red-900 px-4 py-3 text-sm" role="alert">
+          We couldn&apos;t open the payment page. Please try again, or call or text us at {contact.phone}.
+        </p>
+      )}
+      {unbilled.length > 0 && (
+        <Card>
+          <h2 className="font-semibold">Set up autopay</h2>
+          <p className="mt-1 text-sm">
+            Add a card or bank account once for {unbilled.length === 1 ? unbilled[0].address.street : `${unbilled.length} properties`} ({money(unbilledTotal)}/month). You&apos;ll pay
+            for the rest of this month now, then it&apos;s charged automatically on the 1st of each month. Payments are handled securely by Stripe.
+          </p>
+          {preview ? (
+            <p className="mt-2 text-sm" style={{ color: P.muted }}>Preview: the button is hidden here.</p>
+          ) : (
+            <form action={startAutopay} className="mt-3">
+              <button className="rounded-full text-white font-semibold px-5 py-2.5" style={{ backgroundColor: P.tealDark }}>Set up autopay</button>
+            </form>
+          )}
+        </Card>
+      )}
       <Card>
         <h2 className="font-semibold">Payments</h2>
-        {payments.enabled && payments.portalUrl && customer.stripe_customer_id ? (
+        {onAutopay.length > 0 ? (
           <p className="mt-1 text-sm">
-            Update your card, see receipts or cancel in <a href={payments.portalUrl} className="underline font-semibold" style={{ color: P.tealDark }}>billing settings</a>. Sign in there with this same email.
+            {onAutopay.length === billed.length ? "Your properties are" : `${onAutopay.length} of your properties are`} on autopay, charged on the 1st of each month. Stripe emails each receipt.
+            {payments.portalUrl && customer.stripe_customer_id && (
+              <>
+                {" "}Update your card or see past invoices in <a href={payments.portalUrl} className="underline font-semibold" style={{ color: P.tealDark }}>billing settings</a> (sign in with this same email).
+              </>
+            )}
           </p>
         ) : (
-          <p className="mt-1 text-sm">You&apos;re billed monthly with autopay, and receipts come by email. For billing questions, call or text us at {contact.phone}.</p>
+          <p className="mt-1 text-sm">For billing questions, call or text us at {contact.phone}.</p>
         )}
       </Card>
     </>
