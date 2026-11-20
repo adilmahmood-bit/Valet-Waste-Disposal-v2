@@ -10,6 +10,7 @@ const tabs = [
   { label: "Routes", href: "/admin/residential" },
   { label: "Roll-ins", href: "/admin/residential/crew" },
   { label: "Customers", href: "/admin/residential/customers" },
+  { label: "Requests", href: "/admin/residential/requests" },
   { label: "Quotes", href: "/admin/residential/quotes" },
   { label: "Waitlist", href: "/admin/residential/waitlist" },
   { label: "Holiday shifts", href: "/admin/residential/shifts" },

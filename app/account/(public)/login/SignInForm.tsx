@@ -1,6 +1,6 @@
 "use client";
 import { useActionState } from "react";
-import { sendLink } from "../actions";
+import { sendLink } from "@/app/account/actions";
 
 export default function SignInForm() {
   const [state, action, pending] = useActionState(sendLink, null);

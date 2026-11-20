@@ -87,7 +87,8 @@ export async function loadPortal(customerId: string): Promise<PortalProperty[]> 
 
     // Next pickups from today on, after holiday shifts, inside the plan's dates.
     const upcoming: UpcomingPickup[] = [];
-    const active = address.status === "active" || address.status === "paused" || address.status === "signed_up";
+    // A signed-up property only has pickups once its start date is set.
+    const active = address.status === "active" || address.status === "paused" || (address.status === "signed_up" && !!sub?.start_date);
     if (active) {
       for (let w = 0; upcoming.length < UPCOMING && w < UPCOMING + 10; w++) {
         const week = addDays(weekStart(today), 7 * w);

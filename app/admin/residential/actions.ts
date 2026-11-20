@@ -12,6 +12,7 @@ import { routificConfigured } from "@/lib/residential/routific";
 import { addOneOff, pushRollouts, removeOrders, syncRoutific, type OneOffKind } from "@/lib/residential/routific-sync";
 import { saveVisitPhoto } from "@/lib/residential/photos";
 import { notifyVisit } from "@/lib/residential/visit-notify";
+import { acceptRequest, declineRequest } from "@/lib/residential/portal-requests";
 
 const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
@@ -250,4 +251,33 @@ export async function addOneOffStop(f: FormData) {
     failed = true;
   }
   back(date, note, failed);
+}
+
+// ---------- portal requests ----------
+
+const toRequests = (msg: string, error = false) =>
+  redirect(`/admin/residential/requests?${error ? "err" : "msg"}=${encodeURIComponent(msg.slice(0, 400))}`);
+
+export async function acceptPortalRequest(f: FormData) {
+  await requireAdmin();
+  const id = s(f, "id");
+  const date = s(f, "date");
+  const start = s(f, "start");
+  const end = s(f, "end");
+  let note: string;
+  let failed = false;
+  try {
+    await acceptRequest(id, date ? { date, start, end } : undefined);
+    note = "Accepted and applied.";
+  } catch (e) {
+    note = e instanceof Error ? e.message : String(e);
+    failed = true;
+  }
+  toRequests(note, failed);
+}
+
+export async function declinePortalRequest(f: FormData) {
+  await requireAdmin();
+  await declineRequest(s(f, "id"), s(f, "note") || null);
+  toRequests("Declined.");
 }
