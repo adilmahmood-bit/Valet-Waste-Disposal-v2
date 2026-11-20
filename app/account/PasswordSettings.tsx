@@ -1,6 +1,6 @@
 "use client";
 import { useActionState, useState } from "react";
-import { deletePassword, savePassword } from "./actions";
+import { savePassword } from "./actions";
 
 export default function PasswordSettings({ email, hasPassword, minLength }: { email: string; hasPassword: boolean; minLength: number }) {
   const [state, action, pending] = useActionState(savePassword, null);
@@ -11,9 +11,7 @@ export default function PasswordSettings({ email, hasPassword, minLength }: { em
     <section className="rounded-2xl bg-white border border-slate-200 p-5">
       <h2 className="text-lg font-bold">Password</h2>
       <p className="mt-2 text-slate-700">
-        {hasPassword
-          ? "You can sign in with your email and password, or with an email link."
-          : "Optional. You sign in with an email link now. Add a password if you'd rather type one."}
+        You sign in with your email and password. Forgot it? Use &ldquo;Email me a sign-in link&rdquo; on the sign-in page, then set a new one.
       </p>
       {state?.done && (
         <p className="mt-3 rounded-xl bg-green-50 border border-green-200 p-3 text-green-900" role="status">
@@ -45,11 +43,6 @@ export default function PasswordSettings({ email, hasPassword, minLength }: { em
           <button onClick={() => setOpen(true)} className="rounded-full border-2 border-res-navy px-5 py-2 font-semibold hover:bg-res-navy hover:text-white">
             {hasPassword ? "Change password" : "Add a password"}
           </button>
-          {hasPassword && (
-            <form action={deletePassword}>
-              <button className="rounded-full px-4 py-2.5 font-semibold text-red-700">Remove password</button>
-            </form>
-          )}
         </div>
       )}
     </section>

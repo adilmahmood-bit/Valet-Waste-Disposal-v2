@@ -6,8 +6,9 @@ import { SITE } from "@/lib/blog";
 import { db, must, type CustomerRow } from "./db";
 import { sendEmail } from "./email";
 
-// Customer portal (/account) sign-in: no passwords. A customer types the email on their
-// account, we email a one-time link, and opening it starts a session. The link page asks for
+// Customer portal (/account) sign-in: email + password. The first time (or after forgetting
+// the password), a customer types the email on their account, we email a one-time link, and
+// opening it starts a session; /account then makes them create a password. The link page asks for
 // a click before signing in, because email scanners open links on their own and would
 // otherwise use up the token. Only SHA-256 hashes of tokens are stored.
 
@@ -107,9 +108,9 @@ async function startSession(customerId: string) {
   });
 }
 
-// ---------- optional passwords ----------
-// Passwords are optional: emailed links always work, and are how a forgotten password is
-// replaced. Hashes are scrypt with a random salt, stored as scrypt$N$r$p$salt$hash.
+// ---------- passwords ----------
+// Every customer has a password (required after their first sign-in). Emailed links are for
+// the first sign-in and for a forgotten password. Hashes are scrypt with a random salt, stored as scrypt$N$r$p$salt$hash.
 
 export const PASSWORD_MIN = 10;
 const MAX_FAILED = 5;
@@ -135,6 +136,18 @@ async function passwordMatchesHash(password: string, stored: string) {
   const actual = await scryptAsync(password, Buffer.from(salt, "base64"), Number(N), Number(r), Number(p), expected.length);
   return timingSafeEqual(actual, expected);
 }
+
+// Why a new password can't be used, or null if it's fine.
+export function passwordProblem(password: string, confirm: string, email: string) {
+  if (password.length < PASSWORD_MIN) return `Use at least ${PASSWORD_MIN} characters for your password.`;
+  if (password.length > 200) return "That password is too long.";
+  if (password !== confirm) return "The two passwords don't match.";
+  if (password.trim().toLowerCase() === email.trim().toLowerCase()) return "Don't use your email as your password.";
+  return null;
+}
+
+// The stored form of a password chosen at sign-up (a brand-new account only).
+export const hashNewPassword = (password: string) => hashPassword(password);
 
 // A fixed hash to check against when the email has no account or no password, so the
 // answer takes the same time either way.
@@ -191,10 +204,6 @@ export async function setPassword(customer: CustomerRow, password: string) {
       `If this wasn't you, call or text us right away at ${residential.contact.phone}.`,
     ].join("\n"),
   );
-}
-
-export async function removePassword(customer: CustomerRow) {
-  must(await db().from("res_customers").update({ password_hash: null, password_set_at: null }).eq("id", customer.id));
 }
 
 async function endOtherSessions(customerId: string) {

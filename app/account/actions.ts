@@ -6,8 +6,7 @@ import { addTeamMember, createRequest, overflowEstimate, removeTeamMember } from
 import { clientCheckoutUrl } from "@/lib/residential/client-billing";
 import { SITE } from "@/lib/blog";
 import {
-  PASSWORD_MIN,
-  removePassword,
+  passwordProblem,
   requestSignInLink,
   requireCustomer,
   setPassword,
@@ -32,8 +31,8 @@ export async function sendLink(_prev: FormState, form: FormData): Promise<FormSt
 
 export async function passwordSignIn(_prev: FormState, form: FormData): Promise<FormState> {
   const result = await signInWithPassword(String(form.get("email") ?? ""), String(form.get("password") ?? ""));
-  if (result === "locked") return { error: "Too many tries. Wait 15 minutes, or sign in with an email link instead." };
-  if (result === "wrong") return { error: "That email and password don't match. You can also sign in with an email link." };
+  if (result === "locked") return { error: "Too many tries. Wait 15 minutes, or use “Email me a sign-in link” below." };
+  if (result === "wrong") return { error: "That email and password don't match. First time, or forgot your password? Use “Email me a sign-in link” below." };
   redirect("/account");
 }
 
@@ -42,23 +41,28 @@ export async function confirmSignIn(form: FormData) {
   redirect(ok ? "/account" : "/account/login?expired=1");
 }
 
-export async function savePassword(_prev: FormState, form: FormData): Promise<FormState> {
+async function passwordFromForm(form: FormData) {
   const customer = await requireCustomer();
   const password = String(form.get("password") ?? "");
-  const confirm = String(form.get("confirm") ?? "");
-  if (password.length < PASSWORD_MIN) return { error: `Use at least ${PASSWORD_MIN} characters.` };
-  if (password.length > 200) return { error: "That password is too long." };
-  if (password !== confirm) return { error: "The two passwords don't match." };
-  if (password.trim().toLowerCase() === customer.email) return { error: "Don't use your email as your password." };
+  const problem = passwordProblem(password, String(form.get("confirm") ?? ""), customer.email);
+  if (problem) return { error: problem };
   await setPassword(customer, password);
+  return null;
+}
+
+// Changing the password from the portal.
+export async function savePassword(_prev: FormState, form: FormData): Promise<FormState> {
+  const problem = await passwordFromForm(form);
+  if (problem) return problem;
   revalidatePath("/account");
   return { done: true };
 }
 
-export async function deletePassword() {
-  const customer = await requireCustomer();
-  await removePassword(customer);
-  revalidatePath("/account");
+// The required first password (/account/welcome), then on to the portal.
+export async function createPassword(_prev: FormState, form: FormData): Promise<FormState> {
+  const problem = await passwordFromForm(form);
+  if (problem) return problem;
+  redirect("/account");
 }
 
 export async function saveAlerts(form: FormData) {

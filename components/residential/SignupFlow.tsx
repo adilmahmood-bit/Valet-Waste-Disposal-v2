@@ -19,6 +19,8 @@ type Form = {
   name: string;
   mobile: string;
   email: string;
+  password: string;
+  confirm: string;
   source: string;
   referralCode: string;
   termsAccepted: boolean;
@@ -36,6 +38,9 @@ function savedContact(addAnother?: boolean): Partial<Form> {
     return {};
   }
 }
+
+// Same minimum as the account's password rules (lib/residential/portal-auth.ts).
+const PASSWORD_MIN = 10;
 
 const input = "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base focus:border-res-teal focus:outline-none";
 const label = "block text-sm font-semibold mb-1.5";
@@ -62,6 +67,8 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
     name: "",
     mobile: "",
     email: "",
+    password: "",
+    confirm: "",
     source: props.source ?? "",
     referralCode: props.referralCode ?? "",
     termsAccepted: false,
@@ -78,6 +85,7 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
 
   const next = (e: React.FormEvent) => {
     e.preventDefault();
+    if (step === 3 && f.password !== f.confirm) return; // the mismatch note is already showing
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
     window.scrollTo({ top: 0 });
   };
@@ -275,6 +283,37 @@ export default function SignupFlow(props: { zip?: string; plan?: string; source?
           <div>
             <label htmlFor="email" className={label}>Email</label>
             <input id="email" required type="email" autoComplete="email" value={f.email} onChange={(e) => set("email", e.target.value)} className={input} />
+          </div>
+          <div>
+            <label htmlFor="password" className={label}>Create a password</label>
+            <input
+              id="password"
+              type="password"
+              required={!props.addAnother}
+              minLength={PASSWORD_MIN}
+              autoComplete="new-password"
+              value={f.password}
+              onChange={(e) => set("password", e.target.value)}
+              className={input}
+            />
+            <p className="mt-1 text-xs text-slate-500">
+              At least {PASSWORD_MIN} characters. You&apos;ll use it with your email to sign in to your account.
+              {props.addAnother && " Already have an account with us? Leave this blank."}
+            </p>
+          </div>
+          <div>
+            <label htmlFor="confirm" className={label}>Type the password again</label>
+            <input
+              id="confirm"
+              type="password"
+              required={!props.addAnother || f.password !== ""}
+              minLength={PASSWORD_MIN}
+              autoComplete="new-password"
+              value={f.confirm}
+              onChange={(e) => set("confirm", e.target.value)}
+              className={input}
+            />
+            {f.confirm !== "" && f.confirm !== f.password && <p className="mt-1 text-sm text-red-600">The two passwords don&apos;t match yet.</p>}
           </div>
           <div>
             <label htmlFor="source" className={label}>How did you hear about us? <span className="font-normal text-slate-500">(optional)</span></label>

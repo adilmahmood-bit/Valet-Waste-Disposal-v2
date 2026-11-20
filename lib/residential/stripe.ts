@@ -1,5 +1,7 @@
 import Stripe from "stripe";
 import { residential, isPromoCode, promoOn, type Plan } from "@/config/residential";
+import { cityHolidayShifts } from "./holidays";
+import { addDays, effectivePickup, fullDayName, todaySD, weekStart } from "./schedule";
 
 // Server-only Stripe client. Prices are looked up by the lookup keys that
 // scripts/stripe-setup.mjs creates (res_<plan id>, res_extra_bin), so the catalog lives in Stripe
@@ -137,24 +139,41 @@ async function bankDebitConfig() {
   return (configs.find((c) => ach(c) && c.is_default) ?? configs.find(ach))?.id ?? null;
 }
 
-export type ClientLine = { addressId: string; street: string; city: string; monthly: number; startDate: string | null };
+export type ClientLine = {
+  addressId: string;
+  street: string;
+  city: string;
+  zip: string;
+  trashDay: string;
+  monthly: number;
+  startDate: string | null;
+};
 
-// This month's share for each property, counted from its first service day (or today if it has
-// none) to the end of the month. A property starting next month or later owes nothing yet.
+// This month's share for each property, by pickups: the monthly rate times the share of this
+// month's weekly pickups on or after its first service day (or today if it has none). E.g. a
+// Monday property starting Nov 23 pays 2 of November's 5 Mondays. A holiday shift moves a
+// pickup but doesn't add or drop one. A property starting next month or later owes nothing yet.
 export function firstMonthCharges(lines: ClientLine[], now = new Date()) {
-  const today = now.toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" }); // YYYY-MM-DD
-  const [y, m] = today.split("-").map(Number);
-  const monthStart = `${today.slice(0, 7)}-01`;
-  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
-  const monthName = new Date(Date.UTC(y, m - 1, 15)).toLocaleString("en-US", { month: "long", timeZone: "UTC" });
+  const today = todaySD(now);
+  const month = today.slice(0, 7);
+  const monthName = new Date(`${month}-15T00:00:00Z`).toLocaleString("en-US", { month: "long", timeZone: "UTC" });
   return lines.flatMap((l) => {
-    let from = l.startDate ?? today;
-    if (from.slice(0, 7) > today.slice(0, 7)) return [];
-    if (from < monthStart) from = monthStart;
-    const day = Number(from.slice(8, 10));
-    const days = daysInMonth - day + 1;
-    const cents = Math.round((l.monthly * 100 * days) / daysInMonth);
-    return cents > 0 ? [{ line: l, cents, label: `${monthName} ${day}–${daysInMonth} (${days} days): ${l.street}, ${l.city}` }] : [];
+    const from = l.startDate ?? today;
+    if (from.slice(0, 7) > month) return [];
+    const shifts = cityHolidayShifts(l.city, Number(month.slice(0, 4)));
+    // Every week whose regular trash day falls in this month, and where that week's pickup lands.
+    const pickups: { nominal: string; actual: string }[] = [];
+    for (let w = weekStart(`${month}-01`); w.slice(0, 7) <= month; w = addDays(w, 7)) {
+      const nominal = effectivePickup(l.trashDay, l.zip, w, []);
+      if (nominal.slice(0, 7) === month) pickups.push({ nominal, actual: effectivePickup(l.trashDay, l.zip, w, shifts) });
+    }
+    const served = pickups.filter((p) => p.actual >= from);
+    if (!pickups.length || !served.length) return [];
+    const cents = Math.round((l.monthly * 100 * served.length) / pickups.length);
+    const day = fullDayName(l.trashDay);
+    const firstOn = new Date(`${served[0].actual}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+    const label = `${monthName}: ${served.length} of ${pickups.length} ${day} pickups, from ${firstOn}: ${l.street}, ${l.city}`;
+    return [{ line: l, cents, label }];
   });
 }
 

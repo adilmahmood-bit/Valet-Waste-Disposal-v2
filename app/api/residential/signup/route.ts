@@ -20,6 +20,7 @@ import { sendEmail } from "@/lib/residential/email";
 import { ensureStripeCustomer, createCheckout } from "@/lib/residential/stripe";
 import { cleanCode, normalizeSource } from "@/lib/residential/tracking";
 import { clientIp, formContext, isEmail, splitName, str } from "@/lib/residential/request";
+import { hashNewPassword, passwordProblem } from "@/lib/residential/portal-auth";
 
 // The public origin for Stripe's return links. NEXT_PUBLIC_SITE_URL wins, because behind
 // Hostinger's proxy the request URL may not be the public one.
@@ -66,6 +67,16 @@ async function handle(req: NextRequest) {
 
   // One customer per email; a host adding a second property reuses it. First-touch source wins.
   const existing = must(await db().from("res_customers").select("*").eq("email", email).maybeSingle()) as CustomerRow | null;
+  // A new account picks its password here. An existing email keeps its own: the sign-up form
+  // can't prove who's typing, so it never sets or changes the password of an account that
+  // already exists (they sign in by emailed link and create one there if they have none).
+  let passwordHash: string | null = null;
+  if (!existing) {
+    const password = typeof b.password === "string" ? b.password : "";
+    const problem = passwordProblem(password, typeof b.confirm === "string" ? b.confirm : "", email);
+    if (problem) return bad(problem);
+    passwordHash = await hashNewPassword(password);
+  }
   let customerId: string;
   if (existing) {
     customerId = existing.id;
@@ -79,7 +90,16 @@ async function handle(req: NextRequest) {
     const row = must(
       await db()
         .from("res_customers")
-        .insert({ name, mobile, email, property_type: propertyType, source: source || null, referral_code: referralCode || null })
+        .insert({
+          name,
+          mobile,
+          email,
+          property_type: propertyType,
+          source: source || null,
+          referral_code: referralCode || null,
+          password_hash: passwordHash,
+          password_set_at: new Date().toISOString(),
+        })
         .select("id")
         .single(),
     ) as { id: string };
