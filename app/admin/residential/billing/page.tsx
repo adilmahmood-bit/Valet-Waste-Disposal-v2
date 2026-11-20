@@ -25,7 +25,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
       <div>
         <h1 className="text-2xl font-bold">Billing</h1>
         <p className="text-sm text-slate-600">
-          Each customer pays through Stripe autopay: one subscription with a line per active property at its rate. The first payment covers this month from each property&apos;s first service day (whenever they pay);
+          Each customer pays through Stripe autopay: one subscription with a line per active property at its rate. The first payment covers this month&apos;s pickups from each property&apos;s first service day (e.g. 2 of 5 Mondays), whenever they pay;
           after that Stripe charges on the 1st. Stripe is in <strong>{live ? "live" : "test"}</strong> mode.
         </p>
       </div>

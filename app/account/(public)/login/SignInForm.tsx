@@ -17,7 +17,7 @@ export default function SignInForm() {
     );
 
   return (
-    <form action={action} className="mt-6 space-y-3">
+    <form action={action} className="mt-4 space-y-3">
       <label htmlFor="email" className="block text-sm font-semibold">Email</label>
       <input
         id="email"
@@ -29,7 +29,7 @@ export default function SignInForm() {
         className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
       />
       {state?.error && <p className="text-sm text-red-700" role="alert">{state.error}</p>}
-      <button disabled={pending} className="w-full rounded-full bg-res-teal-dark hover:bg-res-teal text-white font-semibold py-3 disabled:opacity-60">
+      <button disabled={pending} className="w-full rounded-full border-2 border-res-navy font-semibold py-2.5 hover:bg-res-navy hover:text-white disabled:opacity-60">
         {pending ? "Sending…" : "Email me a sign-in link"}
       </button>
     </form>
