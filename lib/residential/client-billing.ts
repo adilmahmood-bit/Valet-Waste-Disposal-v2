@@ -73,7 +73,8 @@ export async function linesForAddresses(customerId: string, addressIds: string[]
 // Makes (or reuses) the Stripe customer and returns a Checkout link for one billing account's
 // unbilled properties. Without a group: the only account that needs one (an error if several do).
 export async function clientCheckoutUrl(customerId: string, returnUrl: string, group?: string | null) {
-  const c = must(await db().from("res_customers").select("*").eq("id", customerId).single()) as CustomerRow;
+  const c = must(await db().from("res_customers").select("*").eq("id", customerId).single()) as CustomerRow & { billing_method?: string };
+  if (c.billing_method === "bank_transfer") throw new Error("This customer pays by bank transfer (ACH or wire), not through Stripe.");
   const lines = await unbilledLines(customerId, group);
   if (group === undefined && new Set((await propertiesOf(customerId)).filter((r) => lines.some((l) => l.addressId === r.id)).map(groupOf)).size > 1) {
     throw new Error("This customer has separately billed accounts; make a link for each one.");
@@ -124,8 +125,8 @@ export async function billingAccounts(customerId: string) {
 // For the admin Billing page: every customer with properties, and where their billing stands.
 export async function billingOverview() {
   const customers = must(
-    await db().from("res_customers").select("id, name, email, stripe_customer_id").order("name"),
-  ) as { id: string; name: string; email: string; stripe_customer_id: string | null }[];
+    await db().from("res_customers").select("id, name, email, stripe_customer_id, billing_method").order("name"),
+  ) as { id: string; name: string; email: string; stripe_customer_id: string | null; billing_method: "stripe" | "bank_transfer" }[];
   const out = [];
   for (const c of customers) {
     const props = await propertiesOf(c.id);

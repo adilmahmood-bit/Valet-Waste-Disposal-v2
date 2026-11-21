@@ -65,7 +65,9 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                   ) : (
                     <span />
                   )}
-                  {a.unbilled > 0 ? (
+                  {c.billing_method === "bank_transfer" ? (
+                    <span className="text-sm font-medium text-slate-700">Pays by bank transfer (ACH or wire), outside Stripe</span>
+                  ) : a.unbilled > 0 ? (
                     <form action={makeClientPaymentLink}>
                       <input type="hidden" name="customer_id" value={c.id} />
                       <input type="hidden" name="group" value={a.group ?? ""} />
@@ -85,6 +87,8 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                     <td className="py-1.5 text-right">
                       {r.stripeSub ? (
                         <a href={dash(`subscriptions/${r.stripeSub}`)} target="_blank" rel="noopener noreferrer" className="underline text-emerald-800">Autopay ({r.billing})</a>
+                      ) : r.status === "active" && c.billing_method === "bank_transfer" ? (
+                        <span className="text-slate-600">Bank transfer</span>
                       ) : r.status === "active" ? (
                         <span className="text-amber-800">Not set up</span>
                       ) : (

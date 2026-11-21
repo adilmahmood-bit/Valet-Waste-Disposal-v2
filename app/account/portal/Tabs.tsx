@@ -184,8 +184,20 @@ export function BillingTab({ customer, properties, autopay, preview }: { custome
           We couldn&apos;t open the payment page. Please try again, or call or text us at {contact.phone}.
         </p>
       )}
+      {customer.billing_method === "bank_transfer" && (
+        <Card>
+          <h2 className="font-semibold">How you pay</h2>
+          <p className="mt-1 text-sm">
+            You pay by bank transfer (ACH or wire), set up as a recurring payment from your bank: {money(total)} due on the 1st of each month for that month&apos;s service.
+            When you add or remove a property, we&apos;ll email you the new monthly total before the next 1st.
+          </p>
+          <p className="mt-2 text-sm" style={{ color: P.muted }}>
+            Only use the bank details we gave you in writing. If anyone asks you to pay a different account, call us at {contact.phone} first.
+          </p>
+        </Card>
+      )}
       {accounts
-        .filter((a) => a.unbilled.length > 0)
+        .filter((a) => customer.billing_method !== "bank_transfer" && a.unbilled.length > 0)
         .map((a) => (
           <Card key={a.group ?? ""}>
             <h2 className="font-semibold">Set up autopay{a.name ? `: ${a.name}` : ""}</h2>
