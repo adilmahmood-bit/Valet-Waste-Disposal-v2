@@ -147,6 +147,8 @@ export type ClientLine = {
   trashDay: string;
   monthly: number;
   startDate: string | null;
+  // A custom first-month amount Adil set (e.g. one week of service); null = prorate by pickups.
+  firstMonthCharge?: number | null;
 };
 
 // This month's share for each property, by pickups: the monthly rate times the share of this
@@ -160,6 +162,11 @@ export function firstMonthCharges(lines: ClientLine[], now = new Date()) {
   return lines.flatMap((l) => {
     const from = l.startDate ?? today;
     if (from.slice(0, 7) > month) return [];
+    if (l.firstMonthCharge != null) {
+      const cents = Math.round(l.firstMonthCharge * 100);
+      const on = new Date(`${from}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+      return cents > 0 ? [{ line: l, cents, label: `${monthName}, from ${on}: ${l.street}, ${l.city}` }] : [];
+    }
     const shifts = cityHolidayShifts(l.city, Number(month.slice(0, 4)));
     // Every week whose regular trash day falls in this month, and where that week's pickup lands.
     const pickups: { nominal: string; actual: string }[] = [];

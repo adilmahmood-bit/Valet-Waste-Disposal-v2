@@ -42,7 +42,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
       <ul className="space-y-3">
         {rows.map((c) => (
           <li key={c.id} className={`${card} p-4`}>
-            <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
               <div>
                 <p className="font-semibold">{c.name}</p>
                 <p className="text-sm text-slate-600">
@@ -54,18 +54,32 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                   )}
                 </p>
               </div>
-              {c.unbilled > 0 ? (
-                <form action={makeClientPaymentLink}>
-                  <input type="hidden" name="customer_id" value={c.id} />
-                  <button className={btn}>Make autopay link ({c.unbilled})</button>
-                </form>
-              ) : (
-                <span className="text-sm text-slate-500">{c.rows.some((r) => r.stripeSub) ? "All active properties on autopay" : "No active properties to bill"}</span>
-              )}
             </div>
+            {c.accounts.map((a) => (
+              <div key={a.group ?? ""} className={c.accounts.length > 1 ? "mt-4 rounded-xl border border-slate-200 p-3" : ""}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  {c.accounts.length > 1 ? (
+                    <p className="text-sm font-semibold">
+                      {a.group ?? "Main account"} · {money(a.monthly)}/month
+                    </p>
+                  ) : (
+                    <span />
+                  )}
+                  {c.billing_method === "bank_transfer" ? (
+                    <span className="text-sm font-medium text-slate-700">Pays by bank transfer (ACH or wire), outside Stripe</span>
+                  ) : a.unbilled > 0 ? (
+                    <form action={makeClientPaymentLink}>
+                      <input type="hidden" name="customer_id" value={c.id} />
+                      <input type="hidden" name="group" value={a.group ?? ""} />
+                      <button className={btn}>Make autopay link ({a.unbilled})</button>
+                    </form>
+                  ) : (
+                    <span className="text-sm text-slate-500">{a.rows.some((r) => r.stripeSub) ? "All active properties on autopay" : "No active properties to bill"}</span>
+                  )}
+                </div>
             <table className="mt-3 w-full text-sm">
               <tbody>
-                {c.rows.map((r) => (
+                {a.rows.map((r) => (
                   <tr key={r.id} className="border-t border-slate-100">
                     <td className="py-1.5 pr-2">{r.street}, {r.city}</td>
                     <td className="py-1.5 pr-2"><Badge value={r.status} /></td>
@@ -73,6 +87,8 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                     <td className="py-1.5 text-right">
                       {r.stripeSub ? (
                         <a href={dash(`subscriptions/${r.stripeSub}`)} target="_blank" rel="noopener noreferrer" className="underline text-emerald-800">Autopay ({r.billing})</a>
+                      ) : r.status === "active" && c.billing_method === "bank_transfer" ? (
+                        <span className="text-slate-600">Bank transfer</span>
                       ) : r.status === "active" ? (
                         <span className="text-amber-800">Not set up</span>
                       ) : (
@@ -83,6 +99,8 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                 ))}
               </tbody>
             </table>
+              </div>
+            ))}
           </li>
         ))}
       </ul>

@@ -289,12 +289,13 @@ export async function declinePortalRequest(f: FormData) {
 export async function makeClientPaymentLink(f: FormData) {
   await requireAdmin();
   const id = s(f, "customer_id");
+  const group = String(f.get("group") ?? "") || null;
   const c = must(await db().from("res_customers").select("name").eq("id", id).single()) as { name: string };
   let to: string;
   try {
     const base = process.env.NODE_ENV === "production" ? SITE : "http://localhost:3000";
-    const { url } = await clientCheckoutUrl(id, `${base}/account?tab=billing`);
-    to = `/admin/residential/billing?link=${encodeURIComponent(url)}&for=${encodeURIComponent(c.name)}`;
+    const { url } = await clientCheckoutUrl(id, `${base}/account?tab=billing`, group);
+    to = `/admin/residential/billing?link=${encodeURIComponent(url)}&for=${encodeURIComponent(group ? `${c.name}: ${group}` : c.name)}`;
   } catch (e) {
     to = `/admin/residential/billing?err=${encodeURIComponent((e instanceof Error ? e.message : String(e)).slice(0, 300))}`;
   }

@@ -217,7 +217,7 @@ async function endOtherSessions(customerId: string) {
 
 // Customer fields the portal uses. Password fields are never loaded here.
 const CUSTOMER_COLUMNS =
-  "id, name, mobile, email, property_type, source, referral_code, hubspot_contact_id, hubspot_synced_at, stripe_customer_id, created_at, password_set_at, overflow_first_can, overflow_per_bag, alert_out, alert_back, my_referral_code";
+  "id, name, mobile, email, property_type, source, referral_code, hubspot_contact_id, hubspot_synced_at, stripe_customer_id, created_at, password_set_at, overflow_first_can, overflow_per_bag, alert_out, alert_back, my_referral_code, billing_method";
 
 export type PortalCustomer = CustomerRow & {
   password_set_at: string | null;
@@ -226,6 +226,7 @@ export type PortalCustomer = CustomerRow & {
   alert_out: boolean;
   alert_back: boolean;
   my_referral_code: string | null;
+  billing_method: "stripe" | "bank_transfer"; // bank_transfer = pays by their own recurring ACH/wire, no Stripe
 };
 
 // The signed-in customer, or null.

@@ -165,13 +165,15 @@ export async function removeTeamMemberAction(f: FormData) {
 
 // ---------- Stripe autopay ----------
 
-// Sends the signed-in customer to Stripe to add a card or bank account for their properties.
-export async function startAutopay() {
+// Sends the signed-in customer to Stripe to add a card or bank account for one billing account
+// (the form's "group"; blank = their main account).
+export async function startAutopay(f: FormData) {
   const c = await requireCustomer();
   const base = process.env.NODE_ENV === "production" ? SITE : "http://localhost:3000";
+  const group = String(f.get("group") ?? "") || null;
   let url: string;
   try {
-    url = (await clientCheckoutUrl(c.id, `${base}/account?tab=billing`)).url;
+    url = (await clientCheckoutUrl(c.id, `${base}/account?tab=billing`, group)).url;
   } catch (e) {
     console.error("[account] autopay checkout failed", e);
     redirect("/account?tab=billing&autopay=error");
