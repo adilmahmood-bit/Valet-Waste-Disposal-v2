@@ -9,6 +9,9 @@ export type CollectionRules = {
   carts?: string; // which carts and how often, and whether they're collected the same day
   setOut?: string; // earliest / latest time carts go out
   bringIn?: string; // when carts must come back in
+  // setOut and bringIn as one sentence, for city pages (Adil, 2026-11-23). Only where there's a
+  // bring-in time; the account portal still shows setOut and bringIn separately.
+  setOutAndIn?: string;
   placement?: string; // where carts go at the curb
   holidays?: string; // how holidays shift pickup
   bulky?: string; // bulky items and mattresses: whether the hauler picks them up, how, and what it costs
@@ -45,6 +48,16 @@ export type TrashCollector = {
   rules: CollectionRules;
   // Official page or flyer for the bulky item rule, linked after it on the city page.
   bulkyLink?: { href: string; label: string };
+  // Short version of rules.bulky for the bulky item table on /residential/trash-day. Keep the two in step.
+  bulkySummary?: BulkySummary;
+};
+
+// One row of the bulky item table: short cells, only what the hauler's page states.
+export type BulkySummary = {
+  curbside: boolean; // does the hauler pick bulky items up at the curb
+  cost: string; // "Free, 3 a year, up to 5 items each", "Extra fee", etc.
+  free?: boolean; // highlights the cost cell
+  mattresses: string; // "Yes, wrapped in plastic", "Ask EDCO", etc.
 };
 
 export const sixHolidays: Holiday[] = ["newYears", "memorial", "independence", "labor", "thanksgiving", "christmas"];
@@ -63,6 +76,8 @@ const sanDiego: TrashCollector = {
       "Gray trash and green organics carts are collected every week, and light blue recycling every other week on the same day as your trash, between 6 a.m. and 5:30 p.m. Bag loose trash. Don't put organics or recycling in plastic bags, even ones labeled compostable.",
     setOut: "Carts must be at the curb or alley by 6 a.m. on collection day.",
     bringIn: "Carts must be brought back in by 6 p.m. the same day, and stored out of view from the street.",
+    setOutAndIn:
+      "Carts must be at the curb or alley by 6 a.m. on collection day and brought back in by 6 p.m. the same day, then stored out of view from the street.",
     placement: "Wheels against the curb and handles facing your home, about 3 feet from other carts, parked cars, poles, trees and mailboxes.",
     holidays:
       "No pickup on New Year's Day, Memorial Day, Labor Day, Thanksgiving or Christmas. Starting on the holiday, pickup is one day later for the rest of that week, so a Friday pickup moves to Saturday.",
@@ -75,6 +90,7 @@ const sanDiego: TrashCollector = {
     href: "https://www.sandiego.gov/environmental-services/recycling/residential/mattresses",
     label: "City of San Diego mattress drop-off",
   },
+  bulkySummary: { curbside: false, cost: "No pickup", mattresses: "Free drop-off at Miramar Landfill" },
 };
 
 // Sources: EDCO service-schedules page for each city, and EDCO's "Proper Cart Placement"
@@ -102,6 +118,8 @@ const edco = (
   sub: string,
   rules: CollectionRules = {},
   map?: TrashCollector["map"],
+  // EDCO's bulky pages don't mention mattresses, so the table says to ask.
+  bulkySummary: BulkySummary = { curbside: true, cost: "Extra fee", mattresses: "Ask EDCO" },
 ): TrashCollector => ({
   name: "EDCO",
   who: `Home trash, recycling and organics in ${city} are collected by EDCO, the city's contracted hauler.`,
@@ -115,6 +133,7 @@ const edco = (
     href: `https://${sub}.edcodisposal.com/residential-waste-services/curbside-pickup/bulky-item-pickup/`,
     label: `EDCO ${city} bulky item pickup`,
   },
+  bulkySummary,
 });
 
 // Maps from EDCO and the City of Del Mar, sent by Adil 2026-11-15.
@@ -133,6 +152,7 @@ export const trashCollectors: Record<string, TrashCollector> = {
       carts: "Trash and recycling are picked up every week, and trash, recycling and organics all go out on the same day.", // confirmed by Adil 2026-11-15
       setOut: "Carts must be at the street by 6 a.m. on your service day at the latest.",
       bringIn: "Carts must be off the street by 11 p.m. that day.",
+      setOutAndIn: "Carts must be at the street by 6 a.m. on your service day and off the street by 11 p.m. that day.",
       placement: "Wheels against the curb, with at least 2 feet between carts and 2 feet from parked cars, mailboxes and other obstacles. Keep carts out from under trees.",
       holidays:
         "WM observes New Year's Day, Memorial Day, Independence Day, Labor Day, Thanksgiving and Christmas. When one falls on a weekday, pickup for the rest of that week is one day later: after a Thursday holiday, Thursday pickup moves to Friday and Friday pickup moves to Saturday. Holidays on a Saturday or Sunday don't delay pickup.",
@@ -141,6 +161,7 @@ export const trashCollectors: Record<string, TrashCollector> = {
         "WM offers bulky item pickup. Schedule it from your My WM account, and WM gives you a price before booking. Mattresses and box springs are accepted but must be wrapped in plastic.",
     },
     bulkyLink: { href: "https://www.wm.com/us/en/home/bulk-trash-pickup", label: "WM bulk trash pickup" },
+    bulkySummary: { curbside: true, cost: "Price quoted before booking", mattresses: "Yes, wrapped in plastic" },
   },
   // Sources: republicservices.com/municipality/carlsbad-ca (checked 2026-11-15) and Republic's
   // Carlsbad Residential Service Guide (holiday page, set-out rules), confirmed by Adil 2026-11-15.
@@ -163,12 +184,14 @@ export const trashCollectors: Record<string, TrashCollector> = {
       bulky:
         "Each home gets three free bulky item pickups a year from Republic Services, with up to five items each time. Schedule it online from your Republic account. Mattresses and box springs are accepted if they're wrapped in plastic.",
     },
-    // Republic's Carlsbad page rather than the flyer PDF itself, which some browsers download
-    // instead of opening (Adil, 2026-11-23). The flyer is linked there as "Bulky Item Collection".
+    // Our copy of Republic's flyer (downloaded 2026-11-23 from republicservices.com/municipality/carlsbad-ca,
+    // "Bulky Item Collection"). Served from our site so it opens in the browser instead of downloading.
+    // Re-download it if Republic updates the flyer.
     bulkyLink: {
-      href: "https://www.republicservices.com/municipality/carlsbad-ca",
-      label: "Republic Services Carlsbad (see Bulky Item Collection)",
+      href: "/residential/flyers/carlsbad-bulky-item-pickup.pdf",
+      label: "Republic Services Carlsbad bulky item flyer (PDF)",
     },
+    bulkySummary: { curbside: true, cost: "Free, 3 a year, up to 5 items each", free: true, mattresses: "Yes, wrapped in plastic" },
   },
   encinitas,
   "cardiff-by-the-sea": { ...encinitas, who: "Cardiff-by-the-Sea is part of Encinitas, so home trash, recycling and organics are collected by EDCO, the city's contracted hauler." },
@@ -185,6 +208,7 @@ export const trashCollectors: Record<string, TrashCollector> = {
         "Each home gets three free bulky item pickups a year from EDCO, with up to five items each time. Request one through the contact form on EDCO Del Mar's website, and set items out by 6 a.m., usually on your regular collection day.",
     },
     { src: "/residential/trash-maps/del-mar.jpg", width: 1053, height: 736 },
+    { curbside: true, cost: "Free, 3 a year, up to 5 items each", free: true, mattresses: "Ask EDCO" },
   ),
   // Bulky: coronado.edcodisposal.com bulky-item-pickup page (checked 2026-11-23). No fee stated.
   coronado: edco(
@@ -195,6 +219,7 @@ export const trashCollectors: Record<string, TrashCollector> = {
         "EDCO picks up large household items, including mattresses, sofas and appliances, by special arrangement. Request a pickup through the contact form on EDCO Coronado's website. It doesn't cover construction or remodeling debris.",
     },
     { src: "/residential/trash-maps/coronado.jpg", width: 700, height: 357 },
+    { curbside: true, cost: "By arrangement", mattresses: "Yes" },
   ),
   // San Marcos and Vista added 2026-11-15; Adil confirmed EDCO serves both.
   "san-marcos": edco("San Marcos", "san-marcos", {}, { src: "/residential/trash-maps/san-marcos.jpg", width: 700, height: 506 }),
@@ -212,12 +237,11 @@ export const trashCollectors: Record<string, TrashCollector> = {
   "north-park": sanDiego,
 };
 
-// Order the rules show in on city pages. Holidays first (Adil, 2026-11-16).
+// Order the rules show in on city pages. Holidays first (Adil, 2026-11-16), bulky items second (2026-11-23).
 export const ruleLabels: [keyof CollectionRules, string][] = [
   ["holidays", "Holiday weeks"],
+  ["bulky", "Bulky items and mattresses pickup"],
   ["carts", "Carts"],
+  // Shows setOutAndIn where there is one. Bring-in time and "Where carts go" left off city pages (Adil, 2026-11-23).
   ["setOut", "Setting carts out"],
-  ["bringIn", "Bringing carts in"],
-  ["placement", "Where carts go"],
-  ["bulky", "Bulky items and mattresses"],
 ];

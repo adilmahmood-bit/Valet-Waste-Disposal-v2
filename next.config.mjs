@@ -12,6 +12,9 @@ const nextConfig = {
       // AI crawlers read /llms.txt directly; keep it out of search results so it
       // doesn't compete with the real pages.
       { source: "/llms.txt", headers: [{ key: "X-Robots-Tag", value: "noindex" }] },
+      // HSTS: browsers always use HTTPS for this host (one year). No includeSubDomains, so
+      // subdomains (mail etc.) aren't affected.
+      { source: "/:path*", headers: [{ key: "Strict-Transport-Security", value: "max-age=31536000" }] },
     ];
   },
   async redirects() {
