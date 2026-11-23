@@ -425,7 +425,9 @@ export default function TrashDayPage() {
           </dl>
 
           <section id="bulky" className="scroll-mt-4 mt-12">
-            <h2 className="text-2xl md:text-3xl font-bold">{bulkyFaq.q}</h2>
+            <h2 className="text-2xl md:text-3xl font-bold">
+              {bulkyFaq.q} Updated <time dateTime={updated}>{year}</time>
+            </h2>
             <p className="mt-3 text-slate-700">{bulkyFaq.a}</p>
             <h3 className="mt-6 font-semibold">Bulky item and mattress pickup by city</h3>
             <ul className="mt-2 divide-y divide-slate-200 border-y border-slate-200">
