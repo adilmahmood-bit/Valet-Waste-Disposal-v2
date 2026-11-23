@@ -71,6 +71,10 @@ const sanDiego: TrashCollector = {
     bulky:
       "The City of San Diego doesn't offer curbside bulky item pickup. Mattresses and box springs can be dropped off free at the Miramar Landfill mattress collection site, weekdays 7 a.m. to 3 p.m. For furniture and appliances, WasteFreeSD.org lists places that take them. Furniture, appliances and anything over 50 pounds can't go in your carts.",
   },
+  bulkyLink: {
+    href: "https://www.sandiego.gov/environmental-services/recycling/residential/mattresses",
+    label: "City of San Diego mattress drop-off",
+  },
 };
 
 // Sources: EDCO service-schedules page for each city, and EDCO's "Proper Cart Placement"
@@ -106,6 +110,11 @@ const edco = (
   holidaysObserved: sixHolidays,
   ...(map && { map }),
   rules: { ...edcoRules, ...rules },
+  // EDCO's site answers 403 to command-line checks; open it in a browser to verify (works, 2026-11-23).
+  bulkyLink: {
+    href: `https://${sub}.edcodisposal.com/residential-waste-services/curbside-pickup/bulky-item-pickup/`,
+    label: `EDCO ${city} bulky item pickup`,
+  },
 });
 
 // Maps from EDCO and the City of Del Mar, sent by Adil 2026-11-15.
@@ -131,6 +140,7 @@ export const trashCollectors: Record<string, TrashCollector> = {
       bulky:
         "WM offers bulky item pickup. Schedule it from your My WM account, and WM gives you a price before booking. Mattresses and box springs are accepted but must be wrapped in plastic.",
     },
+    bulkyLink: { href: "https://www.wm.com/us/en/home/bulk-trash-pickup", label: "WM bulk trash pickup" },
   },
   // Sources: republicservices.com/municipality/carlsbad-ca (checked 2026-11-15) and Republic's
   // Carlsbad Residential Service Guide (holiday page, set-out rules), confirmed by Adil 2026-11-15.

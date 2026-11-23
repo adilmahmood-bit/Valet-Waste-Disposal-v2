@@ -69,6 +69,35 @@ const faqs = [
   },
 ];
 
+// Bulky item pickup. The heading is the question people search ("free bulky item pickup San Diego"),
+// answered in the first lines so Google and AI tools can quote it. Keep the answer in step with the
+// bulky rules in trashDay.ts, which the per-city list below is built from.
+const bulkyFaq = {
+  q: "Is there free bulky item pickup in San Diego?",
+  a: "Not from the City of San Diego, which has no curbside bulky item pickup, but mattresses and box springs can be dropped off free at the Miramar Landfill. Elsewhere it depends on your hauler: Republic Services in Carlsbad and EDCO in Del Mar each give homes three free pickups a year, up to five items each time. EDCO charges a fee in Encinitas, Solana Beach, San Marcos and Vista and picks up by arrangement in Coronado, and WM in Oceanside quotes a price before you book.",
+};
+
+// One row per hauler area for the bulky list, grouped like the holiday table: the San Diego
+// neighborhoods share the City's row, and Cardiff is listed with Encinitas.
+type BulkyRow = { key: string; label: string; href: string; hauler: string; rule: string; link?: { href: string; label: string } };
+const bulkyRows: BulkyRow[] = (() => {
+  const rows: BulkyRow[] = [];
+  for (const c of cityPages) {
+    const col = trashCollectors[c.slug];
+    if (!col?.rules.bulky || c.slug === "cardiff-by-the-sea") continue;
+    if (col === trashCollectors["san-diego"] && c.slug !== "san-diego") continue;
+    rows.push({
+      key: c.slug,
+      label: c.slug === "encinitas" ? "Encinitas and Cardiff" : c.name,
+      href: `/residential/${c.slug}#trash-day`,
+      hauler: col.name,
+      rule: col.rules.bulky,
+      link: col.bulkyLink,
+    });
+  }
+  return rows.sort((a, b) => a.label.localeCompare(b.label));
+})();
+
 // "What holidays do Waste Management, EDCO and Republic Services observe?" Built from the same
 // hauler data as the holiday table, so the answer and the table always agree.
 function haulerHolidayFaq() {
@@ -205,7 +234,7 @@ export default function TrashDayPage() {
               url: `${SITE}/residential/trash-day`,
               dateModified: updated,
             },
-            faqPage([...topFaqs, ...bottomFaqs, ...perHoliday]),
+            faqPage([...topFaqs, ...bottomFaqs, bulkyFaq, ...perHoliday]),
             breadcrumbs([
               { name: "For Homes", path: "/residential" },
               { name: "Trash day", path: "/residential/trash-day" },
@@ -394,6 +423,33 @@ export default function TrashDayPage() {
               </div>
             ))}
           </dl>
+
+          <section id="bulky" className="scroll-mt-4 mt-12">
+            <h2 className="text-2xl md:text-3xl font-bold">{bulkyFaq.q}</h2>
+            <p className="mt-3 text-slate-700">{bulkyFaq.a}</p>
+            <h3 className="mt-6 font-semibold">Bulky item and mattress pickup by city</h3>
+            <ul className="mt-2 divide-y divide-slate-200 border-y border-slate-200">
+              {bulkyRows.map((r) => (
+                <li key={r.key} className="py-4">
+                  <p className="font-semibold">
+                    <Link href={r.href} className="hover:text-res-teal-dark hover:underline">{r.label}</Link>
+                    <span className="font-normal text-sm text-slate-500"> · {r.hauler}</span>
+                  </p>
+                  <p className="mt-1 text-sm text-slate-700">{r.rule}</p>
+                  {r.link && (
+                    <a
+                      href={r.link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1.5 inline-flex items-center gap-1 text-sm font-semibold text-res-teal-dark hover:underline"
+                    >
+                      {r.link.label} <IconExternalLink size={15} aria-hidden="true" />
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
 
           <p className="mt-10 text-center md:text-lg text-slate-700">
             Questions? Call or text us at{" "}
