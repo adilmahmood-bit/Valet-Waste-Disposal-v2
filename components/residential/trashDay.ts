@@ -163,9 +163,11 @@ export const trashCollectors: Record<string, TrashCollector> = {
       bulky:
         "Each home gets three free bulky item pickups a year from Republic Services, with up to five items each time. Schedule it online from your Republic account. Mattresses and box springs are accepted if they're wrapped in plastic.",
     },
+    // Republic's Carlsbad page rather than the flyer PDF itself, which some browsers download
+    // instead of opening (Adil, 2026-11-23). The flyer is linked there as "Bulky Item Collection".
     bulkyLink: {
-      href: "https://www.republicservices.com/sites/default/files/legacy_documents/Muni/California/Carlsbad/Bulky-Item-Pickup-Flyer-Carlsbad-CA.pdf",
-      label: "Republic Services Carlsbad bulky item flyer (PDF)",
+      href: "https://www.republicservices.com/municipality/carlsbad-ca",
+      label: "Republic Services Carlsbad (see Bulky Item Collection)",
     },
   },
   encinitas,
