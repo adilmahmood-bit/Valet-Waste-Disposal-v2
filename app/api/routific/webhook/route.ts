@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { db } from "@/lib/residential/db";
-import { handleRoutificEvent, verifySignature } from "@/lib/residential/routific-webhook";
+import { fillMissingPhotos, handleRoutificEvent, verifySignature } from "@/lib/residential/routific-webhook";
 
 // Routific webhook endpoint. Set up in plan.routific.com > Settings > Webhooks (Admin only),
 // with the signing secret in ROUTIFIC_WEBHOOK_SECRET.
@@ -37,6 +37,8 @@ export async function POST(req: Request) {
   try {
     const result = await handleRoutificEvent(topic, body);
     console.log(`[routific:webhook] ${topic} ${eventId}: ${result}`);
+    // After answering: pick up proof photos that reached Routific after their stop was marked done.
+    after(() => fillMissingPhotos().catch((e) => console.error("[routific:webhook] photo catch-up failed", e)));
     return NextResponse.json({ ok: true, result });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
