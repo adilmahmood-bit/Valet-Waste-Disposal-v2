@@ -78,6 +78,13 @@ function ValetTrashAbout() {
           service you get a GPS check-in, a photo-verified report, recycling sortation checks and a swept trash pad, so
           residents stay happy and you stay ahead of violations.
         </p>
+        <p className="text-ink-mid leading-relaxed mb-4">
+          Wondering what trash already costs your property in porter time and fines?{" "}
+          <Link href="/blog/is-valet-trash-worth-it" className="font-semibold underline underline-offset-4" style={{ color: "#0E9AA7" }}>
+            Read: Is valet trash worth it? What San Diego apartments spend without it
+          </Link>
+          .
+        </p>
         <p className="text-ink-mid leading-relaxed">
           Looking for trash can to curb service for a house or short-term rental instead?{" "}
           <Link href="/residential" className="font-semibold underline underline-offset-4" style={{ color: "#0E9AA7" }}>

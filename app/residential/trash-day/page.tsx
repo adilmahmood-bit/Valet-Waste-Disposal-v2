@@ -9,6 +9,7 @@ import { otherAreas, type OtherArea } from "@/components/residential/trashDayLoo
 import TrashDayFinder from "@/components/residential/TrashDayFinder";
 import { currentYear, holidayDate, formatHolidayDate, isWeekend, joinNames, trashDayUpdated } from "@/components/residential/holidayDates";
 import JsonLd from "@/components/JsonLd";
+import { BulkyTable, perCityBulky } from "@/components/residential/BulkyTable";
 import { SITE, faqPage, breadcrumbs } from "@/components/residential/schema";
 
 // Rebuild daily so the holiday schedule year and dates roll over on their own each January.
@@ -69,44 +70,10 @@ const faqs = [
   },
 ];
 
-// Bulky item pickup. The heading is the question people search ("free bulky item pickup San Diego"),
-// answered in the first lines so Google and AI tools can quote it. Keep the answer in step with the
-// bulky rules in trashDay.ts, which the per-city list below is built from.
-const bulkyFaq = {
-  q: "Is there free bulky item pickup in San Diego?",
-  a: "Not from the City of San Diego, which has no curbside bulky item pickup, but mattresses and box springs can be dropped off free at the Miramar Landfill. Elsewhere it depends on your hauler: Republic Services in Carlsbad and EDCO in Del Mar each give homes three free pickups a year, up to five items each time. EDCO charges a fee in Encinitas, Solana Beach, San Marcos and Vista and picks up by arrangement in Coronado, and WM in Oceanside quotes a price before you book.",
-};
-
-// One row per hauler area for the bulky list, grouped like the holiday table: the San Diego
-// neighborhoods share the City's row, and Cardiff is listed with Encinitas.
-type BulkyRow = { key: string; label: string; href: string; hauler: string; rule: string; link?: { href: string; label: string } };
-const bulkyRows: BulkyRow[] = (() => {
-  const rows: BulkyRow[] = [];
-  for (const c of cityPages) {
-    const col = trashCollectors[c.slug];
-    if (!col?.rules.bulky || c.slug === "cardiff-by-the-sea") continue;
-    if (col === trashCollectors["san-diego"] && c.slug !== "san-diego") continue;
-    rows.push({
-      key: c.slug,
-      label: c.slug === "encinitas" ? "Encinitas and Cardiff" : c.name,
-      href: `/residential/${c.slug}#trash-day`,
-      hauler: col.name,
-      rule: col.rules.bulky,
-      link: col.bulkyLink,
-    });
-  }
-  return rows.sort((a, b) => a.label.localeCompare(b.label));
-})();
-
-// "What holidays do Waste Management, EDCO and Republic Services observe?" Built from the same
-// hauler data as the holiday table, so the answer and the table always agree.
-function haulerHolidayFaq() {
-  const by = (slug: string) => trashCollectors[slug].holidaysObserved.map((h) => holidayNames[h]);
-  return {
-    q: "What holidays do Waste Management, EDCO and Republic Services observe?",
-    a: `Waste Management (Oceanside): ${joinNames(by("oceanside"))}. EDCO (Encinitas, Solana Beach, Del Mar, Coronado, San Marcos and Vista): ${joinNames(by("encinitas"))}. Republic Services (Carlsbad): ${joinNames(by("carlsbad"))}. The City of San Diego: ${joinNames(by("san-diego"))}. When one of these falls on a weekday, pickup for the rest of that week is one day later.`,
-  };
-}
+// Bulky item pickup. The heading is the question people search ("free bulky item pickup San Diego").
+// The summary answer under it was removed (Adil, 2026-11-23): the table and the per-city answers
+// below it cover the same ground, straight from the bulky data in trashDay.ts.
+const bulkyFaq = { q: "Is there free bulky item pickup in San Diego?" };
 
 const holidays = Object.keys(holidayNames) as Holiday[];
 
@@ -130,7 +97,8 @@ const holidayRows: HolidayRow[] = (() => {
     }
     rows.push({ key: c.slug, label: c.name, href: `/residential/${c.slug}#trash-day`, observed: col.holidaysObserved });
   }
-  return rows.sort((a, b) => a.label.localeCompare(b.label));
+  // San Diego first (Adil, 2026-11-23), then A to Z.
+  return rows.sort((a, b) => Number(b.key === "san-diego") - Number(a.key === "san-diego") || a.label.localeCompare(b.label));
 })();
 const extraHolidayRows: HolidayRow[] = otherAreas
   .filter((a) => a.holidaysObserved)
@@ -218,10 +186,9 @@ export default function TrashDayPage() {
   const year = currentYear();
   const perHoliday = holidayFaqs(year);
   const updated = trashDayUpdated();
-  // The holiday chart comes right after the first question (Adil, 2026-11-23); the rest follow it,
-  // starting with the holidays-by-hauler question that goes with the chart.
+  // The holiday chart comes right after the first question (Adil, 2026-11-23); the rest follow it.
   const topFaqs = faqs.slice(0, 1);
-  const bottomFaqs = [haulerHolidayFaq(), ...faqs.slice(1)];
+  const bottomFaqs = faqs.slice(1);
   return (
     <>
       <JsonLd
@@ -234,7 +201,7 @@ export default function TrashDayPage() {
               url: `${SITE}/residential/trash-day`,
               dateModified: updated,
             },
-            faqPage([...topFaqs, ...bottomFaqs, bulkyFaq, ...perHoliday]),
+            faqPage([...topFaqs, ...bottomFaqs, ...perHoliday, ...perCityBulky]),
             breadcrumbs([
               { name: "For Homes", path: "/residential" },
               { name: "Trash day", path: "/residential/trash-day" },
@@ -414,6 +381,35 @@ export default function TrashDayPage() {
               </dl>
             </details>
           </div>
+          {/* Bulky items: the third question (Adil, 2026-11-23), with its table and per-city answers. */}
+          <div id="bulky" className="scroll-mt-4 border-t border-slate-200 py-4">
+            <h3 className="font-semibold">{bulkyFaq.q}</h3>
+            <BulkyTable />
+            <p className="mt-3 text-sm text-slate-700">
+              Getting rid of a mattress? See{" "}
+              <Link href="/blog/how-to-get-rid-of-a-mattress-san-diego" className="font-semibold text-res-teal-dark hover:underline">
+                how to get rid of a mattress in San Diego
+              </Link>
+              , including free drop-off at the Miramar Landfill.
+            </p>
+
+            {/* Collapsed like the holiday answers. The text is still in the page HTML (and the FAQ markup). */}
+            <details className="group/b mt-4 rounded-xl ring-1 ring-slate-200">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 font-semibold text-res-teal-dark [&::-webkit-details-marker]:hidden">
+                Is there free bulky item pickup in my city? Answers by city
+                <IconChevronDown size={18} className="shrink-0 transition-transform group-open/b:rotate-180" aria-hidden="true" />
+              </summary>
+              <dl className="divide-y divide-slate-200 border-t border-slate-200 px-4">
+                {perCityBulky.map((f) => (
+                  <div key={f.q} className="py-3">
+                    <dt className="font-semibold">{f.q}</dt>
+                    <dd className="mt-1 text-sm text-slate-700">{f.a}</dd>
+                  </div>
+                ))}
+              </dl>
+            </details>
+          </div>
+
 
           <dl className="divide-y divide-slate-200 border-t border-slate-200">
             {bottomFaqs.map((f) => (
@@ -423,35 +419,6 @@ export default function TrashDayPage() {
               </div>
             ))}
           </dl>
-
-          <section id="bulky" className="scroll-mt-4 mt-12">
-            <h2 className="text-2xl md:text-3xl font-bold">
-              {bulkyFaq.q} Updated <time dateTime={updated}>{year}</time>
-            </h2>
-            <p className="mt-3 text-slate-700">{bulkyFaq.a}</p>
-            <h3 className="mt-6 font-semibold">Bulky item and mattress pickup by city</h3>
-            <ul className="mt-2 divide-y divide-slate-200 border-y border-slate-200">
-              {bulkyRows.map((r) => (
-                <li key={r.key} className="py-4">
-                  <p className="font-semibold">
-                    <Link href={r.href} className="hover:text-res-teal-dark hover:underline">{r.label}</Link>
-                    <span className="font-normal text-sm text-slate-500"> · {r.hauler}</span>
-                  </p>
-                  <p className="mt-1 text-sm text-slate-700">{r.rule}</p>
-                  {r.link && (
-                    <a
-                      href={r.link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1.5 inline-flex items-center gap-1 text-sm font-semibold text-res-teal-dark hover:underline"
-                    >
-                      {r.link.label} <IconExternalLink size={15} aria-hidden="true" />
-                    </a>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </section>
 
           <p className="mt-10 text-center md:text-lg text-slate-700">
             Questions? Call or text us at{" "}

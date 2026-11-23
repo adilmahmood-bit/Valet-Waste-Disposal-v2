@@ -7,6 +7,9 @@ export const SITE = "https://yourdoorstepdisposal.com";
 export const BRAND = "Doorstep Disposal";
 export const PARENT = "Valet Waste Disposal";
 export const BUSINESS_ID = `${SITE}/residential#business`;
+// Doorstep Disposal's Google Business Profile (knowledge graph ID /g/11zkyrvklp, from the share
+// link Adil sent 2026-11-23). Tells Google the site and the profile are the same business.
+export const GOOGLE_PROFILE = "https://www.google.com/search?kgmid=/g/11zkyrvklp";
 
 export const areaServed = () => residential.serviceCities.map((name) => ({ "@type": "City", name: `${name}, CA` }));
 
@@ -26,6 +29,7 @@ export function residentialBusiness() {
     image: `${SITE}/residential-hero-ranch.jpg`,
     address: { "@type": "PostalAddress", addressLocality: "San Diego", addressRegion: "CA", addressCountry: "US" },
     areaServed: areaServed(),
+    sameAs: [GOOGLE_PROFILE],
     parentOrganization: { "@type": "Organization", "@id": `${SITE}/#org`, name: PARENT, url: SITE },
   };
 }

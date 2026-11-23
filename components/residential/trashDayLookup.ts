@@ -3,7 +3,7 @@
 // County gets a link to the hauler's (or city's) own lookup. Haulers checked 2026-11-16 against each
 // city's trash page; confirm here when a city changes hauler.
 import { cityPages } from "./cities";
-import { trashCollectors, sixHolidays, type Holiday } from "./trashDay";
+import { trashCollectors, sixHolidays, type Holiday, type BulkySummary } from "./trashDay";
 
 export type OtherArea = {
   name: string;
@@ -15,9 +15,18 @@ export type OtherArea = {
   note?: string;
   // For the holiday table on /residential/trash-day. Left out where it varies (unincorporated county).
   holidaysObserved?: Holiday[];
+  // For the bulky item table on /residential/trash-day (hidden rows). Only what the hauler's page states.
+  bulkySummary?: BulkySummary;
+  bulkyLink?: { href: string; label: string };
 };
 
 const edcoLookup = (sub: string) => `https://${sub}.edcodisposal.com/service-schedules/`;
+const edcoBulky = (sub: string, city: string, path = "curbside-pickup") => ({
+  href: `https://${sub}.edcodisposal.com/residential-waste-services/${path}/bulky-item-pickup/`,
+  label: `EDCO ${city} bulky item pickup`,
+});
+// EDCO's bulky pages list furniture and appliances but don't mention mattresses.
+const edcoFee: BulkySummary = { curbside: true, cost: "Extra fee", mattresses: "Ask EDCO" };
 const sdCity = trashCollectors["pacific-beach"]; // City of San Diego Environmental Services
 
 // City of San Diego neighborhoods without a page of their own. Single-family homes here are served
@@ -45,20 +54,21 @@ export const sanDiegoCity: OtherArea = {
   ],
 };
 
-// holidaysObserved checked 2026-11-16: EDCO's San Diego County holiday schedule, WM Santee's newsletter
+// bulkySummary from each hauler's bulky item page (checked 2026-11-23); Chula Vista's Republic page
+// publishes no bulky rules. holidaysObserved checked 2026-11-16: EDCO's San Diego County holiday schedule, WM Santee's newsletter
 // and Republic Services' Chula Vista page all list the same six holidays.
 export const otherAreas: OtherArea[] = [
   sanDiegoCity,
-  { name: "Escondido", hauler: "Escondido Disposal (EDCO)", url: "https://www.escondidodisposal.com/service-schedules/", linkLabel: "Escondido Disposal collection day lookup", zips: ["92025", "92026", "92027", "92029"], holidaysObserved: sixHolidays },
-  { name: "Poway", hauler: "EDCO", url: edcoLookup("poway"), linkLabel: "EDCO Poway collection day lookup", zips: ["92064"], holidaysObserved: sixHolidays },
+  { name: "Escondido", hauler: "Escondido Disposal (EDCO)", url: "https://www.escondidodisposal.com/service-schedules/", linkLabel: "Escondido Disposal collection day lookup", zips: ["92025", "92026", "92027", "92029"], holidaysObserved: sixHolidays , bulkySummary: { curbside: true, cost: "$16.71 per item ($66.85 for fridges, freezers and AC units)", mattresses: "Ask Escondido Disposal" }, bulkyLink: { href: "https://www.escondidodisposal.com/residential-waste-services/curbside-pickup/bulky-item-pickup/", label: "Escondido Disposal bulky item pickup" } },
+  { name: "Poway", hauler: "EDCO", url: edcoLookup("poway"), linkLabel: "EDCO Poway collection day lookup", zips: ["92064"], holidaysObserved: sixHolidays , bulkySummary: edcoFee, bulkyLink: edcoBulky("poway", "Poway") },
   // Republic Services' all-locations schedule lookup (Adil, 2026-11-15).
-  { name: "Chula Vista", hauler: "Republic Services", url: "https://www.republicservices.com/schedule", linkLabel: "Republic Services pickup schedule", zips: ["91910", "91911", "91913", "91914", "91915"], aliases: ["eastlake", "otay ranch", "rancho del rey"], holidaysObserved: sixHolidays },
-  { name: "El Cajon", hauler: "EDCO", url: edcoLookup("city-of-el-cajon"), linkLabel: "EDCO El Cajon collection day lookup", zips: ["92019", "92020", "92021"], aliases: ["fletcher hills"], holidaysObserved: sixHolidays },
-  { name: "Imperial Beach", hauler: "EDCO", url: edcoLookup("imperial-beach"), linkLabel: "EDCO Imperial Beach collection day lookup", zips: ["91932"], holidaysObserved: sixHolidays },
-  { name: "La Mesa", hauler: "EDCO", url: edcoLookup("la-mesa-city"), linkLabel: "EDCO La Mesa collection day lookup", zips: ["91941", "91942"], holidaysObserved: sixHolidays },
-  { name: "Lemon Grove", hauler: "EDCO", url: edcoLookup("lemon-grove"), linkLabel: "EDCO Lemon Grove collection day lookup", zips: ["91945"], holidaysObserved: sixHolidays },
-  { name: "National City", hauler: "EDCO", url: edcoLookup("national-city"), linkLabel: "EDCO National City collection day lookup", zips: ["91950"], holidaysObserved: sixHolidays },
-  { name: "Santee", hauler: "Waste Management", url: "https://www.wm.com/us/en/location/ca/santee/trash-pickup-santee-ca", linkLabel: "WM Santee trash pickup page", zips: ["92071"], holidaysObserved: sixHolidays },
+  { name: "Chula Vista", hauler: "Republic Services", url: "https://www.republicservices.com/schedule", linkLabel: "Republic Services pickup schedule", zips: ["91910", "91911", "91913", "91914", "91915"], aliases: ["eastlake", "otay ranch", "rancho del rey"], holidaysObserved: sixHolidays , bulkySummary: { curbside: true, cost: "Not published", mattresses: "Ask Republic" }, bulkyLink: { href: "https://www.republicservices.com/municipality/chula-vista-ca", label: "Republic Services Chula Vista" } },
+  { name: "El Cajon", hauler: "EDCO", url: edcoLookup("city-of-el-cajon"), linkLabel: "EDCO El Cajon collection day lookup", zips: ["92019", "92020", "92021"], aliases: ["fletcher hills"], holidaysObserved: sixHolidays , bulkySummary: { curbside: true, cost: "Free, 4 a year, up to 6 items each", free: true, mattresses: "Ask EDCO" }, bulkyLink: edcoBulky("city-of-el-cajon", "El Cajon", "residential") },
+  { name: "Imperial Beach", hauler: "EDCO", url: edcoLookup("imperial-beach"), linkLabel: "EDCO Imperial Beach collection day lookup", zips: ["91932"], holidaysObserved: sixHolidays , bulkySummary: { curbside: true, cost: "Free, 2 a year, up to 3 items each", free: true, mattresses: "Ask EDCO" }, bulkyLink: edcoBulky("imperial-beach", "Imperial Beach") },
+  { name: "La Mesa", hauler: "EDCO", url: edcoLookup("la-mesa-city"), linkLabel: "EDCO La Mesa collection day lookup", zips: ["91941", "91942"], holidaysObserved: sixHolidays , bulkySummary: edcoFee, bulkyLink: edcoBulky("la-mesa-city", "La Mesa") },
+  { name: "Lemon Grove", hauler: "EDCO", url: edcoLookup("lemon-grove"), linkLabel: "EDCO Lemon Grove collection day lookup", zips: ["91945"], holidaysObserved: sixHolidays , bulkySummary: edcoFee, bulkyLink: edcoBulky("lemon-grove", "Lemon Grove") },
+  { name: "National City", hauler: "EDCO", url: edcoLookup("national-city"), linkLabel: "EDCO National City collection day lookup", zips: ["91950"], holidaysObserved: sixHolidays , bulkySummary: { curbside: true, cost: "Free, once a quarter, up to 3 items", free: true, mattresses: "Ask EDCO" }, bulkyLink: edcoBulky("national-city", "National City") },
+  { name: "Santee", hauler: "Waste Management", url: "https://www.wm.com/us/en/location/ca/santee/trash-pickup-santee-ca", linkLabel: "WM Santee trash pickup page", zips: ["92071"], holidaysObserved: sixHolidays , bulkySummary: { curbside: true, cost: "Price quoted before booking", mattresses: "Yes, wrapped in plastic" }, bulkyLink: { href: "https://www.wm.com/us/en/home/bulk-trash-pickup", label: "WM bulk trash pickup" } },
   // Unincorporated county: several haulers by community, listed in the County's guide.
   {
     name: "Unincorporated San Diego County",

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { isLive } from "@/lib/blog";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { IconCheck, IconBuildingCottage, IconCalendarSearch, IconExternalLink } from "@tabler/icons-react";
@@ -198,9 +199,18 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
                     {ruleLabels.map(([k, label]) =>
                       collector.rules[k] ? (
                         <div key={k}>
-                          <dt className="inline font-semibold">{k === "holidays" ? `Holiday schedule ${city.name} ${year}` : label}: </dt>
+                          <dt className="inline font-semibold">
+                            {k === "holidays"
+                              ? `Holiday schedule ${city.name} ${year}`
+                              : k === "bulky"
+                                ? `${label} ${city.name}`
+                                : k === "setOut" && collector.rules.setOutAndIn
+                                  ? "Setting carts out and bringing them in"
+                                  : label}
+                            :{" "}
+                          </dt>
                           <dd className="inline">
-                            {collector.rules[k]}
+                            {k === "setOut" ? (collector.rules.setOutAndIn ?? collector.rules.setOut) : collector.rules[k]}
                             {k === "bulky" && collector.bulkyLink && (
                               <>
                                 {" "}
@@ -220,6 +230,15 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
                     )}
                   </dl>
                 </>
+              )}
+              {isLive("when-to-put-trash-cans-out-san-diego") && (
+              <p className="mt-3 text-sm text-slate-700">
+                Where carts go and how far apart:{" "}
+                <Link href="/blog/when-to-put-trash-cans-out-san-diego" className="font-semibold text-res-teal-dark hover:underline">
+                  set-out and bring-in rules by city
+                </Link>
+                .
+              </p>
               )}
               <p className="mt-3 text-sm text-slate-700">Once you sign up, we track your trash day for you, holiday weeks included.</p>
             </div>
