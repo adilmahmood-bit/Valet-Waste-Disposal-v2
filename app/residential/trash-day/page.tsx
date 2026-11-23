@@ -7,7 +7,7 @@ import { cityPages } from "@/components/residential/cities";
 import { trashCollectors, holidayNames, type Holiday } from "@/components/residential/trashDay";
 import { otherAreas, type OtherArea } from "@/components/residential/trashDayLookup";
 import TrashDayFinder from "@/components/residential/TrashDayFinder";
-import { currentYear, holidayDate, formatHolidayDate, isWeekend, joinNames, trashDayUpdated, formatLongDate } from "@/components/residential/holidayDates";
+import { currentYear, holidayDate, formatHolidayDate, isWeekend, joinNames, trashDayUpdated } from "@/components/residential/holidayDates";
 import JsonLd from "@/components/JsonLd";
 import { SITE, faqPage, breadcrumbs } from "@/components/residential/schema";
 
@@ -25,7 +25,7 @@ export function generateMetadata(): Metadata {
     description: `What day is trash day in San Diego in ${year}? Enter your city or ZIP to find your pickup day, collection rules and ${year} holiday schedule anywhere in San Diego County.`,
     alternates: { canonical: "/residential/trash-day" },
     openGraph: {
-      title: `When is trash day in San Diego? (${year})`,
+      title: `When is trash day in San Diego? Updated ${year}`,
       description: `Find your trash pickup day, collection rules and ${year} holiday schedule anywhere in San Diego County.`,
       url: "/residential/trash-day",
       siteName: "Doorstep Disposal",
@@ -168,7 +168,7 @@ export default function TrashDayPage() {
           "@graph": [
             {
               "@type": "WebPage",
-              name: `When is trash day in San Diego? (${year})`,
+              name: `When is trash day in San Diego? Updated ${year}`,
               url: `${SITE}/residential/trash-day`,
               dateModified: updated,
             },
@@ -195,10 +195,9 @@ export default function TrashDayPage() {
           <nav aria-label="Breadcrumb" className="text-xs text-white/60">
             <Link href="/residential" className="hover:text-white">For Homes</Link> › <span className="text-white/80">Trash day</span>
           </nav>
-          <h1 className="mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">When is trash day in San Diego? ({year})</h1>
-          <p className="mt-2 text-sm text-white/70">
-            Updated <time dateTime={updated}>{formatLongDate(updated)}</time>
-          </p>
+          <h1 className="mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">
+            When is trash day in San Diego? Updated <time dateTime={updated}>{year}</time>
+          </h1>
           <p className="mt-3 md:mt-4 md:text-lg text-white/85">
             Trash day in San Diego changes street by street. Enter your city, neighborhood or ZIP code to find your day, plus the set-out
             rules and holiday schedule where you live.

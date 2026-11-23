@@ -15,11 +15,6 @@ export const trashDayUpdated = () => {
   const jan1 = `${currentYear()}-01-01`;
   return jan1 > TRASH_DAY_CHECKED ? jan1 : TRASH_DAY_CHECKED;
 };
-
-// "2026-11-20" -> "November 20, 2026"
-export const formatLongDate = (iso: string) =>
-  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" });
-
 // nth weekday (0 = Sunday) of a month; n = -1 for the last one.
 function nthWeekday(year: number, month: number, weekday: number, n: number) {
   if (n > 0) {
