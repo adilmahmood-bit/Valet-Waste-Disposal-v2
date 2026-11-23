@@ -394,7 +394,8 @@ function VisitBox({
           </span>
         )}
       </div>
-      {v && (
+      {/* With a photo, the time is stamped on the photo instead. */}
+      {v && !v.photoUrl && (
         <p className="mt-1 text-sm" style={{ color: P.muted }}>
           {v.status === "done"
             ? `${shortDate(v.date)} at ${timeSD(v.completedAt)}`
@@ -416,11 +417,12 @@ function VisitBox({
             loading="lazy"
             className={`w-full object-cover ${large ? "h-48" : "h-32"}`}
           />
-          {/* Timestamp stamped on the photo: white on dark, like a dash-cam or inspection photo. */}
+          {/* Timestamp stamped on the photo: white text, with a shadow so it reads on any background. */}
           <span
             className="absolute bottom-0 left-0 right-0 px-2 py-1 font-mono text-white leading-tight"
             style={{
-              backgroundColor: "rgba(10, 20, 30, 0.72)",
+              textShadow:
+                "0 1px 2px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.85)",
               fontSize: large ? 12 : 10,
             }}
           >
