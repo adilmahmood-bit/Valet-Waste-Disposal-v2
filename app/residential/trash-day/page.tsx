@@ -188,10 +188,10 @@ export default function TrashDayPage() {
   const year = currentYear();
   const perHoliday = holidayFaqs(year);
   const updated = trashDayUpdated();
-  // Shown above the holiday guide: everything but the last question, with the hauler holidays
-  // one second (Adil, 2026-11-23).
-  const topFaqs = [faqs[0], haulerHolidayFaq(), ...faqs.slice(1, -1)];
-  const bottomFaqs = faqs.slice(-1);
+  // The holiday chart comes right after the first question (Adil, 2026-11-23); the rest follow it,
+  // starting with the holidays-by-hauler question that goes with the chart.
+  const topFaqs = faqs.slice(0, 1);
+  const bottomFaqs = [haulerHolidayFaq(), ...faqs.slice(1)];
   return (
     <>
       <JsonLd
