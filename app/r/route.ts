@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { publicOrigin } from "@/lib/residential/request";
 import { SOURCE_COOKIE, REFERRAL_COOKIE, cleanCode, normalizeSource } from "@/lib/residential/tracking";
 
 // Short link for QR codes and posts: /r?src=door&ref=pb01. Remembers where the visitor came
@@ -8,7 +9,7 @@ const MAX_AGE = 60 * 60 * 24 * 30;
 export function GET(req: NextRequest) {
   const src = normalizeSource(req.nextUrl.searchParams.get("src"));
   const ref = cleanCode(req.nextUrl.searchParams.get("ref"));
-  const res = NextResponse.redirect(new URL("/residential", req.url));
+  const res = NextResponse.redirect(`${publicOrigin(req)}/residential`);
   const opts = { maxAge: MAX_AGE, path: "/", sameSite: "lax" as const };
   if (src) res.cookies.set(SOURCE_COOKIE, src, opts);
   // A referral code implies a referral unless the link says otherwise.

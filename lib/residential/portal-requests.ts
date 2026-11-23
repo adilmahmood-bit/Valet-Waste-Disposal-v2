@@ -104,6 +104,23 @@ async function decide(id: string, status: "accepted" | "declined", note: string 
 export async function acceptRequest(id: string, stop?: { date: string; start: string; end: string }) {
   const r = must(await db().from("res_portal_requests").select("*").eq("id", id).single()) as PortalRequest;
   if (r.status !== "open") throw new Error("That request was already handled.");
+  if (r.kind === "overflow" && (!r.address_id || !stop)) throw new Error("Pick a day and time window for the pickup.");
+  // Claim it first (open -> accepted in one update), so a double-click or a second tab can't
+  // apply it twice (two Routific stops, or the property added twice). Reopened if applying fails.
+  const claimed = must(
+    await db().from("res_portal_requests").update({ status: "accepted", decided_at: new Date().toISOString() }).eq("id", id).eq("status", "open").select("id"),
+  ) as { id: string }[];
+  if (!claimed.length) throw new Error("That request was already handled.");
+  try {
+    await applyRequest(r, stop);
+  } catch (e) {
+    await db().from("res_portal_requests").update({ status: "open", decided_at: null }).eq("id", id);
+    throw e;
+  }
+}
+
+async function applyRequest(r: PortalRequest, stop?: { date: string; start: string; end: string }) {
+  const id = r.id;
   const d = r.details as Record<string, string | number | undefined>;
   let note: string | null = null;
 
@@ -155,7 +172,7 @@ export async function acceptRequest(id: string, stop?: { date: string; start: st
     note = "Added as signed up. Set a start date and make it active on the Customers tab.";
   }
 
-  await decide(id, "accepted", note);
+  if (note) must(await db().from("res_portal_requests").update({ admin_note: note }).eq("id", id));
   // Access changes and pauses can change tonight's Routific orders.
   if (r.kind === "access" || r.kind === "pause") {
     try {
