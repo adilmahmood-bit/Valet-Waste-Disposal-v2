@@ -14,6 +14,7 @@ import { saveVisitPhoto } from "@/lib/residential/photos";
 import { notifyVisit } from "@/lib/residential/visit-notify";
 import { acceptRequest, declineRequest } from "@/lib/residential/portal-requests";
 import { clientCheckoutUrl } from "@/lib/residential/client-billing";
+import { catchUpRouteMileage, syncRollinTrips } from "@/lib/residential/mileage";
 import { SITE } from "@/lib/blog";
 
 const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
@@ -192,8 +193,86 @@ export async function markRollIn(f: FormData) {
         { onConflict: "address_id,date,type" },
       ),
   );
-  after(() => notifyVisit(addressId, "back", status, note));
+  after(async () => {
+    await notifyVisit(addressId, "back", status, note);
+    await syncRollinTrips().catch((e) => console.error("[mileage] roll-in log failed", e));
+  });
   refresh();
+}
+
+// ---------- Mileage log ----------
+
+const MILES_RE = /^\d{1,4}(\.\d)?$/;
+const mileageBack = (year: string, msg: string, error = false) =>
+  redirect(`/admin/residential/mileage?year=${year}&${error ? "err" : "msg"}=${encodeURIComponent(msg.slice(0, 300))}`);
+
+// Actual (odometer) miles and a note for any trip. Blank miles = use the planned/estimate.
+export async function saveTripActual(f: FormData) {
+  await requireAdmin();
+  const id = s(f, "id");
+  const year = s(f, "year") || todaySDForAdmin().slice(0, 4);
+  const miles = s(f, "actual_miles");
+  if (miles && !MILES_RE.test(miles)) return mileageBack(year, "Miles must be a number like 48 or 48.5.", true);
+  must(
+    await db()
+      .from("res_mileage_trips")
+      .update({ actual_miles: miles ? Number(miles) : null, note: s(f, "note") || null, updated_at: new Date().toISOString() })
+      .eq("id", id),
+  );
+  return mileageBack(year, "Saved.");
+}
+
+export async function addManualTrip(f: FormData) {
+  await requireAdmin();
+  const date = s(f, "date");
+  const year = date.slice(0, 4) || todaySDForAdmin().slice(0, 4);
+  const miles = s(f, "miles");
+  const purpose = s(f, "purpose");
+  if (!DATE_RE.test(date)) return mileageBack(year, "Pick a date.", true);
+  if (!purpose) return mileageBack(year, "Add the business purpose (e.g. supply run, client meeting).", true);
+  if (!MILES_RE.test(miles)) return mileageBack(year, "Miles must be a number like 12 or 12.5.", true);
+  must(
+    await db().from("res_mileage_trips").insert({
+      date,
+      kind: "manual",
+      source: "manual",
+      purpose: purpose.slice(0, 300),
+      start_address: s(f, "start_address").slice(0, 200) || null,
+      end_address: s(f, "end_address").slice(0, 200) || null,
+      actual_miles: Number(miles),
+      note: s(f, "note").slice(0, 300) || null,
+    }),
+  );
+  return mileageBack(year, "Trip added.");
+}
+
+export async function deleteManualTrip(f: FormData) {
+  await requireAdmin();
+  const year = s(f, "year") || todaySDForAdmin().slice(0, 4);
+  must(await db().from("res_mileage_trips").delete().eq("id", s(f, "id")).eq("kind", "manual"));
+  return mileageBack(year, "Trip deleted.");
+}
+
+export async function saveMileageRate(f: FormData) {
+  await requireAdmin();
+  const year = s(f, "year") || todaySDForAdmin().slice(0, 4);
+  const rate = s(f, "rate");
+  if (rate && !/^\d(\.\d{1,3})?$/.test(rate)) return mileageBack(year, "Rate must look like 0.70 (dollars per mile).", true);
+  must(
+    await db()
+      .from("res_app_state")
+      .upsert({ key: "mileage_rate", value: rate ? { rate: Number(rate) } : {}, updated_at: new Date().toISOString() }),
+  );
+  return mileageBack(year, rate ? "Rate saved." : "Rate cleared.");
+}
+
+// Pulls in finished Routific routes and roll-in days now (they also arrive on their own).
+export async function refreshMileage(f: FormData) {
+  await requireAdmin();
+  const year = s(f, "year") || todaySDForAdmin().slice(0, 4);
+  const added = await catchUpRouteMileage(30);
+  await syncRollinTrips(30);
+  return mileageBack(year, `Up to date${added ? `: ${added} route${added === 1 ? "" : "s"} added` : ""}.`);
 }
 
 // ---------- Routific dispatch dashboard ----------

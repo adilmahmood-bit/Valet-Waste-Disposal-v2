@@ -31,6 +31,56 @@ export function verifySignature(rawBody: string, header: string | null, timestam
 
 type OrderRow = { id: string; address_id: string; delivery_date: string; routific_status: string | null; kind: string };
 
+// Copies an order's first proof-of-delivery photo onto its visit. False when Routific has no
+// photo for it (yet).
+async function copyProofPhoto(orderUuid: string, addressId: string, date: string, type: "out" | "back") {
+  const full = await getOrder(orderUuid);
+  const ref = full.proofOfDelivery?.photos?.[0];
+  if (!ref) return false;
+  const photo = await getPhoto(orderUuid, ref);
+  const url = await saveVisitPhoto(`${addressId}/${date}-${type}-${photo.photoUuid}.jpg`, photo.bytes, photo.contentType);
+  must(await db().from("res_visits").update({ photo_url: url }).eq("address_id", addressId).eq("date", date).eq("type", type));
+  return true;
+}
+
+// Delivered roll-outs and roll-ins from the last few days whose visit has no photo yet: try
+// again (the driver's phone uploads photos after the stop is marked done, sometimes much later
+// on a weak signal). Runs after each Routific webhook and on the daily sync.
+export async function fillMissingPhotos(days = 3, limit = 10) {
+  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+  const orders = must(
+    await db()
+      .from("res_routific_orders")
+      .select("order_uuid, address_id, delivery_date, kind")
+      .eq("routific_status", "delivered")
+      .in("kind", ["rollout", "rollin"])
+      .is("deleted_at", null)
+      .gte("delivery_date", since),
+  ) as { order_uuid: string; address_id: string; delivery_date: string; kind: string }[];
+  if (!orders.length) return 0;
+  const visits = must(
+    await db()
+      .from("res_visits")
+      .select("address_id, date, type, photo_url")
+      .in("address_id", [...new Set(orders.map((o) => o.address_id))])
+      .gte("date", since),
+  ) as { address_id: string; date: string; type: string; photo_url: string | null }[];
+  let filled = 0;
+  const missing = orders.filter((o) => {
+    const type = o.kind === "rollin" ? "back" : "out";
+    const v = visits.find((x) => x.address_id === o.address_id && x.date === o.delivery_date && x.type === type);
+    return v && v.photo_url === null;
+  });
+  for (const o of missing.slice(0, limit)) {
+    try {
+      if (await copyProofPhoto(o.order_uuid, o.address_id, o.delivery_date, o.kind === "rollin" ? "back" : "out")) filled++;
+    } catch (e) {
+      console.error("[routific] photo catch-up failed", o.order_uuid, e);
+    }
+  }
+  return filled;
+}
+
 async function orderRow(uuid: string) {
   return must(
     await db().from("res_routific_orders").select("id, address_id, delivery_date, routific_status, kind").eq("order_uuid", uuid).maybeSingle(),
@@ -79,18 +129,11 @@ async function onOrderStatus(body: StatusEvent) {
   must(await db().from("res_visits").upsert(visit, { onConflict: "address_id,date,type" }));
 
   // Copy the first proof-of-delivery photo into our bucket. A photo problem doesn't fail
-  // the webhook: the visit is already recorded.
+  // the webhook: the visit is already recorded. The phone often uploads the photo a little
+  // after the stop is marked done, so it may not be there yet; fillMissingPhotos catches up.
   if (status === "done") {
     try {
-      const full = await getOrder(o.uuid);
-      const ref = full.proofOfDelivery?.photos?.[0];
-      if (ref) {
-        const photo = await getPhoto(o.uuid, ref);
-        const url = await saveVisitPhoto(`${row.address_id}/${row.delivery_date}-${type}-${photo.photoUuid}.jpg`, photo.bytes, photo.contentType);
-        must(
-          await db().from("res_visits").update({ photo_url: url }).eq("address_id", row.address_id).eq("date", row.delivery_date).eq("type", type),
-        );
-      }
+      await copyProofPhoto(o.uuid, row.address_id, row.delivery_date, type);
     } catch (e) {
       console.error("[routific:webhook] photo copy failed", e);
     }

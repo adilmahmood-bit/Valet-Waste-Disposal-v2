@@ -75,6 +75,21 @@ export async function getOrder(uuid: string) {
   return (await call<RoutificOrder>("GET", `/orders/${uuid}`)).data;
 }
 
+export type RoutificRoute = {
+  uuid: string;
+  name: string;
+  date: string;
+  status: string; // "completed" once every stop is done
+  distanceInKilometers?: number | null;
+  workingTimeInSeconds?: number | null;
+  driver?: { name?: string | null } | null;
+  constraints?: { startLocation?: { address?: string } | null; endLocation?: { address?: string } | null } | null;
+};
+
+export async function getRoute(uuid: string) {
+  return (await call<RoutificRoute>("GET", `/routes/${uuid}`)).data;
+}
+
 // A proof-of-delivery photo. `ref` is an entry of order.proofOfDelivery.photos, a relative
 // path like "/v1/orders/<order>/photos/<photo>"; only the photo id at the end is used.
 export async function getPhoto(orderUuid: string, ref: string) {
