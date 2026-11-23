@@ -12,7 +12,7 @@ import JsonLd from "@/components/JsonLd";
 
 // Leads with "valet trash", the phrase property managers search for.
 export const metadata: Metadata = {
-  title: { absolute: "Valet Trash Service for San Diego Apartments | Valet Waste Disposal" },
+  title: { absolute: "Valet Trash for San Diego Apartments | Valet Waste Disposal" },
   description:
     "Nightly doorstep valet trash for San Diego County apartment communities, with photo-verified reports, recycling checks and a clean trash pad every morning.",
   alternates: { canonical: "/" },

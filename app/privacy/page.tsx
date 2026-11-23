@@ -6,7 +6,7 @@ import { residential } from "@/config/residential";
 // 22575) and in the style of the CCPA, which doesn't currently apply to us (see 1798.140(d)).
 // Update UPDATED and the text whenever what we collect, the tools we use, or who we share with
 // changes, and review it at least once a year.
-const UPDATED = "November 16, 2026";
+const UPDATED = "November 23, 2026";
 
 export const metadata: Metadata = {
   title: { absolute: "Privacy Notice | Valet Waste Disposal & Doorstep Disposal" },
@@ -77,6 +77,7 @@ export default function PrivacyPage() {
           <li><strong>Our own cookies</strong> that remember which flyer, post or referral link brought you to our site, so we know which ones work.</li>
           <li><strong>HubSpot</strong> cookies, which record the pages you visit. If you sign up or fill out a form, HubSpot links those visits to your contact record so we can see how you found us.</li>
           <li><strong>Microsoft Clarity</strong>, which records how visitors use our pages (clicks, scrolling and page views) and produces heatmaps and session replays, so we can find and fix problems. Clarity masks text you type into forms.</li>
+          <li><strong>Google Analytics</strong>, which uses cookies to count visits and see which pages people view and how they found us.</li>
         </ul>
         <p className={p}>
           You can block or delete cookies in your browser settings. The site still works without them. Our website does not
@@ -91,6 +92,7 @@ export default function PrivacyPage() {
           <li><strong>Resend</strong>: sending emails, including service emails and our own alerts when you fill out a form</li>
           <li><strong>Hostinger</strong>: website hosting</li>
           <li><strong>Microsoft Clarity</strong>: website analytics</li>
+          <li><strong>Google Analytics</strong>: website analytics</li>
           <li>Our phone and text messaging providers, for calls and texts with you</li>
         </ul>
         <p className={p}>

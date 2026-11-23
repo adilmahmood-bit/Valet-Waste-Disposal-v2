@@ -8,7 +8,7 @@ import JsonLd from "@/components/JsonLd";
 import { SITE, residentialBusiness, businessRef, areaServed, offers, breadcrumbs } from "@/components/residential/schema";
 
 export const metadata: Metadata = {
-  title: "Service for Seniors in San Diego",
+  title: "Trash Can Valet for Seniors in San Diego",
   description:
     "Weekly trash can valet for older adults in San Diego and North County. We roll the cans to the curb and back. Family members can sign up for a parent.",
   alternates: { canonical: "/residential/seniors" },

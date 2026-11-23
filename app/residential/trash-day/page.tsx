@@ -7,30 +7,36 @@ import { cityPages } from "@/components/residential/cities";
 import { trashCollectors, holidayNames, type Holiday } from "@/components/residential/trashDay";
 import { otherAreas, type OtherArea } from "@/components/residential/trashDayLookup";
 import TrashDayFinder from "@/components/residential/TrashDayFinder";
-import { currentYear, holidayDate, formatHolidayDate, isWeekend, joinNames } from "@/components/residential/holidayDates";
+import { currentYear, holidayDate, formatHolidayDate, isWeekend, joinNames, trashDayUpdated } from "@/components/residential/holidayDates";
 import JsonLd from "@/components/JsonLd";
-import { faqPage, breadcrumbs } from "@/components/residential/schema";
+import { SITE, faqPage, breadcrumbs } from "@/components/residential/schema";
 
 // Rebuild daily so the holiday schedule year and dates roll over on their own each January.
 export const revalidate = 86400;
 
 const shareImage = { url: "/residential/og/trash-day.jpg", width: 1200, height: 630, alt: "San Diego skyline at night" };
 
-export const metadata: Metadata = {
-  title: { absolute: "When Is Trash Day in San Diego? Find Your Pickup Day | Doorstep Disposal" },
-  description: "What day is trash day in San Diego? Enter your city or ZIP to find your pickup day, collection rules and holiday schedule anywhere in San Diego County.",
-  alternates: { canonical: "/residential/trash-day" },
-  openGraph: {
-    title: "When is trash day in San Diego?",
-    description: "Find your trash pickup day, collection rules and holiday schedule anywhere in San Diego County.",
-    url: "/residential/trash-day",
-    siteName: "Doorstep Disposal",
-    locale: "en_US",
-    type: "website",
-    images: [shareImage],
-  },
-  twitter: { card: "summary_large_image", images: [shareImage] },
-};
+// The year in the title and headings matches searches like "trash day San Diego 2026" and rolls
+// over on its own (the page rebuilds daily).
+export function generateMetadata(): Metadata {
+  const year = currentYear();
+  return {
+    // Title under 60 and description under 160 characters, so Google doesn't cut them.
+    title: { absolute: `When Is Trash Day in San Diego? ${year} Pickup & Holiday Guide` },
+    description: `What day is trash day in San Diego in ${year}? Enter your city or ZIP to find your pickup day, collection rules and holiday schedule anywhere in San Diego County.`,
+    alternates: { canonical: "/residential/trash-day" },
+    openGraph: {
+      title: `When is trash day in San Diego? Updated ${year}`,
+      description: `Find your trash pickup day, collection rules and ${year} holiday schedule anywhere in San Diego County.`,
+      url: "/residential/trash-day",
+      siteName: "Doorstep Disposal",
+      locale: "en_US",
+      type: "website",
+      images: [shareImage],
+    },
+    twitter: { card: "summary_large_image", images: [shareImage] },
+  };
+}
 
 // The first question matches how people search ("what day is trash day in San Diego"). It is shown
 // on the page and marked up as an FAQ so search engines and AI tools can quote the answer.
@@ -39,11 +45,68 @@ const faqs = [
     q: "What day is trash day in San Diego?",
     a: "There's no single trash day in San Diego. Each street has its own collection day, Monday through Friday, and a holiday can push it one day later that week. Enter your city, neighborhood or ZIP code above to find your day, or use the City of San Diego's collection lookup if you live in the city.",
   },
+  // Questions from Google's "People also ask" for San Diego trash searches (2026-11-23). Facts come from
+  // the City of San Diego's and the haulers' own pages; sources are noted in trashDay.ts.
+  {
+    q: "My trash wasn't picked up in San Diego. What should I do?",
+    a: "First check whether it's a holiday week, since pickup moves one day later after most holidays. If your carts were out by 6 a.m. and still weren't emptied, report it. In the City of San Diego, check the City's missed collections map, then submit a Missed Collection Request through Get It Done. In Oceanside, report it to WM, which says collection will be finished by the next business day. In cities served by EDCO or Republic Services, use the service request form on the hauler's website.",
+  },
+  {
+    q: "What if I forget to take the trash out on trash day?",
+    a: "Haulers collect on a set weekly schedule, and carts need to be at the curb by 6 a.m. If yours weren't out in time, plan on your next pickup day. Don't leave them at the curb until then: the City of San Diego requires carts back in by 6 p.m. on collection day. Keep lids closed until next week, because overfilled and overweight carts can be skipped.",
+  },
+  {
+    q: "Can I put leaves in the trash?",
+    a: "No. Leaves and other yard trimmings go in your green organics cart, not the gray trash cart. California's organics law, SB 1383, requires yard waste to be kept out of the trash, and the City of San Diego and EDCO both tell residents to put it in the green cart. Put it in loose: the City of San Diego doesn't accept plastic bags in the organics cart, even compostable ones.",
+  },
+  {
+    q: "How do I keep trash cans from blowing over?",
+    a: "Close the lid all the way and don't overfill the cart, since an open lid catches the wind. Put heavier bags at the bottom. Keep carts about 2 to 3 feet apart so one falling doesn't knock over the next. When Santa Ana winds are forecast, set carts out as close to pickup time as you can and bring them back in soon after the truck comes.",
+  },
   {
     q: "What time do trash cans need to be out?",
     a: "In most of San Diego County, carts need to be at the curb by 6 a.m. on collection day. Some cities also set a time to bring them back in. Check your city's page for its rules.",
   },
 ];
+
+// Bulky item pickup. The heading is the question people search ("free bulky item pickup San Diego"),
+// answered in the first lines so Google and AI tools can quote it. Keep the answer in step with the
+// bulky rules in trashDay.ts, which the per-city list below is built from.
+const bulkyFaq = {
+  q: "Is there free bulky item pickup in San Diego?",
+  a: "Not from the City of San Diego, which has no curbside bulky item pickup, but mattresses and box springs can be dropped off free at the Miramar Landfill. Elsewhere it depends on your hauler: Republic Services in Carlsbad and EDCO in Del Mar each give homes three free pickups a year, up to five items each time. EDCO charges a fee in Encinitas, Solana Beach, San Marcos and Vista and picks up by arrangement in Coronado, and WM in Oceanside quotes a price before you book.",
+};
+
+// One row per hauler area for the bulky list, grouped like the holiday table: the San Diego
+// neighborhoods share the City's row, and Cardiff is listed with Encinitas.
+type BulkyRow = { key: string; label: string; href: string; hauler: string; rule: string; link?: { href: string; label: string } };
+const bulkyRows: BulkyRow[] = (() => {
+  const rows: BulkyRow[] = [];
+  for (const c of cityPages) {
+    const col = trashCollectors[c.slug];
+    if (!col?.rules.bulky || c.slug === "cardiff-by-the-sea") continue;
+    if (col === trashCollectors["san-diego"] && c.slug !== "san-diego") continue;
+    rows.push({
+      key: c.slug,
+      label: c.slug === "encinitas" ? "Encinitas and Cardiff" : c.name,
+      href: `/residential/${c.slug}#trash-day`,
+      hauler: col.name,
+      rule: col.rules.bulky,
+      link: col.bulkyLink,
+    });
+  }
+  return rows.sort((a, b) => a.label.localeCompare(b.label));
+})();
+
+// "What holidays do Waste Management, EDCO and Republic Services observe?" Built from the same
+// hauler data as the holiday table, so the answer and the table always agree.
+function haulerHolidayFaq() {
+  const by = (slug: string) => trashCollectors[slug].holidaysObserved.map((h) => holidayNames[h]);
+  return {
+    q: "What holidays do Waste Management, EDCO and Republic Services observe?",
+    a: `Waste Management (Oceanside): ${joinNames(by("oceanside"))}. EDCO (Encinitas, Solana Beach, Del Mar, Coronado, San Marcos and Vista): ${joinNames(by("encinitas"))}. Republic Services (Carlsbad): ${joinNames(by("carlsbad"))}. The City of San Diego: ${joinNames(by("san-diego"))}. When one of these falls on a weekday, pickup for the rest of that week is one day later.`,
+  };
+}
 
 const holidays = Object.keys(holidayNames) as Holiday[];
 
@@ -154,13 +217,24 @@ function AreaRow({ a }: { a: OtherArea }) {
 export default function TrashDayPage() {
   const year = currentYear();
   const perHoliday = holidayFaqs(year);
+  const updated = trashDayUpdated();
+  // The holiday chart comes right after the first question (Adil, 2026-11-23); the rest follow it,
+  // starting with the holidays-by-hauler question that goes with the chart.
+  const topFaqs = faqs.slice(0, 1);
+  const bottomFaqs = [haulerHolidayFaq(), ...faqs.slice(1)];
   return (
     <>
       <JsonLd
         data={{
           "@context": "https://schema.org",
           "@graph": [
-            faqPage([...faqs, ...perHoliday]),
+            {
+              "@type": "WebPage",
+              name: `When is trash day in San Diego? Updated ${year}`,
+              url: `${SITE}/residential/trash-day`,
+              dateModified: updated,
+            },
+            faqPage([...topFaqs, ...bottomFaqs, bulkyFaq, ...perHoliday]),
             breadcrumbs([
               { name: "For Homes", path: "/residential" },
               { name: "Trash day", path: "/residential/trash-day" },
@@ -183,9 +257,11 @@ export default function TrashDayPage() {
           <nav aria-label="Breadcrumb" className="text-xs text-white/60">
             <Link href="/residential" className="hover:text-white">For Homes</Link> › <span className="text-white/80">Trash day</span>
           </nav>
-          <h1 className="mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">When is trash day in San Diego?</h1>
+          <h1 className="mt-3 text-[2rem] md:text-5xl font-bold leading-[1.15]">
+            When is trash day in San Diego? Updated <time dateTime={updated}>{year}</time>
+          </h1>
           <p className="mt-3 md:mt-4 md:text-lg text-white/85">
-            Pickup days change street by street. Enter your city, neighborhood or ZIP code to find your day, plus the set-out
+            Trash day in San Diego changes street by street. Enter your city, neighborhood or ZIP code to find your day, plus the set-out
             rules and holiday schedule where you live.
           </p>
           <div className="mt-6">
@@ -251,7 +327,7 @@ export default function TrashDayPage() {
 
           <h2 className="mt-12 text-2xl md:text-3xl font-bold">Trash day questions</h2>
           <dl className="mt-4 divide-y divide-slate-200">
-            {faqs.slice(0, 1).map((f) => (
+            {topFaqs.map((f) => (
               <div key={f.q} className="py-4">
                 <dt className="font-semibold">{f.q}</dt>
                 <dd className="mt-1.5 text-slate-700">{f.a}</dd>
@@ -340,13 +416,42 @@ export default function TrashDayPage() {
           </div>
 
           <dl className="divide-y divide-slate-200 border-t border-slate-200">
-            {faqs.slice(1).map((f) => (
+            {bottomFaqs.map((f) => (
               <div key={f.q} className="py-4">
                 <dt className="font-semibold">{f.q}</dt>
                 <dd className="mt-1.5 text-slate-700">{f.a}</dd>
               </div>
             ))}
           </dl>
+
+          <section id="bulky" className="scroll-mt-4 mt-12">
+            <h2 className="text-2xl md:text-3xl font-bold">
+              {bulkyFaq.q} Updated <time dateTime={updated}>{year}</time>
+            </h2>
+            <p className="mt-3 text-slate-700">{bulkyFaq.a}</p>
+            <h3 className="mt-6 font-semibold">Bulky item and mattress pickup by city</h3>
+            <ul className="mt-2 divide-y divide-slate-200 border-y border-slate-200">
+              {bulkyRows.map((r) => (
+                <li key={r.key} className="py-4">
+                  <p className="font-semibold">
+                    <Link href={r.href} className="hover:text-res-teal-dark hover:underline">{r.label}</Link>
+                    <span className="font-normal text-sm text-slate-500"> · {r.hauler}</span>
+                  </p>
+                  <p className="mt-1 text-sm text-slate-700">{r.rule}</p>
+                  {r.link && (
+                    <a
+                      href={r.link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1.5 inline-flex items-center gap-1 text-sm font-semibold text-res-teal-dark hover:underline"
+                    >
+                      {r.link.label} <IconExternalLink size={15} aria-hidden="true" />
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
 
           <p className="mt-10 text-center md:text-lg text-slate-700">
             Questions? Call or text us at{" "}

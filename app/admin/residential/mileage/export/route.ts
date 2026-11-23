@@ -17,6 +17,22 @@ export async function GET(req: Request) {
   const y = new URL(req.url).searchParams.get("year") ?? "";
   const year = /^\d{4}$/.test(y) ? Number(y) : new Date().getFullYear();
   const trips = (await tripsForYear(year)).reverse(); // oldest first
+  const daily = new URL(req.url).searchParams.get("view") === "daily";
+  if (daily) {
+    // One row per day: total miles, and the trips that make it up.
+    const dates = [...new Set(trips.map((t) => t.date))];
+    const rows = [
+      ["Date", "Trips", "Roll-out miles", "Roll-in miles", "Other miles", "Total miles", "Business purpose"],
+      ...dates.map((date) => {
+        const list = trips.filter((t) => t.date === date);
+        const sum = (k?: string) => list.filter((t) => !k || t.kind === k).reduce((n, t) => n + tripMiles(t), 0).toFixed(1);
+        return [date, list.length, sum("rollout"), sum("rollin"), sum("manual"), sum(), list.map((t) => t.purpose).join(" | ")];
+      }),
+      [],
+      ["Total", trips.length, "", "", "", trips.reduce((n, t) => n + tripMiles(t), 0).toFixed(1)],
+    ];
+    return csvResponse(rows, `doorstep-disposal-mileage-${year}-daily.csv`);
+  }
   const rows = [
     ["Date", "Type", "Business purpose", "Starting point", "Destination", "Stops", "Miles", "How miles were measured", "Planned miles", "Driver", "Note"],
     ...trips.map((t) => [
@@ -35,11 +51,15 @@ export async function GET(req: Request) {
     [],
     ["Total", "", "", "", "", "", trips.reduce((n, t) => n + tripMiles(t), 0).toFixed(1)],
   ];
+  return csvResponse(rows, `doorstep-disposal-mileage-${year}.csv`);
+}
+
+function csvResponse(rows: unknown[][], filename: string) {
   const csv = rows.map((r) => r.map(cell).join(",")).join("\r\n");
   return new Response(`﻿${csv}`, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="doorstep-disposal-mileage-${year}.csv"`,
+      "Content-Disposition": `attachment; filename="${filename}"`,
       "Cache-Control": "no-store",
     },
   });

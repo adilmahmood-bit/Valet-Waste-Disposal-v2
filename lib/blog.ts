@@ -5,8 +5,9 @@ export const SITE = "https://yourdoorstepdisposal.com";
 
 export type Post = {
   slug: string;
-  title: string;
-  description: string;
+  title: string; // the H1 and the title on the blog list
+  seoTitle?: string; // the browser tab / Google result title, under 60 characters; falls back to title
+  description: string; // under 160 characters
   published: string; // ISO date
   updated: string; // ISO date
   image: { src: string; alt: string; width: number; height: number };
@@ -16,11 +17,12 @@ export type Post = {
 export const posts: Post[] = [
   {
     slug: "is-valet-trash-worth-it",
-    title: "Is Valet Trash Worth It? What San Diego Apartments Spend Without It",
+    title: "Is Valet Trash Worth It? What San Diego Apartments Spend in 2026 Without It",
+    seoTitle: "Is Valet Trash Worth It? San Diego Apartment Costs 2026",
     description:
-      "Without valet trash, apartment communities pay in porter time, contamination fines and extra pickups. What San Diego managers told us, and a calculator to estimate the cost at your property.",
+      "What San Diego apartments spend without valet trash: porter time, contamination fines and extra pickups, plus a calculator for your property.",
     published: "2026-11-17",
-    updated: "2026-11-17",
+    updated: "2026-11-23",
     image: {
       src: "/blog/porter-time/dumpster-lid-cannot-close.jpg",
       alt: "Trash bags and an open shoe box piled above the rim of an apartment dumpster so the lid can't close",
@@ -32,3 +34,7 @@ export const posts: Post[] = [
 ];
 
 export const postUrl = (slug: string) => `${SITE}/blog/${slug}`;
+
+// "2026-11-17" -> "November 17, 2026"
+export const formatPostDate = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" });

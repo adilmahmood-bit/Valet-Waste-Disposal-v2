@@ -7,8 +7,8 @@ import JsonLd from "@/components/JsonLd";
 import { residentialBusiness, breadcrumbs } from "@/components/residential/schema";
 
 export const metadata: Metadata = {
-  title: "Service Area: San Diego & North County",
-  description: `Curbside trash can service in ${residential.serviceCities.slice(0, 8).join(", ")} and more. Check your ZIP code or join the waitlist.`,
+  title: { absolute: "Trash Can Valet Service Area: San Diego & North County" },
+  description: `Curbside trash can service in ${residential.serviceCities.slice(0, 6).join(", ")} and more. Check your ZIP code or join the waitlist.`,
   alternates: { canonical: "/residential/service-area" },
 };
 

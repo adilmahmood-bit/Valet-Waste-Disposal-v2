@@ -14,7 +14,7 @@ const shareImage = {
 
 // Titles and descriptions use the phrases people search for: trash can valet, valet trash, bin to curb.
 export const metadata: Metadata = {
-  title: { default: "Trash Can Valet San Diego & North County | Doorstep Disposal", template: "%s | Doorstep Disposal Trash Can Valet" },
+  title: { default: "Trash Can Valet San Diego & North County | Doorstep Disposal", template: "%s | Doorstep Disposal" },
   description: "Trash can valet for San Diego and North County homes. Every week we roll your trash, recycling and green waste cans to the curb and bring them back.",
   openGraph: { siteName: "Doorstep Disposal", locale: "en_US", type: "website", images: [shareImage] },
   twitter: { card: "summary_large_image" },

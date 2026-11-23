@@ -4,13 +4,13 @@ import JsonLd from "@/components/JsonLd";
 import Footer from "@/components/Footer";
 import PorterCalculator from "@/components/blog/PorterCalculator";
 import PollResults from "@/components/blog/PollResults";
-import { postUrl, posts, SITE } from "@/lib/blog";
+import { postUrl, posts, SITE, formatPostDate as fmt } from "@/lib/blog";
 
 const post = posts.find((p) => p.slug === "is-valet-trash-worth-it")!;
 const url = postUrl(post.slug);
 
 export const metadata: Metadata = {
-  title: { absolute: post.title },
+  title: { absolute: post.seoTitle ?? post.title },
   description: post.description,
   alternates: { canonical: `/blog/${post.slug}` },
   openGraph: {
@@ -40,6 +40,14 @@ const faqs = [
   {
     q: "What causes contamination fines at apartment communities?",
     a: "Usually the wrong material in a recycling container, such as bagged trash or food waste, or containers that overflow before pickup. Whether the fine comes from the hauler or the city depends on the area and the contract.",
+  },
+  {
+    q: "How does valet trash work in an apartment?",
+    a: "Each unit gets a lidded container. On service nights, residents set their tied trash bag out in the container just outside their door by a set time, usually early evening. An attendant then walks every floor, collects each bag, carries it to the dumpster or compactor and tidies the dumpster pad. Service usually runs three to five nights a week, and the property gets a report of every door serviced.",
+  },
+  {
+    q: "How much do apartments pay for valet trash?",
+    a: "Valet trash is usually billed as a flat monthly fee per unit, often called a per-door fee. The rate depends on the number of units, how many nights a week the service runs and how the property is laid out, such as stairs, elevators and the distance to the dumpsters. Many properties pass the fee through to residents, so the service costs the property little or nothing.",
   },
   {
     q: "Who pays for valet trash?",
@@ -108,7 +116,7 @@ export default function Page() {
             put a number on it for your own property.
           </p>
           <p className="mt-4 text-sm text-muted">
-            <time dateTime={post.published}>November 17, 2026</time> ·{" "}
+            Updated <time dateTime={post.updated}>{fmt(post.updated)}</time> ·{" "}
             {post.readMinutes} min read
           </p>
 

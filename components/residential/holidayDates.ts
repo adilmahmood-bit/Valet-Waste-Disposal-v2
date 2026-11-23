@@ -5,6 +5,16 @@ import type { Holiday } from "./trashDay";
 export const currentYear = () =>
   Number(new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", year: "numeric" }).format(new Date()));
 
+// The day someone last checked the trash day data (trashDay.ts, trashDayLookup.ts) against the
+// cities' and haulers' own pages. Change it whenever you re-check or edit that data.
+export const TRASH_DAY_CHECKED = "2026-11-23";
+
+// "Last updated" date for trash day content (ISO): the last check, or January 1 once the year
+// rolls over, since the holiday dates on the pages are recalculated for the new year then.
+export const trashDayUpdated = () => {
+  const jan1 = `${currentYear()}-01-01`;
+  return jan1 > TRASH_DAY_CHECKED ? jan1 : TRASH_DAY_CHECKED;
+};
 // nth weekday (0 = Sunday) of a month; n = -1 for the last one.
 function nthWeekday(year: number, month: number, weekday: number, n: number) {
   if (n > 0) {
