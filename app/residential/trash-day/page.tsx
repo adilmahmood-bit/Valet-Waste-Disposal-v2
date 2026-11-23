@@ -44,11 +44,39 @@ const faqs = [
     q: "What day is trash day in San Diego?",
     a: "There's no single trash day in San Diego. Each street has its own collection day, Monday through Friday, and a holiday can push it one day later that week. Enter your city, neighborhood or ZIP code above to find your day, or use the City of San Diego's collection lookup if you live in the city.",
   },
+  // Questions from Google's "People also ask" for San Diego trash searches (2026-11-23). Facts come from
+  // the City of San Diego's and the haulers' own pages; sources are noted in trashDay.ts.
+  {
+    q: "My trash wasn't picked up in San Diego. What should I do?",
+    a: "First check whether it's a holiday week, since pickup moves one day later after most holidays. If your carts were out by 6 a.m. and still weren't emptied, report it. In the City of San Diego, check the City's missed collections map, then submit a Missed Collection Request through Get It Done. In Oceanside, report it to WM, which says collection will be finished by the next business day. In cities served by EDCO or Republic Services, use the service request form on the hauler's website.",
+  },
+  {
+    q: "What if I forget to take the trash out on trash day?",
+    a: "Haulers collect on a set weekly schedule, and carts need to be at the curb by 6 a.m. If yours weren't out in time, plan on your next pickup day. Don't leave them at the curb until then: the City of San Diego requires carts back in by 6 p.m. on collection day. Keep lids closed until next week, because overfilled and overweight carts can be skipped.",
+  },
+  {
+    q: "Can I put leaves in the trash?",
+    a: "No. Leaves and other yard trimmings go in your green organics cart, not the gray trash cart. California's organics law, SB 1383, requires yard waste to be kept out of the trash, and the City of San Diego and EDCO both tell residents to put it in the green cart. Put it in loose: the City of San Diego doesn't accept plastic bags in the organics cart, even compostable ones.",
+  },
+  {
+    q: "How do I keep trash cans from blowing over?",
+    a: "Close the lid all the way and don't overfill the cart, since an open lid catches the wind. Put heavier bags at the bottom. Keep carts about 2 to 3 feet apart so one falling doesn't knock over the next. When Santa Ana winds are forecast, set carts out as close to pickup time as you can and bring them back in soon after the truck comes.",
+  },
   {
     q: "What time do trash cans need to be out?",
     a: "In most of San Diego County, carts need to be at the curb by 6 a.m. on collection day. Some cities also set a time to bring them back in. Check your city's page for its rules.",
   },
 ];
+
+// "What holidays do Waste Management, EDCO and Republic Services observe?" Built from the same
+// hauler data as the holiday table, so the answer and the table always agree.
+function haulerHolidayFaq() {
+  const by = (slug: string) => trashCollectors[slug].holidaysObserved.map((h) => holidayNames[h]);
+  return {
+    q: "What holidays do Waste Management, EDCO and Republic Services observe?",
+    a: `Waste Management (Oceanside): ${joinNames(by("oceanside"))}. EDCO (Encinitas, Solana Beach, Del Mar, Coronado, San Marcos and Vista): ${joinNames(by("encinitas"))}. Republic Services (Carlsbad): ${joinNames(by("carlsbad"))}. The City of San Diego: ${joinNames(by("san-diego"))}. When one of these falls on a weekday, pickup for the rest of that week is one day later.`,
+  };
+}
 
 const holidays = Object.keys(holidayNames) as Holiday[];
 
@@ -160,6 +188,9 @@ export default function TrashDayPage() {
   const year = currentYear();
   const perHoliday = holidayFaqs(year);
   const updated = trashDayUpdated();
+  // Shown above the holiday guide: everything but the last question, plus the hauler holidays one.
+  const topFaqs = [...faqs.slice(0, -1), haulerHolidayFaq()];
+  const bottomFaqs = faqs.slice(-1);
   return (
     <>
       <JsonLd
@@ -172,7 +203,7 @@ export default function TrashDayPage() {
               url: `${SITE}/residential/trash-day`,
               dateModified: updated,
             },
-            faqPage([...faqs, ...perHoliday]),
+            faqPage([...topFaqs, ...bottomFaqs, ...perHoliday]),
             breadcrumbs([
               { name: "For Homes", path: "/residential" },
               { name: "Trash day", path: "/residential/trash-day" },
@@ -265,7 +296,7 @@ export default function TrashDayPage() {
 
           <h2 className="mt-12 text-2xl md:text-3xl font-bold">Trash day questions</h2>
           <dl className="mt-4 divide-y divide-slate-200">
-            {faqs.slice(0, 1).map((f) => (
+            {topFaqs.map((f) => (
               <div key={f.q} className="py-4">
                 <dt className="font-semibold">{f.q}</dt>
                 <dd className="mt-1.5 text-slate-700">{f.a}</dd>
@@ -354,7 +385,7 @@ export default function TrashDayPage() {
           </div>
 
           <dl className="divide-y divide-slate-200 border-t border-slate-200">
-            {faqs.slice(1).map((f) => (
+            {bottomFaqs.map((f) => (
               <div key={f.q} className="py-4">
                 <dt className="font-semibold">{f.q}</dt>
                 <dd className="mt-1.5 text-slate-700">{f.a}</dd>

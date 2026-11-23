@@ -42,6 +42,14 @@ const faqs = [
     a: "Usually the wrong material in a recycling container, such as bagged trash or food waste, or containers that overflow before pickup. Whether the fine comes from the hauler or the city depends on the area and the contract.",
   },
   {
+    q: "How does valet trash work in an apartment?",
+    a: "Each unit gets a lidded container. On service nights, residents set their tied trash bag out in the container just outside their door by a set time, usually early evening. An attendant then walks every floor, collects each bag, carries it to the dumpster or compactor and tidies the dumpster pad. Service usually runs three to five nights a week, and the property gets a report of every door serviced.",
+  },
+  {
+    q: "How much do apartments pay for valet trash?",
+    a: "Valet trash is usually billed as a flat monthly fee per unit, often called a per-door fee. The rate depends on the number of units, how many nights a week the service runs and how the property is laid out, such as stairs, elevators and the distance to the dumpsters. Many properties pass the fee through to residents, so the service costs the property little or nothing.",
+  },
+  {
     q: "Who pays for valet trash?",
     a: "The property pays the valet company and decides whether to fund it or pass some or all of the cost to residents. That is the owner's decision, and owners should check with their own counsel on resident fees.",
   },

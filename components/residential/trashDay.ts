@@ -11,6 +11,7 @@ export type CollectionRules = {
   bringIn?: string; // when carts must come back in
   placement?: string; // where carts go at the curb
   holidays?: string; // how holidays shift pickup
+  bulky?: string; // bulky items and mattresses: whether the hauler picks them up, how, and what it costs
 };
 
 // Holidays shown in the holiday table on /residential/trash-day, in calendar order.
@@ -63,6 +64,10 @@ const sanDiego: TrashCollector = {
     placement: "Wheels against the curb and handles facing your home, about 3 feet from other carts, parked cars, poles, trees and mailboxes.",
     holidays:
       "No pickup on New Year's Day, Memorial Day, Labor Day, Thanksgiving or Christmas. Starting on the holiday, pickup is one day later for the rest of that week, so a Friday pickup moves to Saturday.",
+    // Source: sandiego.gov/environmental-services/recycling/residential/mattresses and
+    // /recycling/residential/curbside, /collection/general (checked 2026-11-23).
+    bulky:
+      "The City of San Diego doesn't offer curbside bulky item pickup. Mattresses and box springs can be dropped off free at the Miramar Landfill mattress collection site, weekdays 7 a.m. to 3 p.m. For furniture and appliances, WasteFreeSD.org lists places that take them. Furniture, appliances and anything over 50 pounds can't go in your carts.",
   },
 };
 
@@ -80,6 +85,10 @@ const edcoRules: CollectionRules = {
   placement:
     "On the street with wheels against the curb and the lid arrows pointing toward the street. Keep carts at least 2 feet from each other and from parked cars, trees, poles and mailboxes, and out of bike lanes.",
   holidays: edcoHolidays,
+  // Source: <city>.edcodisposal.com/residential-waste-services/curbside-pickup/bulky-item-pickup/
+  // (checked 2026-11-23). Encinitas, Solana Beach, San Marcos and Vista all use this wording;
+  // Del Mar and Coronado differ and set their own below.
+  bulky: "EDCO picks up bulky items for an additional fee. Request a pickup through the contact form on EDCO's website for your city.",
 };
 
 const edco = (
@@ -116,6 +125,9 @@ export const trashCollectors: Record<string, TrashCollector> = {
       placement: "Wheels against the curb, with at least 2 feet between carts and 2 feet from parked cars, mailboxes and other obstacles. Keep carts out from under trees.",
       holidays:
         "WM observes New Year's Day, Memorial Day, Independence Day, Labor Day, Thanksgiving and Christmas. When one falls on a weekday, pickup for the rest of that week is one day later: after a Thursday holiday, Thursday pickup moves to Friday and Friday pickup moves to Saturday. Holidays on a Saturday or Sunday don't delay pickup.",
+      // Source: wm.com Oceanside page ("Bulk Trash Pickup") and wm.com/us/en/home/bulk-trash-pickup (checked 2026-11-23).
+      bulky:
+        "WM offers bulky item pickup. Schedule it from your My WM account, and WM gives you a price before booking. Mattresses and box springs are accepted but must be wrapped in plastic.",
     },
   },
   // Sources: republicservices.com/municipality/carlsbad-ca (checked 2026-11-15) and Republic's
@@ -134,6 +146,10 @@ export const trashCollectors: Record<string, TrashCollector> = {
       placement: "Keep carts at least 1 foot apart from each other and 2 feet from other objects like parked cars, poles and mailboxes.",
       holidays:
         "No pickup on New Year's Day, Thanksgiving or Christmas. When one falls on a weekday, pickup is one day later for the rest of that week. Holidays on a weekend don't delay pickup. Other holidays don't change your day.",
+      // Source: Republic's Carlsbad bulky item flyer (Bulky-Item-Pickup-Flyer-Carlsbad-CA.pdf, dated 2023,
+      // linked from republicservices.com/municipality/carlsbad-ca; checked 2026-11-23).
+      bulky:
+        "Each home gets three free bulky item pickups a year from Republic Services, with up to five items each time. Schedule it online from your Republic account. Mattresses and box springs are accepted if they're wrapped in plastic.",
     },
   },
   encinitas,
@@ -142,8 +158,26 @@ export const trashCollectors: Record<string, TrashCollector> = {
   "solana-beach": edco("Solana Beach", "solana-beach", {
     carts: "Trash and recycling are typically collected on the same day. Each home also gets a green 95-gallon organics cart, collected every week on your service day.",
   }),
-  "del-mar": edco("Del Mar", "del-mar", {}, { src: "/residential/trash-maps/del-mar.jpg", width: 1053, height: 736 }),
-  coronado: edco("Coronado", "coronado", {}, { src: "/residential/trash-maps/coronado.jpg", width: 700, height: 357 }),
+  // Bulky: del-mar.edcodisposal.com bulky-item-pickup page (checked 2026-11-23).
+  "del-mar": edco(
+    "Del Mar",
+    "del-mar",
+    {
+      bulky:
+        "Each home gets three free bulky item pickups a year from EDCO, with up to five items each time. Request one through the contact form on EDCO Del Mar's website, and set items out by 6 a.m., usually on your regular collection day.",
+    },
+    { src: "/residential/trash-maps/del-mar.jpg", width: 1053, height: 736 },
+  ),
+  // Bulky: coronado.edcodisposal.com bulky-item-pickup page (checked 2026-11-23). No fee stated.
+  coronado: edco(
+    "Coronado",
+    "coronado",
+    {
+      bulky:
+        "EDCO picks up large household items, including mattresses, sofas and appliances, by special arrangement. Request a pickup through the contact form on EDCO Coronado's website. It doesn't cover construction or remodeling debris.",
+    },
+    { src: "/residential/trash-maps/coronado.jpg", width: 700, height: 357 },
+  ),
   // San Marcos and Vista added 2026-11-15; Adil confirmed EDCO serves both.
   "san-marcos": edco("San Marcos", "san-marcos", {}, { src: "/residential/trash-maps/san-marcos.jpg", width: 700, height: 506 }),
   vista: edco("Vista", "city-of-vista", {}, { src: "/residential/trash-maps/vista.jpg", width: 1400, height: 1074 }),
@@ -167,4 +201,5 @@ export const ruleLabels: [keyof CollectionRules, string][] = [
   ["setOut", "Setting carts out"],
   ["bringIn", "Bringing carts in"],
   ["placement", "Where carts go"],
+  ["bulky", "Bulky items and mattresses"],
 ];

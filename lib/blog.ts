@@ -20,7 +20,7 @@ export const posts: Post[] = [
     description:
       "Without valet trash, apartment communities pay in porter time, contamination fines and extra pickups. What San Diego managers told us, and a calculator to estimate the cost at your property.",
     published: "2026-11-17",
-    updated: "2026-11-17",
+    updated: "2026-11-23",
     image: {
       src: "/blog/porter-time/dumpster-lid-cannot-close.jpg",
       alt: "Trash bags and an open shoe box piled above the rim of an apartment dumpster so the lid can't close",

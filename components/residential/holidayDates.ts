@@ -7,7 +7,7 @@ export const currentYear = () =>
 
 // The day someone last checked the trash day data (trashDay.ts, trashDayLookup.ts) against the
 // cities' and haulers' own pages. Change it whenever you re-check or edit that data.
-export const TRASH_DAY_CHECKED = "2026-11-20";
+export const TRASH_DAY_CHECKED = "2026-11-23";
 
 // "Last updated" date for trash day content (ISO): the last check, or January 1 once the year
 // rolls over, since the holiday dates on the pages are recalculated for the new year then.
