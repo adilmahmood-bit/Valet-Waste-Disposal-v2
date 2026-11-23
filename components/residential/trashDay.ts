@@ -43,6 +43,8 @@ export type TrashCollector = {
   // Holidays that change pickup (no pickup that day, so the week shifts). Keep in step with rules.holidays.
   holidaysObserved: Holiday[];
   rules: CollectionRules;
+  // Official page or flyer for the bulky item rule, linked after it on the city page.
+  bulkyLink?: { href: string; label: string };
 };
 
 export const sixHolidays: Holiday[] = ["newYears", "memorial", "independence", "labor", "thanksgiving", "christmas"];
@@ -146,10 +148,14 @@ export const trashCollectors: Record<string, TrashCollector> = {
       placement: "Keep carts at least 1 foot apart from each other and 2 feet from other objects like parked cars, poles and mailboxes.",
       holidays:
         "No pickup on New Year's Day, Thanksgiving or Christmas. When one falls on a weekday, pickup is one day later for the rest of that week. Holidays on a weekend don't delay pickup. Other holidays don't change your day.",
-      // Source: Republic's Carlsbad bulky item flyer (Bulky-Item-Pickup-Flyer-Carlsbad-CA.pdf, dated 2023,
-      // linked from republicservices.com/municipality/carlsbad-ca; checked 2026-11-23).
+      // Source: Republic's Carlsbad bulky item flyer (linked below, from republicservices.com/municipality/carlsbad-ca).
+      // Adil confirmed it's current, 2026-11-23.
       bulky:
         "Each home gets three free bulky item pickups a year from Republic Services, with up to five items each time. Schedule it online from your Republic account. Mattresses and box springs are accepted if they're wrapped in plastic.",
+    },
+    bulkyLink: {
+      href: "https://www.republicservices.com/sites/default/files/legacy_documents/Muni/California/Carlsbad/Bulky-Item-Pickup-Flyer-Carlsbad-CA.pdf",
+      label: "Republic Services Carlsbad bulky item flyer (PDF)",
     },
   },
   encinitas,

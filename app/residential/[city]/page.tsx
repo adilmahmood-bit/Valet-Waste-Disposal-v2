@@ -198,7 +198,22 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
                       collector.rules[k] ? (
                         <div key={k}>
                           <dt className="inline font-semibold">{k === "holidays" ? `Holiday schedule ${city.name} ${year}` : label}: </dt>
-                          <dd className="inline">{collector.rules[k]}</dd>
+                          <dd className="inline">
+                            {collector.rules[k]}
+                            {k === "bulky" && collector.bulkyLink && (
+                              <>
+                                {" "}
+                                <a
+                                  href={collector.bulkyLink.href}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-0.5 font-semibold text-res-teal-dark hover:underline"
+                                >
+                                  {collector.bulkyLink.label} <IconExternalLink size={14} aria-hidden="true" />
+                                </a>
+                              </>
+                            )}
+                          </dd>
                         </div>
                       ) : null,
                     )}
