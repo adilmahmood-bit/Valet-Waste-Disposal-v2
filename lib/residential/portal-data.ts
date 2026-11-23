@@ -68,6 +68,8 @@ export async function loadPortal(customerId: string): Promise<PortalProperty[]> 
     db()
       .from("res_routific_orders")
       .select("address_id, pickup_date, routific_status, eta, tracking_url")
+      // The evening roll-out's arrival and status (the roll-in on pickup day shares its pickup date).
+      .eq("kind", "rollout")
       .in("address_id", ids)
       .gte("pickup_date", today)
       .is("deleted_at", null)

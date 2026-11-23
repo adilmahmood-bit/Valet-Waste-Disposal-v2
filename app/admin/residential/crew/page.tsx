@@ -10,8 +10,9 @@ import RollInForm from "./RollInForm";
 
 export const dynamic = "force-dynamic";
 
-// Roll-ins for one day, on a phone. Roll-outs are driven from the Routific app; roll-ins
-// aren't in Routific, so the crew records them here, with a photo.
+// Roll-ins for one day, on a phone. Since 2026-11-23 roll-ins are Routific stops too (the
+// driver marks them done in the Routific app and the webhook records them here). This page
+// stays as a backup: a stop done here instead shows as done, and the card hides its form.
 export default async function CrewPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await requireAdmin();
   const q = (await searchParams).date;
@@ -51,6 +52,9 @@ export default async function CrewPage({ searchParams }: { searchParams: Promise
       </div>
       <p className="text-slate-600">
         {formatLong(date)} · {sorted.length ? `${left} of ${sorted.length} left` : "No roll-ins today"}
+      </p>
+      <p className="text-sm text-slate-500">
+        Roll-ins are Routific stops: mark them done in the Routific app. Use this page only if Routific isn&apos;t working.
       </p>
 
       {sorted.map((s, i) => {

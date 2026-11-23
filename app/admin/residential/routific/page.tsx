@@ -83,6 +83,7 @@ export default async function RoutificPage({ searchParams }: { searchParams: Pro
         <h2 className="text-lg font-semibold">Roll-outs due ({stops.length})</h2>
         <p className="text-sm text-slate-600">
           Cans out this evening ({rollOutWindow.start}–{rollOutWindow.end}) for the next morning&apos;s pickup. Holidays and pauses are already applied.
+          Roll-ins ({residential.routific.rollInWindow.start}–{residential.routific.rollInWindow.end} on pickup day) are sent by the sync automatically and listed with the day&apos;s other stops below.
         </p>
         {stops.length === 0 ? (
           <p className="mt-3 text-sm text-slate-500">No roll-outs due this evening.</p>

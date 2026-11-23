@@ -47,6 +47,9 @@ export const residential = {
   // 2026-11-19). Roll-ins are not sent. Times are 24-hour, San Diego time.
   routific: {
     rollOutWindow: { start: "16:00", end: "21:00" },
+    // Roll-ins on pickup day, after the hauler has been. Ends at 6 p.m. because the City of
+    // San Diego requires carts back in by then (the strictest bring-in rule we serve).
+    rollInWindow: { start: "12:00", end: "18:00" },
     // Time at each stop, in seconds: a base plus a little per can.
     stopSeconds: { base: 120, perBin: 30 },
     // Days ahead to keep in Routific. 1 = tonight's and tomorrow night's roll-outs.

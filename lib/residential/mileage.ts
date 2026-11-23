@@ -113,6 +113,8 @@ export async function syncRollinTrips(days = 14) {
       .select("date, address_id, address:res_addresses(city)")
       .eq("type", "back")
       .in("status", ["done", "issue"])
+      // Roll-ins done as Routific stops are on that route's own mileage entry already.
+      .neq("completed_by", "routific")
       .gte("date", since),
   ) as unknown as { date: string; address_id: string; address: { city: string } | null }[];
   const byDate = new Map<string, typeof visits>();
@@ -122,7 +124,7 @@ export async function syncRollinTrips(days = 14) {
     const addressIds = [...new Set(list.map((v) => v.address_id))];
     // The roll-out route(s) that put these properties' cans out for this pickup day.
     const orders = must(
-      await db().from("res_routific_orders").select("route_uuid").eq("pickup_date", date).in("address_id", addressIds).not("route_uuid", "is", null),
+      await db().from("res_routific_orders").select("route_uuid").eq("pickup_date", date).eq("kind", "rollout").in("address_id", addressIds).not("route_uuid", "is", null),
     ) as { route_uuid: string }[];
     const routeUuids = [...new Set(orders.map((o) => o.route_uuid))];
     const routes = routeUuids.length
