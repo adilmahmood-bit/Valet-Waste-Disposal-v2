@@ -4,7 +4,7 @@ import JsonLd from "@/components/JsonLd";
 import Footer from "@/components/Footer";
 import PorterCalculator from "@/components/blog/PorterCalculator";
 import PollResults from "@/components/blog/PollResults";
-import { postUrl, posts, SITE } from "@/lib/blog";
+import { postUrl, posts, SITE, formatPostDate as fmt } from "@/lib/blog";
 
 const post = posts.find((p) => p.slug === "is-valet-trash-worth-it")!;
 const url = postUrl(post.slug);
@@ -108,7 +108,7 @@ export default function Page() {
             put a number on it for your own property.
           </p>
           <p className="mt-4 text-sm text-muted">
-            <time dateTime={post.published}>November 17, 2026</time> ·{" "}
+            Updated <time dateTime={post.updated}>{fmt(post.updated)}</time> ·{" "}
             {post.readMinutes} min read
           </p>
 

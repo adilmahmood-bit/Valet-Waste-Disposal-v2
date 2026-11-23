@@ -10,7 +10,7 @@ import ZipCheck from "@/components/residential/ZipCheck";
 import StickyCta from "@/components/residential/StickyCta";
 import JsonLd from "@/components/JsonLd";
 import { trashCollectors, ruleLabels } from "@/components/residential/trashDay";
-import { currentYear } from "@/components/residential/holidayDates";
+import { currentYear, trashDayUpdated, formatLongDate } from "@/components/residential/holidayDates";
 
 
 // One static page per city in cities.ts; any other slug is a 404.
@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   if (!city) return {};
   // Leads with the phrase people search for ("trash can valet <city>").
   const title = `Trash Can Valet ${city.name}, CA | Doorstep Disposal`;
-  const description = `Trash can valet in ${city.name}. Every week we roll your trash, recycling and green waste cans to the curb and bring them back after pickup.`;
+  const description = `Trash can valet in ${city.name}. Every week we roll your trash, recycling and green waste cans to the curb and bring them back after pickup. Plus when trash day is in ${city.name} in ${currentYear()}.`;
   // Link previews (texts, social posts) show this city's photo. Made by scripts/city-og-images.mjs.
   const image = { url: `/residential/og/${city.slug}.jpg`, width: 1200, height: 630, alt: `${city.name}, California` };
   return {
@@ -46,10 +46,17 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
   const others = cityPages.filter((c) => c.slug !== city.slug);
   const collector = trashCollectors[city.slug];
   const year = currentYear();
+  const updated = trashDayUpdated();
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
+      {
+        "@type": "WebPage",
+        name: `Trash can valet in ${city.name}, CA`,
+        url: `${SITE}/residential/${city.slug}`,
+        dateModified: updated,
+      },
       {
         "@type": "Service",
         name: `Trash can valet in ${city.name}, CA`,
@@ -151,8 +158,11 @@ export default async function CityPage({ params }: { params: Promise<{ city: str
             <div id="trash-day" className="scroll-mt-4 mt-8 rounded-2xl border border-slate-200 p-5 md:p-6">
               <h3 className="flex items-center gap-2 text-lg font-semibold">
                 <IconCalendarSearch size={22} className="text-res-teal-dark shrink-0" aria-hidden="true" />
-                When is trash day in {city.name}?
+                When is trash day in {city.name}? ({year})
               </h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Updated <time dateTime={updated}>{formatLongDate(updated)}</time>
+              </p>
               <p className="mt-2 text-slate-700">It depends on your street. {collector.who}</p>
               <a
                 href={collector.lookupUrl}

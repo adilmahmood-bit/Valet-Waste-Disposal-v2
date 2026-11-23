@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Footer from "@/components/Footer";
-import { posts } from "@/lib/blog";
+import { posts, formatPostDate as fmt } from "@/lib/blog";
 
 export const metadata: Metadata = {
   title: { absolute: "Blog: Apartment Trash and Valet Trash in San Diego | Valet Waste Disposal" },
@@ -9,9 +9,6 @@ export const metadata: Metadata = {
     "Field notes for San Diego apartment managers on dumpster pads, porter time, contamination fines and valet trash.",
   alternates: { canonical: "/blog" },
 };
-
-const fmt = (iso: string) =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
 export default function BlogIndex() {
   return (
@@ -31,7 +28,7 @@ export default function BlogIndex() {
                   <img src={p.image.src} alt={p.image.alt} width={p.image.width} height={p.image.height} className="w-full h-48 object-cover" />
                   <div className="p-6">
                     <p className="text-sm text-muted">
-                      <time dateTime={p.published}>{fmt(p.published)}</time> · {p.readMinutes} min read
+                      Updated <time dateTime={p.updated}>{fmt(p.updated)}</time> · {p.readMinutes} min read
                     </p>
                     <h2 className="font-heading text-2xl text-ink mt-1 group-hover:text-teal">{p.title}</h2>
                     <p className="mt-2 text-ink-mid">{p.description}</p>

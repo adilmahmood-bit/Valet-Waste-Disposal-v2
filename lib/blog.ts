@@ -16,7 +16,7 @@ export type Post = {
 export const posts: Post[] = [
   {
     slug: "is-valet-trash-worth-it",
-    title: "Is Valet Trash Worth It? What San Diego Apartments Spend Without It",
+    title: "Is Valet Trash Worth It in 2026? What San Diego Apartments Spend Without It",
     description:
       "Without valet trash, apartment communities pay in porter time, contamination fines and extra pickups. What San Diego managers told us, and a calculator to estimate the cost at your property.",
     published: "2026-11-17",
@@ -32,3 +32,7 @@ export const posts: Post[] = [
 ];
 
 export const postUrl = (slug: string) => `${SITE}/blog/${slug}`;
+
+// "2026-11-17" -> "November 17, 2026"
+export const formatPostDate = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" });
