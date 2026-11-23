@@ -1,17 +1,24 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
+    "seo-audit": {
+      "source": "coreyhaines31/marketingskills",
+      "commit": "5b2b400eec1e7e1cec76245a715d0b0d4fd2a9c1",
+      "sourceType": "github",
+      "skillPath": "skills/seo-audit/SKILL.md",
+      "computedHash": "d42f6f32bb62f8ebce93826ef33a7b663f2259b2891a0992f3d63dbd46f0f5ad"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/supabase/SKILL.md",
-      "computedHash": "b77176bbd69eb179e1250eac478178a43f635f5f9efecb9cf196eb5482d7e8c8"
+      "computedHash": "3d3da36ab006bbcd6d96fda84e6b9cc2af0e8a9fa40ca47b01971bdcb3dac972"
     },
     "supabase-postgres-best-practices": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
-      "computedHash": "38fb49d3b57c46cba18b07a44254bd42c4c93903fda1d8cb683429615d32fec4"
+      "computedHash": "74099e261ce782bc869a4f0b9f34b0dcead5c1b80106cfadce0a713598e58542"
     }
   }
 }
