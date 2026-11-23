@@ -6,10 +6,11 @@ import { addDays, formatLong, todaySD } from "./schedule";
 import { createOrders, deleteOrder, routificConfigured, updateOrder, type RoutificOrderInput } from "./routific";
 import { decryptGateCode } from "./crypto";
 
-// Keeps Routific in step with our schedule: one order per property per trash day, for the
-// evening roll-out. Our route builder (holidays, pauses, plan dates) decides who is due;
-// this creates missing orders, updates changed ones and deletes ones no longer due.
-// Safe to run any number of times. Never touches dates before today.
+// Keeps Routific in step with our schedule: two orders per property per trash day, the evening
+// roll-out (kind "rollout", the night before) and the roll-in after pickup (kind "rollin", on
+// pickup day). Our route builder (holidays, pauses, plan dates) decides who is due; this creates
+// missing orders, updates changed ones and deletes ones no longer due. Safe to run any number of
+// times. Never touches dates before today.
 
 export type SyncLine = { label: string; addressId: string; detail?: string };
 export type DaySync = {
@@ -35,37 +36,79 @@ type OrderRow = {
   manual: boolean;
 };
 
+type Kind = "rollout" | "rollin";
+
 const DONE = ["delivered", "missed"];
 
-export function orderFor(stop: Stop): RoutificOrderInput {
-  const { address, customer, sub, gateCode } = stop;
-  const { rollOutWindow, stopSeconds } = residential.routific;
-  const cans = `${address.bins} ${address.bins === 1 ? "can" : "cans"}`;
+// Driver-facing basics shared by both kinds of stop.
+function stopBasics(stop: Stop) {
+  const { address, customer, gateCode } = stop;
+  const { stopSeconds } = residential.routific;
   // "5966 Baja Dr (front house)": the bracket note goes to the driver, not to the map lookup.
   const unit = address.street.match(/\(([^)]*)\)/)?.[1];
   const street = address.street.replace(/\s*\([^)]*\)\s*/g, " ").trim();
-  const lines = [
-    `ROLL OUT ${cans} for trash pickup ${formatLong(stop.pickupDate)}.`,
-    unit ? `Which one: ${unit}` : null,
-    sub?.plan === "push_out" ? "Roll-out only plan: we do NOT bring these back." : "Bring them back in after pickup (not a Routific stop).",
-    gateCode ? `Gate code: ${gateCode}` : null,
-    address.access_flags.length ? `Access: ${address.access_flags.map(accessFlagLabel).join(", ")}` : null,
-    address.access_notes ? `Notes: ${address.access_notes}` : null,
-  ];
   return {
     name: customer.name,
-    locations: [{ address: `${street}, ${address.city}, CA ${address.zip}` }],
+    cans: `${address.bins} ${address.bins === 1 ? "can" : "cans"}`,
+    location: { address: `${street}, ${address.city}, CA ${address.zip}` },
     duration: stopSeconds.base + stopSeconds.perBin * address.bins,
+    extra: [
+      unit ? `Which one: ${unit}` : null,
+      gateCode ? `Gate code: ${gateCode}` : null,
+      address.access_flags.length ? `Access: ${address.access_flags.map(accessFlagLabel).join(", ")}` : null,
+      address.access_notes ? `Notes: ${address.access_notes}` : null,
+    ],
+  };
+}
+
+export function orderFor(stop: Stop): RoutificOrderInput {
+  const b = stopBasics(stop);
+  const { rollOutWindow } = residential.routific;
+  const lines = [
+    `ROLL OUT ${b.cans} for trash pickup ${formatLong(stop.pickupDate)}.`,
+    stop.sub?.plan === "push_out" ? "Roll-out only plan: we do NOT bring these back." : "Roll-in after pickup is a separate stop tomorrow.",
+    ...b.extra,
+  ];
+  return {
+    name: b.name,
+    locations: [b.location],
+    duration: b.duration,
     instructions: lines.filter(Boolean).join("\n"),
     timeWindows: [{ startTime: rollOutWindow.start, endTime: rollOutWindow.end }],
-    customerOrderNumber: `${address.id}:${stop.pickupDate}`,
+    customerOrderNumber: `${stop.address.id}:${stop.pickupDate}`,
+    deliveryDate: stop.visitDate,
+  };
+}
+
+// The roll-in on pickup day. Same external ID format as a roll-in added by hand on the dashboard,
+// so the two can't both exist (the unique index on address, pickup date and kind).
+export function rollInOrderFor(stop: Stop): RoutificOrderInput {
+  const b = stopBasics(stop);
+  const { rollInWindow } = residential.routific;
+  const lines = [
+    `ROLL IN ${b.cans}: bring them back from the curb to their spot after today's trash pickup.`,
+    "If the cans haven't been emptied yet, mark this stop missed and note it.",
+    ...b.extra,
+  ];
+  return {
+    name: b.name,
+    locations: [b.location],
+    duration: b.duration,
+    instructions: lines.filter(Boolean).join("\n"),
+    timeWindows: [{ startTime: rollInWindow.start, endTime: rollInWindow.end }],
+    customerOrderNumber: `${stop.address.id}:${stop.pickupDate}:rollin`,
     deliveryDate: stop.visitDate,
   };
 }
 
 const hashOf = (o: RoutificOrderInput) => createHash("sha256").update(JSON.stringify(o)).digest("hex");
-const label = (s: Stop) => `${s.address.street}, ${s.address.zip} (${s.customer.name})`;
+const KIND_LABEL: Record<Kind, string> = { rollout: "Roll-out", rollin: "Roll-in" };
+const label = (s: Stop, kind: Kind) => `${KIND_LABEL[kind]}: ${s.address.street}, ${s.address.zip} (${s.customer.name})`;
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e)).slice(0, 500);
+
+// "HH:MM" now in San Diego.
+const nowTimeSD = () =>
+  new Date().toLocaleTimeString("en-GB", { timeZone: "America/Los_Angeles", hour: "2-digit", minute: "2-digit", hour12: false });
 
 export async function syncRoutific({ dryRun = false, from = todaySD() }: { dryRun?: boolean; from?: string } = {}): Promise<SyncResult> {
   if (!dryRun && !routificConfigured()) throw new Error("Routific isn't set up: ROUTIFIC_API_TOKEN and ROUTIFIC_WORKSPACE_UUID are needed.");
@@ -78,19 +121,33 @@ export async function syncRoutific({ dryRun = false, from = todaySD() }: { dryRu
   return { dryRun, days, ranAt: new Date().toISOString() };
 }
 
-type DayOptions = { only?: Set<string>; remove?: boolean };
+type DayOptions = { only?: Set<string>; remove?: boolean; kinds?: Kind[] };
 
-// One roll-out evening. `only` limits it to some properties (the dashboard's "push selected");
-// `remove: false` leaves orders that are no longer due alone. Only regular roll-out orders
-// (kind = rollout) are touched; one-off stops from the dashboard are left alone.
-async function syncDay(rollOutDate: string, dryRun: boolean, { only, remove = true }: DayOptions = {}): Promise<DaySync> {
-  const pickupDate = addDays(rollOutDate, 1);
-  const day: DaySync = { rollOutDate, pickupDate, create: [], update: [], remove: [], keep: [], errors: [] };
+// One day: that evening's roll-outs (for the next day's pickup) and that day's roll-ins (after
+// its pickup). `only` limits it to some properties and `kinds` to one kind of stop (the
+// dashboard's "push selected" sends roll-outs only); `remove: false` leaves orders that are no
+// longer due alone. One-off stops added on the dashboard (manual) are never removed.
+async function syncDay(date: string, dryRun: boolean, { only, remove = true, kinds = ["rollout", "rollin"] }: DayOptions = {}): Promise<DaySync> {
+  const pickupDate = addDays(date, 1);
+  const day: DaySync = { rollOutDate: date, pickupDate, create: [], update: [], remove: [], keep: [], errors: [] };
+  const route = await buildRoute(date);
+  const pick = (s: Stop) => !s.paused && (!only || only.has(s.address.id));
 
-  const route = await buildRoute(rollOutDate);
-  const due = route.out.filter((s) => !s.paused && s.pickupDate === pickupDate && (!only || only.has(s.address.id)));
+  if (kinds.includes("rollout")) {
+    await syncKind(day, "rollout", pickupDate, date, route.out.filter((s) => s.pickupDate === pickupDate && pick(s)), dryRun, remove);
+  }
+  if (kinds.includes("rollin")) {
+    // Today's roll-ins only while their window is still open; after it, a new stop would be stale.
+    const open = date > todaySD() || nowTimeSD() < residential.routific.rollInWindow.end;
+    if (open) await syncKind(day, "rollin", date, date, route.back.filter(pick), dryRun, remove);
+  }
+  return day;
+}
+
+async function syncKind(day: DaySync, kind: Kind, pickupDate: string, deliveryDate: string, due: Stop[], dryRun: boolean, remove: boolean) {
+  const build = kind === "rollout" ? orderFor : rollInOrderFor;
   const rows = must(
-    await db().from("res_routific_orders").select("*").eq("pickup_date", pickupDate).eq("kind", "rollout").is("deleted_at", null),
+    await db().from("res_routific_orders").select("*").eq("pickup_date", pickupDate).eq("kind", kind).is("deleted_at", null),
   ) as OrderRow[];
   const rowFor = new Map(rows.map((r) => [r.address_id, r]));
   const dueIds = new Set(due.map((s) => s.address.id));
@@ -99,30 +156,38 @@ async function syncDay(rollOutDate: string, dryRun: boolean, { only, remove = tr
   const toCreate: { stop: Stop; order: RoutificOrderInput; row?: OrderRow }[] = [];
   const toUpdate: { stop: Stop; order: RoutificOrderInput; row: OrderRow }[] = [];
   for (const stop of due) {
-    const order = orderFor(stop);
+    const order = build(stop);
     const row = rowFor.get(stop.address.id);
+    const line = { label: label(stop, kind), addressId: stop.address.id };
     if (row && !row.order_uuid && Date.now() - new Date(row.created_at).getTime() < 120_000) {
       // Another sync claimed it moments ago and is still talking to Routific.
-      day.keep.push({ label: label(stop), addressId: stop.address.id, detail: "being created" });
+      day.keep.push({ ...line, detail: "being created" });
+    } else if (row?.manual && kind === "rollin") {
+      // A roll-in already added by hand (its own window and notes): leave it as it is.
+      day.keep.push({ ...line, detail: "added by hand" });
     } else if (!row || !row.order_uuid) {
       toCreate.push({ stop, order, row });
-      day.create.push({ label: label(stop), addressId: stop.address.id, detail: row ? "retry" : undefined });
+      day.create.push({ ...line, detail: row ? "retry" : undefined });
     } else if (DONE.includes(row.routific_status ?? "")) {
-      day.keep.push({ label: label(stop), addressId: stop.address.id, detail: row.routific_status ?? undefined });
+      day.keep.push({ ...line, detail: row.routific_status ?? undefined });
     } else if (row.payload_hash !== hashOf(order)) {
       toUpdate.push({ stop, order, row });
-      day.update.push({ label: label(stop), addressId: stop.address.id });
+      day.update.push(line);
     } else {
-      day.keep.push({ label: label(stop), addressId: stop.address.id });
+      day.keep.push(line);
     }
   }
   // Stops added by hand on the dashboard (manual) are never removed by the sync.
   const toRemove = remove ? rows.filter((r) => !dueIds.has(r.address_id) && !r.manual) : [];
   for (const r of toRemove) {
     const done = DONE.includes(r.routific_status ?? "");
-    (done ? day.keep : day.remove).push({ label: r.customer_order_number, addressId: r.address_id, detail: done ? `${r.routific_status}, no longer due` : undefined });
+    (done ? day.keep : day.remove).push({
+      label: `${KIND_LABEL[kind]}: ${r.customer_order_number}`,
+      addressId: r.address_id,
+      detail: done ? `${r.routific_status}, no longer due` : undefined,
+    });
   }
-  if (dryRun) return day;
+  if (dryRun) return;
 
   // Create: claim a row first (the unique index stops a second sync running at the same time),
   // then send every new order in one request and match the replies by customerOrderNumber.
@@ -134,11 +199,11 @@ async function syncDay(rollOutDate: string, dryRun: boolean, { only, remove = tr
     }
     const ins = await db()
       .from("res_routific_orders")
-      .insert({ address_id: stop.address.id, pickup_date: pickupDate, delivery_date: rollOutDate, customer_order_number: order.customerOrderNumber })
+      .insert({ address_id: stop.address.id, kind, pickup_date: pickupDate, delivery_date: deliveryDate, customer_order_number: order.customerOrderNumber })
       .select("id")
       .maybeSingle();
     if (ins.error) {
-      day.errors.push(`${label(stop)}: skipped, another sync is creating it (${ins.error.message})`);
+      day.errors.push(`${label(stop, kind)}: skipped, another sync is creating it (${ins.error.message})`);
       continue;
     }
     claimed.push({ order, rowId: (ins.data as { id: string }).id });
@@ -156,7 +221,7 @@ async function syncDay(rollOutDate: string, dryRun: boolean, { only, remove = tr
         await db().from("res_routific_orders").update({ ...update, updated_at: new Date().toISOString() }).eq("id", c.rowId);
       }
     } catch (e) {
-      day.errors.push(`Creating ${claimed.length} orders failed: ${msg(e)}`);
+      day.errors.push(`Creating ${claimed.length} ${KIND_LABEL[kind].toLowerCase()} orders failed: ${msg(e)}`);
       await db().from("res_routific_orders").update({ last_error: msg(e), updated_at: new Date().toISOString() }).in("id", claimed.map((c) => c.rowId));
     }
   }
@@ -166,7 +231,7 @@ async function syncDay(rollOutDate: string, dryRun: boolean, { only, remove = tr
       await updateOrder(row.order_uuid!, order);
       await db().from("res_routific_orders").update({ payload_hash: hashOf(order), last_error: null, updated_at: new Date().toISOString() }).eq("id", row.id);
     } catch (e) {
-      day.errors.push(`Updating ${label(stop)} failed: ${msg(e)}`);
+      day.errors.push(`Updating ${label(stop, kind)} failed: ${msg(e)}`);
       await db().from("res_routific_orders").update({ last_error: msg(e), updated_at: new Date().toISOString() }).eq("id", row.id);
     }
   }
@@ -181,7 +246,6 @@ async function syncDay(rollOutDate: string, dryRun: boolean, { only, remove = tr
       await db().from("res_routific_orders").update({ last_error: msg(e), updated_at: new Date().toISOString() }).eq("id", r.id);
     }
   }
-  return day;
 }
 
 // For the admin page: orders we know about from yesterday on.
@@ -217,7 +281,7 @@ export async function recentOrders() {
 export async function pushRollouts(rollOutDate: string, addressIds: string[]) {
   if (!routificConfigured()) throw new Error("Routific isn't set up.");
   if (rollOutDate < todaySD()) throw new Error("That date has passed.");
-  return syncDay(rollOutDate, false, { only: new Set(addressIds), remove: false });
+  return syncDay(rollOutDate, false, { only: new Set(addressIds), remove: false, kinds: ["rollout"] });
 }
 
 // Removes orders from Routific (and marks them removed here). Completed ones can't be removed.
