@@ -6,7 +6,7 @@ import JsonLd from "@/components/JsonLd";
 import { SITE, residentialBusiness, offers, breadcrumbs } from "@/components/residential/schema";
 
 export const metadata: Metadata = {
-  title: "Pricing",
+  title: "Trash Can Valet Pricing",
   description: `Trash-to-curb service from ${money(advertisedPrice(planById("annual")!))}/month with code ${residential.promo.label}. Month-to-month or annual, or a one-time round trip for ${money(planById("one_time")!.basePrice)}. San Diego and North County.`,
   alternates: { canonical: "/residential/pricing" },
 };
@@ -36,6 +36,8 @@ export default function PricingPage() {
       <p className="mt-3 text-center text-slate-600 max-w-xl mx-auto">Weekly service month-to-month or with an annual agreement, or a single visit.</p>
 
       <div className="mt-12">
+        {/* The plan names are h3s; this keeps headings in order (h1, h2, h3) for screen readers and search. */}
+        <h2 className="sr-only">Plans</h2>
         <PlanCards />
       </div>
 

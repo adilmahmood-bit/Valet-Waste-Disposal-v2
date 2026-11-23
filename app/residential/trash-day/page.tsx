@@ -21,8 +21,9 @@ const shareImage = { url: "/residential/og/trash-day.jpg", width: 1200, height: 
 export function generateMetadata(): Metadata {
   const year = currentYear();
   return {
-    title: { absolute: `When Is Trash Day in San Diego? ${year} Pickup Days & Holidays | Doorstep Disposal` },
-    description: `What day is trash day in San Diego in ${year}? Enter your city or ZIP to find your pickup day, collection rules and ${year} holiday schedule anywhere in San Diego County.`,
+    // Title under 60 and description under 160 characters, so Google doesn't cut them.
+    title: { absolute: `When Is Trash Day in San Diego? ${year} Pickup & Holiday Guide` },
+    description: `What day is trash day in San Diego in ${year}? Enter your city or ZIP to find your pickup day, collection rules and holiday schedule anywhere in San Diego County.`,
     alternates: { canonical: "/residential/trash-day" },
     openGraph: {
       title: `When is trash day in San Diego? Updated ${year}`,

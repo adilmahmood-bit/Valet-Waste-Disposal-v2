@@ -5,7 +5,7 @@ import JsonLd from "@/components/JsonLd";
 import { faqPage, breadcrumbs } from "@/components/residential/schema";
 
 export const metadata: Metadata = {
-  title: "FAQ",
+  title: "Trash Can Valet FAQ",
   description: "Answers about our trash-to-curb service: gate codes, holiday weeks, rain, pausing for travel, steep driveways and cancelling.",
   alternates: { canonical: "/residential/faq" },
 };

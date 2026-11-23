@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import { posts, formatPostDate as fmt } from "@/lib/blog";
 
 export const metadata: Metadata = {
-  title: { absolute: "Blog: Apartment Trash and Valet Trash in San Diego | Valet Waste Disposal" },
+  title: { absolute: "Apartment Trash & Valet Trash Blog | Valet Waste Disposal" },
   description:
     "Field notes for San Diego apartment managers on dumpster pads, porter time, contamination fines and valet trash.",
   alternates: { canonical: "/blog" },

@@ -10,7 +10,7 @@ const post = posts.find((p) => p.slug === "is-valet-trash-worth-it")!;
 const url = postUrl(post.slug);
 
 export const metadata: Metadata = {
-  title: { absolute: post.title },
+  title: { absolute: post.seoTitle ?? post.title },
   description: post.description,
   alternates: { canonical: `/blog/${post.slug}` },
   openGraph: {

@@ -27,7 +27,8 @@ export async function generateMetadata({ params }: { params: Promise<{ city: str
   if (!city) return {};
   // Leads with the phrase people search for ("trash can valet <city>").
   const title = `Trash Can Valet ${city.name}, CA | Doorstep Disposal`;
-  const description = `Trash can valet in ${city.name}. Every week we roll your trash, recycling and green waste cans to the curb and bring them back after pickup. Plus when trash day is in ${city.name} in ${currentYear()}.`;
+  // Kept under 160 characters (Google cuts longer ones), even for the longest city names.
+  const description = `Trash can valet in ${city.name}: we roll your cans to the curb and back every week. Plus your ${city.name} trash day and ${currentYear()} holidays.`;
   // Link previews (texts, social posts) show this city's photo. Made by scripts/city-og-images.mjs.
   const image = { url: `/residential/og/${city.slug}.jpg`, width: 1200, height: 630, alt: `${city.name}, California` };
   return {
