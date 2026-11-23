@@ -19,8 +19,22 @@ import { SITE } from "@/lib/blog";
 
 const s = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 
+// After 5 wrong passwords in a row the admin login locks for 15 minutes (counted in the database,
+// so guesses sent at once can't slip past it).
+const ADMIN_MAX_FAILED = 5;
+const ADMIN_LOCK_MINUTES = 15;
+const LOCKED_MSG = `Too many wrong passwords. Try again in ${ADMIN_LOCK_MINUTES} minutes.`;
+
 export async function login(_: unknown, f: FormData) {
-  if (!passwordMatches(s(f, "password"))) return { error: "Wrong password." };
+  const locked = await db().rpc("res_admin_login_locked");
+  if (locked.error) throw new Error(locked.error.message);
+  if (locked.data) return { error: LOCKED_MSG };
+  if (!passwordMatches(s(f, "password"))) {
+    const failed = await db().rpc("res_admin_login_failed", { p_max: ADMIN_MAX_FAILED, p_minutes: ADMIN_LOCK_MINUTES });
+    if (failed.error) throw new Error(failed.error.message);
+    return { error: failed.data ? LOCKED_MSG : "Wrong password." };
+  }
+  await db().rpc("res_admin_login_ok");
   await startAdminSession();
   redirect("/admin/residential");
 }
@@ -36,15 +50,31 @@ export async function markVisit(f: FormData) {
   await requireAdmin();
   const status = s(f, "status");
   const type = s(f, "type");
-  if (!VISIT_STATUSES.includes(status) || !["out", "back"].includes(type)) return;
-  must(
-    await db()
-      .from("res_visits")
-      .upsert(
-        { address_id: s(f, "address_id"), date: s(f, "date"), type, status, note: s(f, "note") || null, completed_by: "admin", completed_at: new Date().toISOString() },
-        { onConflict: "address_id,date,type" },
-      ),
-  );
+  const addressId = s(f, "address_id");
+  const date = s(f, "date");
+  if (!VISIT_STATUSES.includes(status) || !["out", "back"].includes(type) || !addressId || !DATE_RE.test(date)) return;
+  const note = s(f, "note") || null;
+  const existing = must(
+    await db().from("res_visits").select("id, status").eq("address_id", addressId).eq("date", date).eq("type", type).maybeSingle(),
+  ) as { id: string; status: string } | null;
+  if (existing) {
+    // Editing a recorded visit (a note, or done -> issue) keeps when it happened and who did it:
+    // the portal shows that time and stamps it on the customer's photo. Only a visit that
+    // becomes "done" now takes the current time.
+    const becameDone = status === "done" && existing.status !== "done";
+    must(
+      await db()
+        .from("res_visits")
+        .update({ status, note, ...(becameDone ? { completed_by: "admin", completed_at: new Date().toISOString() } : {}) })
+        .eq("id", existing.id),
+    );
+  } else {
+    must(
+      await db()
+        .from("res_visits")
+        .insert({ address_id: addressId, date, type, status, note, completed_by: "admin", completed_at: new Date().toISOString() }),
+    );
+  }
   refresh();
 }
 
@@ -345,6 +375,9 @@ export async function acceptPortalRequest(f: FormData) {
   const date = s(f, "date");
   const start = s(f, "start");
   const end = s(f, "end");
+  if (date && (!DATE_RE.test(date) || !TIME_RE.test(start) || !TIME_RE.test(end) || end <= start)) {
+    return toRequests("Pick a day and a time window with the start before the end.", true);
+  }
   let note: string;
   let failed = false;
   try {

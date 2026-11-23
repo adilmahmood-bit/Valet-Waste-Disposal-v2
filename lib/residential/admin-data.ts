@@ -36,9 +36,13 @@ export async function loadCustomers(f: CustomerFilters): Promise<CustomerLine[]>
 }
 
 // Escape one CSV cell.
+// Text that starts with = + - @ (or a tab/return) would run as a formula in Excel or Sheets, and
+// names and notes come from public forms, so it gets a leading ' (shown as plain text).
+// Plain numbers (including negatives) are left alone.
 export const csvCell = (v: unknown) => {
-  const s = v == null ? "" : String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  let s = v == null ? "" : String(v);
+  if (typeof v === "string" && /^[=+\-@\t\r]/.test(s) && !/^-?\d+(\.\d+)?$/.test(s)) s = `'${s}`;
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
 export const toCsv = (header: string[], rows: unknown[][]) => [header, ...rows].map((r) => r.map(csvCell).join(",")).join("\n");

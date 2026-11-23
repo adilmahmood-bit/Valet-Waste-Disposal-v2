@@ -169,12 +169,9 @@ export async function signInWithPassword(rawEmail: string, password: string): Pr
   if (c.locked_until && new Date(c.locked_until) > new Date()) return "locked";
 
   if (!(await passwordMatchesHash(password, c.password_hash))) {
-    const failed = (c.locked_until ? 0 : c.failed_logins) + 1;
-    const lock = failed >= MAX_FAILED;
-    await db()
-      .from("res_customers")
-      .update({ failed_logins: lock ? 0 : failed, locked_until: lock ? minutesFromNow(LOCK_MINUTES) : null })
-      .eq("id", c.id);
+    // Counted in one locked database step, so guesses sent at once can't all slip under the limit.
+    const { data: lock, error } = await db().rpc("res_customer_login_failed", { p_id: c.id, p_max: MAX_FAILED, p_minutes: LOCK_MINUTES });
+    if (error) throw new Error(error.message);
     return lock ? "locked" : "wrong";
   }
 

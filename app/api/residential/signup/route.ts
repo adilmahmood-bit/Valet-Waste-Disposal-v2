@@ -19,12 +19,8 @@ import { syncCustomer, addNote, addTask, submitForm } from "@/lib/residential/hu
 import { sendEmail } from "@/lib/residential/email";
 import { ensureStripeCustomer, createCheckout } from "@/lib/residential/stripe";
 import { cleanCode, normalizeSource } from "@/lib/residential/tracking";
-import { clientIp, formContext, isEmail, splitName, str } from "@/lib/residential/request";
+import { clientIp, formContext, isEmail, publicOrigin, splitName, str } from "@/lib/residential/request";
 import { hashNewPassword, passwordProblem } from "@/lib/residential/portal-auth";
-
-// The public origin for Stripe's return links. NEXT_PUBLIC_SITE_URL wins, because behind
-// Hostinger's proxy the request URL may not be the public one.
-const siteOrigin = (req: NextRequest) => (process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin).replace(/\/$/, "");
 
 const bad =(error: string) => NextResponse.json({ error }, { status: 400 });
 
@@ -78,14 +74,30 @@ async function handle(req: NextRequest) {
     passwordHash = await hashNewPassword(password);
   }
   let customerId: string;
+  // What the form said, when it differs from an existing account (the account keeps its own).
+  let contactMismatch = "";
   if (existing) {
     customerId = existing.id;
+    // The form can't prove who's typing, so an existing account's name, mobile and property type
+    // stay as they are (the name may carry the company, e.g. "Nate Gozlan (Pacific Estate)").
+    // Only blanks are filled and first-touch source/referral kept; Adil is told about differences.
     must(
       await db()
         .from("res_customers")
-        .update({ name, mobile, property_type: propertyType, source: existing.source ?? (source || null), referral_code: existing.referral_code ?? (referralCode || null) })
+        .update({
+          name: existing.name || name,
+          mobile: existing.mobile || mobile,
+          property_type: existing.property_type || propertyType,
+          source: existing.source ?? (source || null),
+          referral_code: existing.referral_code ?? (referralCode || null),
+        })
         .eq("id", customerId),
     );
+    const diffs = [
+      existing.name && existing.name !== name ? `name "${name}" (account: "${existing.name}")` : "",
+      existing.mobile && existing.mobile !== mobile ? `mobile ${mobile} (account: ${existing.mobile})` : "",
+    ].filter(Boolean);
+    if (diffs.length) contactMismatch = `Existing account. The form gave a different ${diffs.join(" and ")}; the account was not changed.`;
   } else {
     const row = must(
       await db()
@@ -156,9 +168,9 @@ async function handle(req: NextRequest) {
   if (payNow) {
     const stripeCustomerId = await ensureStripeCustomer({
       id: customerId,
-      name,
+      name: existing?.name || name,
       email,
-      mobile,
+      mobile: existing?.mobile || mobile,
       stripeCustomerId: existing?.stripe_customer_id ?? null,
       address: { street, city, zip },
     });
@@ -174,7 +186,7 @@ async function handle(req: NextRequest) {
       referralCode,
       addressId: address.id,
       subscriptionRowId: subscription.id,
-      origin: siteOrigin(req),
+      origin: publicOrigin(req),
       successQuery: thanks,
     });
     must(
@@ -202,6 +214,7 @@ async function handle(req: NextRequest) {
     `Access: ${accessFlags.map(accessFlagLabel).join(", ") || "none"}`,
     `Notes: ${accessNotes || "-"}`,
     `Source: ${sourceLabel(source) || "-"}${referralCode ? `, promo code ${referralCode}` : ""}`,
+    ...(contactMismatch ? ["", contactMismatch] : []),
   ].join("\n");
 
   after(async () => {

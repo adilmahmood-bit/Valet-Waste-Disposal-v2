@@ -1,5 +1,11 @@
 import type { NextRequest } from "next/server";
 import type { FormContext } from "./hubspot";
+import { SITE } from "@/lib/blog";
+
+// The public origin for links and redirects. Never the request URL in production: behind
+// Hostinger's proxy it is the internal address (https://0.0.0.0:3000).
+export const publicOrigin = (req: NextRequest) =>
+  (process.env.NEXT_PUBLIC_SITE_URL || (process.env.NODE_ENV === "production" ? SITE : req.nextUrl.origin)).replace(/\/$/, "");
 
 export const clientIp = (req: NextRequest) =>
   req.headers.get("x-forwarded-for")?.split(",")[0].trim() || req.headers.get("x-real-ip") || null;

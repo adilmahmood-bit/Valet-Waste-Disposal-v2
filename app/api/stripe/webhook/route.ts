@@ -103,7 +103,20 @@ async function clientCheckoutPaid(session: Stripe.Checkout.Session) {
     const billed = must(
       await db().from("res_subscriptions").select("id").in("address_id", addressIds).not("stripe_subscription_id", "is", null),
     ) as { id: string }[];
-    if (billed.length) return;
+    if (billed.length) {
+      // Already on autopay from another checkout (e.g. an emailed link and the portal button).
+      // This one may still have charged a first month, so Adil checks and refunds it if needed.
+      // Only once the money is in (a card at checkout, a bank debit when it clears), so it alerts once.
+      if (session.payment_status === "paid" && (session.amount_total ?? 0) > 0) {
+        const c = must(await db().from("res_customers").select("name").eq("id", customerId).single()) as { name: string };
+        await moneyAlert(
+          `Possible double payment: ${c.name}`,
+          `${c.name} paid ${money((session.amount_total ?? 0) / 100)} on a second autopay checkout, but those properties were already on autopay. No second subscription was made. Check whether this month was paid twice and refund this payment if so.`,
+          `checkout/sessions/${session.id}`,
+        );
+      }
+      return;
+    }
     const sub = await startClientSubscription(session, await linesForAddresses(customerId, addressIds));
     if (!sub) return;
     stripeSubscriptionId = sub.id;
