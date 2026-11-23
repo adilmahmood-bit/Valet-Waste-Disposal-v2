@@ -419,7 +419,7 @@ function VisitBox({
           />
           {/* Timestamp stamped on the photo: white text, with a shadow so it reads on any background. */}
           <span
-            className="absolute bottom-0 left-0 right-0 px-2 py-1 font-mono text-white leading-tight"
+            className="absolute top-0 left-0 px-2 py-1 font-mono text-white leading-tight"
             style={{
               textShadow:
                 "0 1px 2px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.85)",
