@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/residential/db";
 import { syncRoutific } from "@/lib/residential/routific-sync";
 import { fillMissingPhotos } from "@/lib/residential/routific-webhook";
+import { catchUpRouteMileage, syncRollinTrips } from "@/lib/residential/mileage";
 
 // Called on a schedule (Supabase pg_cron + pg_net) to keep Routific in step with tonight's
 // and tomorrow night's roll-outs. Needs "Authorization: Bearer <CRON_SECRET>".
@@ -33,6 +34,9 @@ export async function POST(req: Request) {
       // Proof photos that reached Routific after their stop was marked done.
       const photos = await fillMissingPhotos().catch((e) => (console.error("[cron:routific] photo catch-up failed", e), 0));
       if (photos) console.log(`[cron:routific] added ${photos} late proof photos`);
+      // Mileage log: completed routes, and estimates for crew roll-in days.
+      await catchUpRouteMileage().catch((e) => console.error("[cron:routific] mileage log failed", e));
+      await syncRollinTrips().catch((e) => console.error("[cron:routific] roll-in mileage failed", e));
     }
     if (!dryRun) await db().from("res_app_state").upsert({ key: "routific_last_sync", value: { ...result, by: "daily schedule" }, updated_at: new Date().toISOString() });
     const count = (k: "create" | "update" | "remove" | "keep") => result.days.reduce((n, d) => n + d[k].length, 0);

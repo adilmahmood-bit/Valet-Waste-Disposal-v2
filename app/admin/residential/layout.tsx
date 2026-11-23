@@ -13,6 +13,7 @@ const tabs = [
   { label: "Customers", href: "/admin/residential/customers" },
   { label: "Requests", href: "/admin/residential/requests" },
   { label: "Billing", href: "/admin/residential/billing" },
+  { label: "Mileage", href: "/admin/residential/mileage" },
   { label: "Quotes", href: "/admin/residential/quotes" },
   { label: "Waitlist", href: "/admin/residential/waitlist" },
   { label: "Holiday shifts", href: "/admin/residential/shifts" },
