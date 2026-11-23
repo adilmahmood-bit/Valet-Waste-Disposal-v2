@@ -168,7 +168,9 @@ export default async function MileagePage({
             {year} total
           </p>
           <p className="text-2xl font-bold">{mi(total)}</p>
-          <p className="text-xs text-slate-500">{trips.length} trips</p>
+          <p className="text-xs text-slate-500">
+            {trips.length} trip{trips.length === 1 ? "" : "s"}
+          </p>
         </div>
         <div className={`${card} p-4`}>
           <p className="text-xs uppercase tracking-wide text-slate-500">
