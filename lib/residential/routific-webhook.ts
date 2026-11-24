@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { db, must } from "./db";
-import { saveVisitPhoto, uprightJpeg } from "./photos";
+import { saveVisitPhoto } from "./photos";
 import { getOrder, getPhoto } from "./routific";
 import { notifyVisit } from "./visit-notify";
 
@@ -38,8 +38,9 @@ async function copyProofPhoto(orderUuid: string, addressId: string, date: string
   const ref = full.proofOfDelivery?.photos?.[0];
   if (!ref) return false;
   const photo = await getPhoto(orderUuid, ref);
-  // Routific tags every photo "rotate 90°" (its camera is portrait-locked); Adil shoots sideways.
-  const url = await saveVisitPhoto(`${addressId}/${date}-${type}-${photo.photoUuid}.jpg`, uprightJpeg(photo.bytes), photo.contentType);
+  // Saved as-is: browsers turn the photo using its EXIF orientation tag (1 upright, 3 upside
+  // down, 6 portrait). The tag is only right when the phone's rotation lock is off.
+  const url = await saveVisitPhoto(`${addressId}/${date}-${type}-${photo.photoUuid}.jpg`, photo.bytes, photo.contentType);
   must(await db().from("res_visits").update({ photo_url: url }).eq("address_id", addressId).eq("date", date).eq("type", type));
   return true;
 }
