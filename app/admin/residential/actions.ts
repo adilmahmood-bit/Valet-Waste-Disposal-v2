@@ -323,6 +323,8 @@ export async function pushSelectedRollouts(f: FormData) {
   try {
     const r = await pushRollouts(date, ids);
     note = `Sent ${r.create.length} new and ${r.update.length} updated roll-outs to Routific; ${r.keep.length} were already there.`;
+    if (r.routing.length) note += ` ${r.routing.map((n) => n.replace(/^! /, "")).join(" ")}`;
+    if (r.routing.some((n) => n.startsWith("!"))) failed = true;
     if (r.errors.length) {
       note += ` Problems: ${r.errors.join("; ")}`;
       failed = true;

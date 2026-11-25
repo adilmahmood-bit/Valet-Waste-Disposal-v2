@@ -3,7 +3,18 @@ import { accessFlagLabel, residential } from "@/config/residential";
 import { db, must, type AddressRow } from "./db";
 import { buildRoute, type Stop } from "./routes";
 import { addDays, formatLong, todaySD } from "./schedule";
-import { createOrders, deleteOrder, routificConfigured, updateOrder, type RoutificOrderInput } from "./routific";
+import {
+  createOrders,
+  deleteOrder,
+  getOrder,
+  listRoutes,
+  publishRoutes,
+  RoutificError,
+  routificConfigured,
+  scheduleOrders,
+  updateOrder,
+  type RoutificOrderInput,
+} from "./routific";
 import { decryptGateCode } from "./crypto";
 
 // Keeps Routific in step with our schedule: two orders per property per trash day, the evening
@@ -30,6 +41,7 @@ type OrderRow = {
   pickup_date: string;
   customer_order_number: string;
   order_uuid: string | null;
+  routific_order_number: string | null;
   routific_status: string | null;
   payload_hash: string | null;
   created_at: string;
@@ -152,6 +164,25 @@ async function syncKind(day: DaySync, kind: Kind, pickupDate: string, deliveryDa
   const rowFor = new Map(rows.map((r) => [r.address_id, r]));
   const dueIds = new Set(due.map((s) => s.address.id));
 
+  // Our row only says what we sent. If the order was deleted in Routific since, matching on the
+  // row alone would report it as "already there" forever, so check each due one still exists
+  // (and pick up its current status). A missing one is created again below.
+  const gone = new Set<string>();
+  for (const stop of due) {
+    const row = rowFor.get(stop.address.id);
+    if (!row?.order_uuid || DONE.includes(row.routific_status ?? "") || (row.manual && kind === "rollin")) continue;
+    try {
+      const remote = await getOrder(row.order_uuid);
+      if (remote.status && remote.status !== row.routific_status) {
+        row.routific_status = remote.status;
+        if (!dryRun) await db().from("res_routific_orders").update({ routific_status: remote.status, updated_at: new Date().toISOString() }).eq("id", row.id);
+      }
+    } catch (e) {
+      // Any other failure (network, Routific down): carry on with what we have.
+      if (e instanceof RoutificError && e.status === 404) gone.add(row.id);
+    }
+  }
+
   // Work out what to do.
   const toCreate: { stop: Stop; order: RoutificOrderInput; row?: OrderRow }[] = [];
   const toUpdate: { stop: Stop; order: RoutificOrderInput; row: OrderRow }[] = [];
@@ -165,9 +196,9 @@ async function syncKind(day: DaySync, kind: Kind, pickupDate: string, deliveryDa
     } else if (row?.manual && kind === "rollin") {
       // A roll-in already added by hand (its own window and notes): leave it as it is.
       day.keep.push({ ...line, detail: "added by hand" });
-    } else if (!row || !row.order_uuid) {
+    } else if (!row || !row.order_uuid || gone.has(row.id)) {
       toCreate.push({ stop, order, row });
-      day.create.push({ ...line, detail: row ? "retry" : undefined });
+      day.create.push({ ...line, detail: !row ? undefined : gone.has(row.id) ? `${row.routific_order_number ?? "order"} was missing in Routific` : "retry" });
     } else if (DONE.includes(row.routific_status ?? "")) {
       day.keep.push({ ...line, detail: row.routific_status ?? undefined });
     } else if (row.payload_hash !== hashOf(order)) {
@@ -281,7 +312,87 @@ export async function recentOrders() {
 export async function pushRollouts(rollOutDate: string, addressIds: string[]) {
   if (!routificConfigured()) throw new Error("Routific isn't set up.");
   if (rollOutDate < todaySD()) throw new Error("That date has passed.");
-  return syncDay(rollOutDate, false, { only: new Set(addressIds), remove: false, kinds: ["rollout"] });
+  const day = await syncDay(rollOutDate, false, { only: new Set(addressIds), remove: false, kinds: ["rollout"] });
+  const routing = await routeAndPublish(rollOutDate, addressIds);
+  return { ...day, routing };
+}
+
+// Creating an order only puts it in Routific's "unscheduled" list; the driver sees nothing until
+// it is on a route and the route is published. This does both for the chosen roll-outs: schedules
+// the ones not on a route yet onto that day's routes, then publishes the day. Returns notes for
+// the dashboard (problems start with "!").
+async function routeAndPublish(date: string, addressIds: string[]): Promise<string[]> {
+  const notes: string[] = [];
+  const rows = must(
+    await db()
+      .from("res_routific_orders")
+      .select("id, order_uuid, routific_order_number, routific_status")
+      .eq("kind", "rollout")
+      .eq("delivery_date", date)
+      .in("address_id", addressIds)
+      .is("deleted_at", null),
+  ) as { id: string; order_uuid: string | null; routific_order_number: string | null; routific_status: string | null }[];
+  const live = rows.filter((r) => r.order_uuid && !DONE.includes(r.routific_status ?? ""));
+  if (!live.length) return notes;
+
+  try {
+    const unscheduled: typeof live = [];
+    for (const r of live) {
+      const o = await getOrder(r.order_uuid!).catch(() => null);
+      if (o && !o.isScheduled && !DONE.includes(o.status)) unscheduled.push(r);
+    }
+    const routes = await listRoutes(date);
+    if (unscheduled.length) {
+      if (!routes.length) {
+        notes.push(`! There's no route in Routific for ${formatLong(date)}, so ${unscheduled.map((r) => r.routific_order_number).join(", ")} can't go on one. Create a route for that day in Routific (with a driver), then push again.`);
+        return notes;
+      }
+      // Routific refuses the whole request if any route is locked; drop those and try the rest.
+      let open = routes;
+      let res: Awaited<ReturnType<typeof scheduleOrders>> | null = null;
+      while (!res) {
+        if (!open.length) {
+          const names = routes.map((r) => `"${r.name}"`).join(", ");
+          notes.push(`! The ${formatLong(date)} route${routes.length > 1 ? "s" : ""} in Routific (${names}) ${routes.length > 1 ? "are" : "is"} locked, so Routific won't add stops. A route is locked once it's published or under way: add the stop to it in Routific and publish again, or unlock it there and push again.`);
+          return notes;
+        }
+        try {
+          res = await scheduleOrders(date, unscheduled.map((r) => r.order_uuid!), open.map((r) => r.uuid));
+        } catch (e) {
+          if (!(e instanceof RoutificError && e.status === 400 && e.body.includes("ROUTE_LOCKED"))) throw e;
+          const locked = String((JSON.parse(e.body) as { params?: { uuids?: string | string[] } }).params?.uuids ?? "");
+          const next = open.filter((r) => !locked.includes(r.uuid));
+          open = next.length < open.length ? next : [];
+        }
+      }
+      if (res.status !== "finished") {
+        notes.push(`! Routific couldn't put the stops on a route (${res.status}${res.error ? `: ${res.error}` : ""}).`);
+        return notes;
+      }
+      const onRoute = new Set((res.actionSummary?.scheduledOrders ?? []).map((o) => o.uuid));
+      for (const r of unscheduled) {
+        if (onRoute.has(r.order_uuid!)) {
+          await db().from("res_routific_orders").update({ routific_status: "scheduled", updated_at: new Date().toISOString() }).eq("id", r.id);
+        }
+      }
+      const left = unscheduled.filter((r) => !onRoute.has(r.order_uuid!));
+      notes.push(`Put ${onRoute.size} on the route.`);
+      if (left.length) notes.push(`! Routific left ${left.map((r) => r.routific_order_number).join(", ")} off the route; open ${formatLong(date)} in Routific to place it by hand.`);
+    }
+    try {
+      const pub = await publishRoutes(date);
+      const bad = (pub.actionSummary?.routes ?? []).filter((r) => r.actionStatus !== "finished" && r.actionStatus !== "skipped");
+      if (pub.status === "finished") notes.push("Route published to the driver app.");
+      else notes.push(`! Publishing the route ${pub.status}${pub.error ? `: ${pub.error}` : ""}${bad.length ? ` (${bad.map((r) => r.error ?? r.actionStatus).join("; ")})` : ""}.`);
+    } catch (e) {
+      // 400 PUBLISH_FAILED: nothing changed since the last publish.
+      if (e instanceof RoutificError && e.status === 400 && e.body.includes("PUBLISH_FAILED")) notes.push("Route was already published.");
+      else throw e;
+    }
+  } catch (e) {
+    notes.push(`! Routing in Routific failed: ${msg(e)}`);
+  }
+  return notes;
 }
 
 // Removes orders from Routific (and marks them removed here). Completed ones can't be removed.

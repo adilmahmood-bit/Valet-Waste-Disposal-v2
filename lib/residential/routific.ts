@@ -59,6 +59,7 @@ export type RoutificOrder = RoutificOrderInput & {
   uuid: string;
   routificOrderNumber: string;
   status: string;
+  isScheduled?: boolean;
   deliveryTime?: string | null;
   deliveryNotes?: string | null;
   deliveryMissedReason?: string | null;
@@ -88,6 +89,45 @@ export type RoutificRoute = {
 
 export async function getRoute(uuid: string) {
   return (await call<RoutificRoute>("GET", `/routes/${uuid}`)).data;
+}
+
+export type RoutificRouteSummary = RoutificRoute & { ordersCount?: number };
+
+export async function listRoutes(date: string) {
+  const { data } = await call<{ items: RoutificRouteSummary[] }>("GET", `/routes?workspaceUuid=${workspace()}&date=${date}`);
+  return data?.items ?? [];
+}
+
+type Action<S> = { actionUuid: string; actionName: string; status: "pending" | "finished" | "failed"; error?: string | null; actionSummary?: S };
+export type ScheduleSummary = {
+  scheduledOrders?: { uuid: string; routeUuid: string }[];
+  unscheduledOrders?: { uuid: string }[];
+};
+export type PublishSummary = { routes?: { uuid: string; actionStatus: string; error?: string | null }[] };
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// Routific runs scheduling and publishing in the background; wait (up to ~40 s) for the result.
+async function waitFor<S>(path: string): Promise<Action<S>> {
+  let last: Action<S> | null = null;
+  for (let i = 0; i < 20; i++) {
+    await sleep(i === 0 ? 1000 : 2000);
+    last = (await call<Action<S>>("GET", path)).data;
+    if (last.status !== "pending") return last;
+  }
+  return last!;
+}
+
+// Puts orders on that day's routes (Routific picks the stop order), like "Schedule" in the app.
+export async function scheduleOrders(date: string, orders: string[], routes: string[]) {
+  const { data } = await call<Action<ScheduleSummary>>("POST", `/schedules?workspaceUuid=${workspace()}`, { date, orders, routes });
+  return waitFor<ScheduleSummary>(`/schedules/actions/${data.actionUuid}`);
+}
+
+// Sends every route of that day to the drivers' app (unchanged published routes are skipped).
+export async function publishRoutes(date: string) {
+  const { data } = await call<Action<PublishSummary>>("POST", `/routes/publish?workspaceUuid=${workspace()}&date=${date}`);
+  return waitFor<PublishSummary>(`/routes/actions/${data.actionUuid}`);
 }
 
 // A proof-of-delivery photo. `ref` is an entry of order.proofOfDelivery.photos, a relative
