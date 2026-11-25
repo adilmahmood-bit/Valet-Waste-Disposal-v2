@@ -55,6 +55,7 @@ export type SubscriptionRow = {
   start_date: string | null;
   billing_group?: string | null;
   first_month_charge?: number | null;
+  autopay_from?: string | null;
   stripe_subscription_id?: string | null;
 };
 
