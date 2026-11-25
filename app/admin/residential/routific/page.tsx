@@ -64,6 +64,9 @@ export default async function RoutificPage({ searchParams }: { searchParams: Pro
         <div>
           <h1 className="text-2xl font-bold">Routific dispatch</h1>
           <p className="text-sm text-slate-600">Evening of {formatLong(date)}{past ? " (past, view only)" : ""}</p>
+          <p className="text-sm text-slate-500 max-w-2xl">
+            Sends the schedule to the driver: Push puts the day&apos;s roll-outs on its Routific route and publishes it. Push before publishing in Routific, since a published route is locked.
+          </p>
         </div>
         <form className="flex items-center gap-2">
           <Link href={`?date=${addDays(date, -1)}`} className={btnGhost} aria-label="Previous day">←</Link>

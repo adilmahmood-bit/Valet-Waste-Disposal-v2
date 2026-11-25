@@ -29,7 +29,10 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
   return (
     <div className="space-y-5">
       <div className="flex items-end justify-between">
-        <h1 className="text-2xl font-bold">Quote requests <span className="text-slate-500 font-medium">({quotes.length})</span></h1>
+        <div>
+          <h1 className="text-2xl font-bold">Quote requests <span className="text-slate-500 font-medium">({quotes.length})</span></h1>
+          <p className="text-sm text-slate-500">Sign-ups whose access details need a custom price before service starts; the reason is on each one. Set the price here.</p>
+        </div>
         <a href={all ? "?" : "?all=1"} className={btnGhost}>{all ? "Open only" : "Show all"}</a>
       </div>
       {quotes.length === 0 && <p className={`${card} p-4 text-slate-500`}>No open quote requests.</p>}

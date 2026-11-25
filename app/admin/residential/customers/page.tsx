@@ -34,7 +34,10 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <h1 className="text-2xl font-bold">Customers <span className="text-slate-500 font-medium">({rows.length})</span></h1>
+        <div>
+          <h1 className="text-2xl font-bold">Customers <span className="text-slate-500 font-medium">({rows.length})</span></h1>
+          <p className="text-sm text-slate-500">Everyone signed up and their properties: plan, status, trash day and HubSpot links. &quot;View as customer&quot; shows their portal.</p>
+        </div>
         <a href={`/admin/residential/export?type=customers&${qs}`} className={btnGhost}>CSV</a>
       </div>
 

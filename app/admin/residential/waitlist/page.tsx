@@ -18,7 +18,10 @@ export default async function WaitlistPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Waitlist <span className="text-slate-500 font-medium">({rows.length})</span></h1>
+      <div>
+        <h1 className="text-2xl font-bold">Waitlist <span className="text-slate-500 font-medium">({rows.length})</span></h1>
+        <p className="text-sm text-slate-500">People outside the service area who asked to be told when we reach them, counted by ZIP to show where to expand next.</p>
+      </div>
 
       <section className={`${card} p-4`}>
         <h2 className="font-semibold">By ZIP</h2>

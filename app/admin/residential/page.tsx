@@ -23,6 +23,9 @@ export default async function RoutesPage({ searchParams }: { searchParams: Promi
         <div>
           <h1 className="text-2xl font-bold">Route list</h1>
           <p className="text-slate-600">{formatLong(date)}</p>
+          <p className="text-sm text-slate-500 max-w-2xl">
+            Who&apos;s due from our own schedule (trash days, holidays, pauses and plans applied), with map links and access notes. Printable, and works even if Routific is down.
+          </p>
         </div>
         <form className="flex flex-wrap items-center gap-2">
           <a href={`?date=${addDays(date, -1)}`} className={btnGhost}>← Prev</a>
