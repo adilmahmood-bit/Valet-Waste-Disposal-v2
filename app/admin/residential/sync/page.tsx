@@ -30,7 +30,10 @@ export default async function SyncPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">HubSpot sync</h1>
+      <div>
+        <h1 className="text-2xl font-bold">HubSpot sync</h1>
+        <p className="text-sm text-slate-500">Health check for the HubSpot link and outgoing emails: every CRM write is read back to confirm it landed. Retry failures or pull contact edits here.</p>
+      </div>
       {!hubspotConfigured() && (
         <p className="rounded-xl bg-amber-100 text-amber-950 px-4 py-3 text-sm">HUBSPOT_TOKEN isn&apos;t set, so nothing is syncing yet.</p>
       )}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { poppins } from "@/app/fonts/fonts";
 import { isAdmin } from "@/lib/residential/admin-auth";
 import { logout } from "./actions";
+import FollowToday from "./FollowToday";
 
 export const metadata: Metadata = { title: "Residential ops | Valet Waste Disposal", robots: { index: false, follow: false } };
 
@@ -43,6 +44,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </nav>
         )}
       </header>
+      {admin && <FollowToday />}
       <div className="max-w-7xl mx-auto px-4 py-6">{children}</div>
     </div>
   );
