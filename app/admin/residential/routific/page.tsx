@@ -113,7 +113,7 @@ export default async function RoutificPage({ searchParams }: { searchParams: Pro
                             type="checkbox"
                             name="address_id"
                             value={s.address.id}
-                            defaultChecked={!s.paused && !o}
+                            defaultChecked={!s.paused && (!o || o.routific_status === "not_scheduled")}
                             disabled={s.paused || !!done || !ready}
                             aria-label={`Send ${s.address.street}`}
                             className="h-4 w-4"
@@ -150,7 +150,7 @@ export default async function RoutificPage({ searchParams }: { searchParams: Pro
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <button className={btn} disabled={!ready}>Push ticked roll-outs to Routific</button>
-              <span className="text-xs text-slate-500">Already-sent ones are updated if their details changed.</span>
+              <span className="text-xs text-slate-500">Puts them on that day&apos;s route in Routific and publishes it to the driver. Already-sent ones are updated if their details changed.</span>
             </div>
           </form>
         )}
