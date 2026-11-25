@@ -131,6 +131,25 @@ export function nextFirstOfMonth(now = new Date()) {
   return Math.floor(Date.UTC(y, m, 1, 8) / 1000);
 }
 
+// Midnight San Diego time on a YYYY-MM-DD date, as a Unix timestamp.
+export function midnightPacific(date: string) {
+  const [y, m, d] = date.split("-").map(Number);
+  for (const h of [8, 7]) {
+    const t = new Date(Date.UTC(y, m - 1, d, h));
+    const local = t.toLocaleString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false });
+    if (local === "0" || local === "24") return Math.floor(t.getTime() / 1000);
+  }
+  return Math.floor(Date.UTC(y, m - 1, d, 8) / 1000);
+}
+
+// Lines billed in arrears (res_subscriptions.autopay_from on or after the next 1st): nothing is
+// charged up front for them, and autopay's first charge waits until their date. Once that date
+// has passed, the property is billed the standard way.
+export function deferredLines(lines: ClientLine[], now = new Date()) {
+  const next = nextFirstOfMonth(now);
+  return lines.filter((l) => l.autopayFrom && midnightPacific(l.autopayFrom) >= next);
+}
+
 // The Stripe payment-method settings that offer bank debit (ACH), so client checkouts can
 // pay by bank. Stripe keeps several settings groups; the default one may have ACH off.
 async function bankDebitConfig() {
@@ -149,6 +168,8 @@ export type ClientLine = {
   startDate: string | null;
   // A custom first-month amount Adil set (e.g. one week of service); null = prorate by pickups.
   firstMonthCharge?: number | null;
+  // First autopay charge for a property billed in arrears (YYYY-MM-DD, the 1st); null = standard.
+  autopayFrom?: string | null;
 };
 
 // This month's share for each property, by pickups: the monthly rate times the share of this
@@ -199,7 +220,9 @@ export async function createClientCheckout(o: {
   returnUrl: string;
 }) {
   if (!o.lines.length) throw new Error("No active properties with a monthly rate to bill.");
-  const anchor = nextFirstOfMonth();
+  // Properties billed in arrears push autopay's first charge to their date and pay nothing now.
+  const deferred = deferredLines(o.lines);
+  const anchor = Math.max(nextFirstOfMonth(), ...deferred.map((l) => midnightPacific(l.autopayFrom!)));
   const metadata = {
     res_kind: "client",
     res_customer_id: o.customerId,
@@ -210,7 +233,7 @@ export async function createClientCheckout(o: {
   const first = new Date(anchor * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "America/Los_Angeles" });
   const what = `${o.lines.length} ${o.lines.length === 1 ? "property" : "properties"}`;
   const description = `Trash can valet, ${what}`;
-  const charges = firstMonthCharges(o.lines);
+  const charges = firstMonthCharges(o.lines.filter((l) => !deferred.includes(l)));
   const pmConfig = await bankDebitConfig();
   const common = {
     ...(pmConfig ? { payment_method_configuration: pmConfig } : {}),

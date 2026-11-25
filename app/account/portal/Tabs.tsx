@@ -3,12 +3,14 @@ import type { PortalCustomer } from "@/lib/residential/portal-auth";
 import { PASSWORD_MIN } from "@/lib/residential/portal-auth";
 import type { PortalProperty } from "@/lib/residential/portal-data";
 import type { PortalRequest, TeamMember } from "@/lib/residential/portal-requests";
+import { todaySD } from "@/lib/residential/schedule";
 import AlertSettings from "../AlertSettings";
 import PasswordSettings from "../PasswordSettings";
 import { signOutAction, startAutopay } from "../actions";
 import { AddPropertyForm, CopyLink, OverflowForm, RemoveTeamButton, TeamForm } from "./forms";
 import { Card, P, Pill } from "./Shell";
 
+const longDate = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 const money = (n: number) => `$${Number(n).toFixed(2).replace(/\.00$/, "")}`;
 const date = (iso: string) => new Date(iso).toLocaleDateString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric" });
 
@@ -132,6 +134,9 @@ export function BillingTab({ customer, properties, autopay, preview }: { custome
     };
   });
   const several = accounts.length > 1;
+  // The 1st of next month (San Diego), as YYYY-MM-DD; autopay dates on or after it are "later".
+  const [ty, tm] = todaySD().split("-").map(Number);
+  const nextFirst = tm === 12 ? `${ty + 1}-01-01` : `${ty}-${String(tm + 1).padStart(2, "0")}-01`;
   return (
     <>
       <Card>
@@ -198,12 +203,25 @@ export function BillingTab({ customer, properties, autopay, preview }: { custome
       )}
       {accounts
         .filter((a) => customer.billing_method !== "bank_transfer" && a.unbilled.length > 0)
-        .map((a) => (
+        .map((a) => {
+          // Billed in arrears (agreement terms): nothing charged now, autopay starts on a later 1st.
+          const later = a.unbilled.map((p) => p.sub?.autopay_from).filter((d): d is string => !!d && d >= nextFirst).sort().pop();
+          return (
           <Card key={a.group ?? ""}>
             <h2 className="font-semibold">Set up autopay{a.name ? `: ${a.name}` : ""}</h2>
             <p className="mt-1 text-sm">
-              Add a card or bank account once for {a.unbilled.length === 1 ? a.unbilled[0].address.street : a.unbilled.map((p) => p.address.street).join(", ")} ({money(a.unbilledTotal)}/month). You&apos;ll
-              pay for this month&apos;s service now, then it&apos;s charged automatically on the 1st of each month. Payments are handled securely by Stripe.
+              Add a card or bank account once for {a.unbilled.length === 1 ? a.unbilled[0].address.street : a.unbilled.map((p) => p.address.street).join(", ")} ({money(a.unbilledTotal)}/month).{" "}
+              {later ? (
+                <>
+                  Nothing is charged today. Autopay starts {longDate(later)}, then runs on the 1st of each month. Service before then is invoiced separately, as in
+                  your agreement. Payments are handled securely by Stripe.
+                </>
+              ) : (
+                <>
+                  You&apos;ll pay for this month&apos;s service now, then it&apos;s charged automatically on the 1st of each month. Payments are handled securely by
+                  Stripe.
+                </>
+              )}
             </p>
             {preview ? (
               <p className="mt-2 text-sm" style={{ color: P.muted }}>Preview: the button is hidden here.</p>
@@ -216,7 +234,8 @@ export function BillingTab({ customer, properties, autopay, preview }: { custome
               </form>
             )}
           </Card>
-        ))}
+          );
+        })}
       <Card>
         <h2 className="font-semibold">Payments</h2>
         {onAutopay.length > 0 ? (

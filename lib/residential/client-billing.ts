@@ -23,6 +23,7 @@ type Row = {
         stripe_subscription_id: string | null;
         billing_group: string | null;
         first_month_charge: number | null;
+        autopay_from: string | null;
       }[]
     | null;
 };
@@ -32,7 +33,7 @@ async function propertiesOf(customerId: string) {
     await db()
       .from("res_addresses")
       .select(
-        "id, street, city, zip, trash_day, status, sub:res_subscriptions(id, price, plan, status, start_date, stripe_subscription_id, billing_group, first_month_charge)",
+        "id, street, city, zip, trash_day, status, sub:res_subscriptions(id, price, plan, status, start_date, stripe_subscription_id, billing_group, first_month_charge, autopay_from)",
       )
       .eq("customer_id", customerId)
       .order("created_at"),
@@ -53,6 +54,7 @@ const lineOf = (r: Row): ClientLine => {
     monthly: Number(s.price),
     startDate: s.start_date,
     firstMonthCharge: s.first_month_charge == null ? null : Number(s.first_month_charge),
+    autopayFrom: s.autopay_from,
   };
 };
 
